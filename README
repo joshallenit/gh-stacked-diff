@@ -17,3 +17,7 @@ These scripts make it easier to build from the command line and to create and up
 ## Working with these scripts
 
 - create-symlinks.sh - Create symlinks for these scripts
+
+## Installation
+
+  Clone repository and run `./create-symlinks.sh` from the terminal.
