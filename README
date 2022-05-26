@@ -1,0 +1,19 @@
+# Developer Scripts
+
+These scripts make it easier to build from the command line and to create and update PR's.
+
+## Build Scripts
+
+- installapp: assembleInternalDebug and install on device
+- assemble: assembleInternalDebug and build tests
+
+
+## Working with Pull Requests
+
+- git-newpr: Create a new PR with a cherry-pick of the given commit hash
+- git-updatepr: Add the topmost commit to the PR with the given commit hash
+- gitlog: Abbreviate git log that only shows what has changed, useful for copying commit hashes.
+
+## Working with these scripts
+
+- create-symlinks.sh - Create symlinks for these scripts
