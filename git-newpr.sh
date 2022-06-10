@@ -23,7 +23,7 @@ if ! git cherry-pick "$pr_commit"; then
 fi
 
 # Create a new remote branch by the same name.
-git -c push.default=current push
+git -c push.default=current push -f
 
 # Use GitHub's cli to create the PR from the branch.
 # See: https://github.com/cli/cli
