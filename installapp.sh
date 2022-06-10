@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Warning: Either use command line build or IDE build but avoid mixing both during your workflow, 
+# as it can slow down build times
+# See https://issuetracker.google.com/issues/164145066
+
 trap ctrl_c INT
 
 # Avoid say command on ctrl-c
