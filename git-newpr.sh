@@ -41,5 +41,7 @@ git -c push.default=current push -f
 # See: https://github.com/cli/cli
 gh pr create --draft --title "$pr_title" --body "$body" --fill
 
+gh pr view --web
+
 # Go back to main branch.
 git switch main
