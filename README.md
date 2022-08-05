@@ -21,4 +21,10 @@ These scripts make it easier to build from the command line and to create and up
 
 ## Installation
 
-  Clone repository and run `./create-symlinks.sh` from the terminal.
+Clone repository and run `./create-symlinks.sh` from the terminal.
+
+```bash
+brew install gh
+brew install go
+./create-symlinks.sh
+```
