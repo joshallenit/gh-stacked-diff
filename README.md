@@ -1,6 +1,6 @@
 # Developer Scripts
 
-These scripts make it easier to build from the command line and to create and update PR's.
+These scripts make it easier to build from the command line and to create and update PR's. They facilitates a stacked diff workflow, where you always commit on `main` branch and have can have multiple streams of work on all `main`.
 
 ## Build Scripts
 
