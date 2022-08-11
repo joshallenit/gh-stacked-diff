@@ -21,10 +21,12 @@ These scripts make it easier to build from the command line and to create and up
 
 ## Installation
 
-Clone repository and run `./create-symlinks.sh` from the terminal.
+Clone repository and then:
 
 ```bash
-brew install gh
-brew install go
-./create-symlinks.sh
+brew install gh # Install Github CLI
+gh auth login # Setup login for Github CLI
+brew install go # Go Lang is used by git-reset-main
+cd development-scripts # or wherever you cloned repo
+./create-symlinks.sh # Create symlinks for the scripts
 ```
