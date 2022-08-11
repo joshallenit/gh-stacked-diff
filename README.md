@@ -30,3 +30,10 @@ brew install go # Go Lang is used by git-reset-main
 cd development-scripts # or wherever you cloned repo
 ./create-symlinks.sh # Create symlinks for the scripts
 ```
+
+## When Creating PRs
+
+If you prefix the Jira ticket to the git commit summary then `git-newpr` will populate the `Ticket` section of the PR description.
+
+For example:
+`CONV-9999 Add new feature`
