@@ -41,3 +41,11 @@ If you prefix the Jira ticket to the git commit summary then `git-newpr` will po
 
 For example:
 `CONV-9999 Add new feature`
+
+## Example Workflow
+
+### To Update Main
+
+```bash
+git fetch && git rebase origin/main
+```
