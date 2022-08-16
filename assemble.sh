@@ -16,6 +16,7 @@ set -x # show executing lines
     compileInternalDebugUnitTestSources \
     app:assembleInternalDebugAndroidTest \
     detekt \
+    assertAllowedModuleDependencies \
     "$@"
 
 retVal=$?
