@@ -8,3 +8,4 @@ sudo ln -sfn $PWD/code.sh /usr/local/bin/code
 sudo ln -sfn $PWD/git-amendpr.sh /usr/local/bin/git-amendpr
 sudo ln -sfn $PWD/git-reset-main.sh /usr/local/bin/git-reset-main
 sudo ln -sfn $PWD/git-prs.sh /usr/local/bin/git-prs
+sudo ln -sfn $PWD/git-review.sh /usr/local/bin/git-review

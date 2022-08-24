@@ -19,6 +19,7 @@ Using a stacked diff workflow like this allows you to work on separate streams o
 - **git-updatepr**: Add the topmost commit to the PR with the given commit hash
 - **git-reset-main**: Reset the main branch with the squashed contents of the given commits associated branch. Sometimes you might want to switch to a feature branch and make changes to it (rebase, amend). With this script you can then ensure that your `main` branch is up to date.
 - **git-prs**: Lists all of your open PRs. Useful for copying PR numbers.
+- **git-review**: Update the given PR as "Ready for Review" and automatically add reviewers listed in your PR_REVIEWERS environment variable.
 
 ## Working with these scripts
 
@@ -42,6 +43,17 @@ If you prefix the Jira ticket to the git commit summary then `git-newpr` will po
 
 For example:
 `CONV-9999 Add new feature`
+
+## Automatically adding PR Reviewers
+
+The `git-review` command will mark your Draft PR as "Ready for Review" and automatically add reviewers that are specified in the PR_REVIEWERS environment variable.
+You can specify more than one reviewer using a comma-delimited string.
+
+```bash
+export PR_REVIEWERS=first-user,second-user,third-user
+```
+
+Add this to your shell rc file (`~/.zshrc` or `~/.bashrc`) and run `source <rc-file>`
 
 ## Example Workflow
 
