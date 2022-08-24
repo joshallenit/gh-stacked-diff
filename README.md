@@ -18,6 +18,7 @@ Using a stacked diff workflow like this allows you to work on separate streams o
 - **git-newpr**: Create a new PR with a cherry-pick of the given commit hash
 - **git-updatepr**: Add the topmost commit to the PR with the given commit hash
 - **git-reset-main**: Reset the main branch with the squashed contents of the given commits associated branch. Sometimes you might want to switch to a feature branch and make changes to it (rebase, amend). With this script you can then ensure that your `main` branch is up to date.
+- **git-prs**: Lists all of your open PRs. Useful for copying PR numbers.
 
 ## Working with these scripts
 
