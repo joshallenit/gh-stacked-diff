@@ -20,6 +20,7 @@ Using a stacked diff workflow like this allows you to work on separate streams o
 - **git-reset-main**: Reset the main branch with the squashed contents of the given commits associated branch. Sometimes you might want to switch to a feature branch and make changes to it (rebase, amend). With this script you can then ensure that your `main` branch is up to date.
 - **git-prs**: Lists all of your open PRs. Useful for copying PR numbers.
 - **git-review**: Update the given PR as "Ready for Review" and automatically add reviewers listed in your PR_REVIEWERS environment variable.
+- **git-merge-pr**: Add the given PR to the merge queue
 
 ## Working with these scripts
 
