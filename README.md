@@ -38,6 +38,24 @@ cd development-scripts # or wherever you cloned repo
 echo "export PR_REVIEWERS=first-user,second-user,third-user" >> ~/.zshrc # List regular PR reviewers for the git-review command
 ```
 
+To avoid having some commands show their output in full-screen `less` (or your default pager), define these args in your LESS environment variable:
+
+```bash
+export LESS=-FRX
+```
+
+Add to your `.zshrc` file:
+
+```bash
+echo "export LESS=-FRX" >> `~/.zshrc`
+```
+
+Don't forget to run `source`!
+
+```bash
+source ~/.zshrc
+```
+
 ## When Creating PRs
 
 If you prefix the Jira ticket to the git commit summary then `git-newpr` will populate the `Ticket` section of the PR description.
