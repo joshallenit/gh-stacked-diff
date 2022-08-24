@@ -16,7 +16,7 @@ git switch "$branch_name"
 git branch -D forsquashing || true
 git checkout -b forsquashing
 
-GIT_SEQUENCE_EDITOR="go run ~/development-scripts/squash-commits.go \$1" git rebase -i HEAD~`gitlog | wc -l | xargs`
+GIT_SEQUENCE_EDITOR="go run /usr/local/bin/squash-commits.go \$1" git rebase -i HEAD~`gitlog | wc -l | xargs`
 
 readonly squashed_commit=`git rev-parse HEAD`
 
