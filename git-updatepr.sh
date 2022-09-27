@@ -8,12 +8,8 @@ if [[ $# -ne 1 ]]; then
     exit
 fi
 
-readonly pr_commit=$1
-
-readonly email=`git config user.email`
-readonly username=${email%@*}
-
-readonly branch_name="$username/$(git show --no-patch --format="%f" "$pr_commit")"
+read username pr_commit branch_name < <(git-get-commit-branch $1)
+echo "here with $username $pr_commit $branch_name"
 
 git switch "$branch_name"
 
