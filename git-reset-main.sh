@@ -3,13 +3,7 @@
 
 set -euo pipefail
 
-readonly pr_commit="${1:-main}"
-
-readonly email=`git config user.email`
-readonly username=${email%@*}
-
-# Autogenerate a branch name based on the commit subject.
-readonly branch_name="$username/$(git show --no-patch --format="%f" "$pr_commit")"
+read username pr_commit branch_name < <(git-get-commit-branch $1)
 
 git switch "$branch_name"
 

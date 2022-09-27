@@ -11,3 +11,4 @@ sudo ln -sfn $PWD/git-prs.sh /usr/local/bin/git-prs
 sudo ln -sfn $PWD/git-review.sh /usr/local/bin/git-review
 sudo ln -sfn $PWD/git-merge-pr.sh /usr/local/bin/git-merge-pr
 sudo ln -sfn $PWD/squash-commits.go /usr/local/bin/squash-commits.go
+sudo ln -sfn $PWD/git-get-commit-branch.sh /usr/local/bin/git-get-commit-branch

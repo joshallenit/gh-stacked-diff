@@ -3,13 +3,8 @@
 
 set -euo pipefail
 
-readonly pr_commit="${1:-main}"
+read username pr_commit branch_name < <(git-get-commit-branch $1)
 
-readonly email=`git config user.email`
-readonly username=${email%@*}
-
-# Autogenerate a branch name based on the commit subject.
-readonly branch_name="$username/$(git show --no-patch --format="%f" "$pr_commit")"
 readonly commit_summary="$(git --no-pager show --no-patch --format="%s" "$pr_commit")"
 readonly commit_body="$(git --no-pager show --no-patch --format="%b" "$pr_commit")"
 # Get the commit summary without the first ticket number (if any)
