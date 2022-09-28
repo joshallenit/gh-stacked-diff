@@ -1,9 +1,12 @@
 #!/bin/bash
 # Modified from https://kastiglione.github.io/git/2020/09/11/git-stacked-commits.html
+# Usage git-newpr <commit hash or PR number>
+#   Note: PR number doesn't really make sense unless you are recreating an old PR
+#   If argument is missing "main" is used.
 
 set -euo pipefail
 
-read username pr_commit branch_name < <(git-get-commit-branch $1)
+read username pr_commit branch_name < <(git-get-commit-branch ${1:-main})
 
 readonly commit_summary="$(git --no-pager show --no-patch --format="%s" "$pr_commit")"
 readonly commit_body="$(git --no-pager show --no-patch --format="%b" "$pr_commit")"

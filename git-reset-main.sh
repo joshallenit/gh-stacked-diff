@@ -1,9 +1,11 @@
 #!/bin/bash
 # Resets the squashed commit on main
+# Usage git-reset-main <commit hash or PR number>
+#   If argument is missing "main" is used.
 
 set -euo pipefail
 
-read username pr_commit branch_name < <(git-get-commit-branch $1)
+read username pr_commit branch_name < <(git-get-commit-branch ${1:-main})
 
 git switch "$branch_name"
 
