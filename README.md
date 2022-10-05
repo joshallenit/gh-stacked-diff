@@ -2,6 +2,8 @@
 
 These scripts make it easier to build from the command line and to create and update PR's. They facilitates a [stacked diff workflow](https://kastiglione.github.io/git/2020/09/11/git-stacked-commits.html), where you always commit on `main` branch and have can have multiple streams of work all on `main`.
 
+Join the discussion in [#devel-stacked-diff-workflow](https://slack-pde.slack.com/archives/C03V94N2A84)
+
 ### TL;DR
 
 Using a stacked diff workflow like this allows you to work on separate streams of work without changing branches.
