@@ -16,8 +16,10 @@ readonly ticket="$(echo "$commit_summary" | pcregrep -o1 '^(\S+[[:digit:]]+ )?(.
 readonly newline=$'\n'
 readonly body="$commit_body$newline\
 $newline\
-<!-- <img src=\"XXXCOPYURLXXX\" alt=\"\" width=\"300\"\> -->$newline\
-#### Ticket(s): $ticket$newline\
+<!-- <img src=\"XXXCOPYURLXXX\" alt=\"\" width=\"300\"/> -->$newline\
+<!-- <video src=\"XXXCOPYURLXXX\" alt=\"\" width=\"300\"/> -->$newline\
+$newline\
+#### Ticket: [$ticket](https://jira.tinyspeck.com/browse/$ticket)$newline\
 $newline\
 #### Feature flag(s): \`None\`"
 
