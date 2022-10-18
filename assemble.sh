@@ -8,6 +8,7 @@ function ctrl_c() {
 }
 
 # Note: lintInternalDebug is omitted as it takes over 10 minutes.
+# Also omitted tasks from ci/common/lint.sh such as: assertModuleGraph dependencyGuard
 
 set -x # show executing lines
 
@@ -17,6 +18,7 @@ set -x # show executing lines
     app:assembleInternalDebugAndroidTest \
     detekt \
     assertAllowedModuleDependencies \
+    spotlessCheck \
     "$@"
 
 retVal=$?
