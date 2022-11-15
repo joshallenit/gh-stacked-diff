@@ -18,7 +18,6 @@ set -x # show executing lines
     app:assembleInternalDebugAndroidTest \
     detekt \
     assertAllowedModuleDependencies \
-    spotlessCheck \
     "$@"
 
 retVal=$?
