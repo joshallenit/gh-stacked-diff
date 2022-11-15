@@ -21,7 +21,7 @@ if ! git cherry-pick main; then
 fi
 
 # Push the updated branch.
-git push -f origin "$branch_name"
+git push origin "$branch_name"
 
 # Go back to main.
 git switch main
