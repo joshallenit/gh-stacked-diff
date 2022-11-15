@@ -36,6 +36,7 @@ Clone repository and then:
 brew install gh # Install Github CLI
 gh auth login # Setup login for Github CLI
 brew install go # Go Lang is used by git-reset-main
+brew install pcre # Install pcregrep
 cd development-scripts # or wherever you cloned repo
 ./create-symlinks.sh # Create symlinks for the scripts
 echo "export PR_REVIEWERS=first-user,second-user,third-user" >> ~/.zshrc # List regular PR reviewers for the git-review command
