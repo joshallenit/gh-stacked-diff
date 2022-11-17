@@ -9,7 +9,6 @@ if [[ $# -ne 1 ]]; then
 fi
 
 read username pr_commit branch_name < <(git-get-commit-branch $1)
-echo "here with $username $pr_commit $branch_name"
 
 git switch "$branch_name"
 
