@@ -33,13 +33,20 @@ Using a stacked diff workflow like this allows you to work on separate streams o
 Clone repository and then:
 
 ```bash
-brew install gh # Install Github CLI
-gh auth login # Setup login for Github CLI
-brew install go # Go Lang is used by git-reset-main
-brew install pcre # Install pcregrep
-cd development-scripts # or wherever you cloned repo
-./create-symlinks.sh # Create symlinks for the scripts
-echo "export PR_REVIEWERS=first-user,second-user,third-user" >> ~/.zshrc # List regular PR reviewers for the git-review command
+# Install Github CLI
+brew install gh 
+# Setup login for Github CLI
+gh auth login 
+# Go Lang is used by git-reset-main
+brew install go 
+# Install pcregrep
+brew install pcre 
+# cd where you clone the repository
+cd development-scripts 
+# Create symlinks for the scripts
+./create-symlinks.sh 
+# Setup git-review with the your regular reviewers
+echo "export PR_REVIEWERS=first-user,second-user,third-user" >> ~/.zshrc
 ```
 
 To avoid having some commands show their output in full-screen `less` (or your default pager), define these args in your LESS environment variable:
