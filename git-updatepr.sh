@@ -12,6 +12,9 @@ read username pr_commit branch_name < <(git-get-commit-branch $1)
 
 git switch "$branch_name"
 
+# Fast forward in case there were any commits made via github web interface.
+git fetch && git merge --ff-only "origin/$branch_name"
+
 # Cherrypick the latest commit to the PR branch.
 if ! git cherry-pick main; then
     git cherry-pick --abort
@@ -20,7 +23,7 @@ if ! git cherry-pick main; then
 fi
 
 # Push the updated branch.
-git push origin "$branch_name" || git push -f origin "$branch_name"
+git push origin "$branch_name"
 
 # Go back to main.
 git switch main
