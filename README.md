@@ -23,7 +23,7 @@ Using a stacked diff workflow like this allows you to work on separate streams o
 - **git-prs**: Lists all of your open PRs. Useful for copying PR numbers.
 - **git-review**: Update the given PR as "Ready for Review" and automatically add reviewers listed in your PR_REVIEWERS environment variable.
 - **git-merge-pr**: Add the given PR to the merge queue
-- **git-checkout**: Checkout the feature branch associated with a given PR or commit. For times when you want to checkout the feature branch to add commits or rebase and then use `git-reset-main` to sync `main`.
+- **git-checkout**: Checkout the feature branch associated with a given PR or commit. For when you want to checkout the feature branch to add commits or rebase, (instead of `git-update-pr`), and then use `git-reset-main` to sync `main`
 
 ## Working with these scripts
 
