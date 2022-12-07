@@ -1,0 +1,8 @@
+{{.CommitBody}}
+
+<!-- <img src="XXXCOPYURLXXX" alt="" width="300"/> -->
+<!-- <video src="XXXCOPYURLXXX" alt="" width="300"/> -->
+
+#### Ticket: [{{.TicketNumber}}](https://jira.tinyspeck.com/browse/{{.TicketNumber}})
+
+#### Feature flag(s): `{{if .FeatureFlag}}{{.FeatureFlag}}{{else}}None{{end}}`
