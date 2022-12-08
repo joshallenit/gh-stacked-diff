@@ -9,17 +9,25 @@ import (
 
 type ExecuteOptions struct {
 	TrimSpace bool
+  IncludeStack bool
+  Stdin *string
 }
 
 func Execute(programName string, args ...string) string {
-	return ExecuteWithOptions(ExecuteOptions{TrimSpace: true}, programName, args...)
+	return ExecuteWithOptions(ExecuteOptions{TrimSpace: true, IncludeStack: true}, programName, args...)
 }
 
 func ExecuteWithOptions(options ExecuteOptions, programName string, args ...string) string {
 	cmd := exec.Command(programName, args...)
-	out, err := cmd.CombinedOutput()
+  if (options.Stdin != nil) {
+    println("stdin", "x" + *options.Stdin + "x")
+    cmd.Stdin = strings.NewReader(*options.Stdin)
+  }
+  out, err := cmd.CombinedOutput()
 	if err != nil {
-		debug.PrintStack()
+    if (options.IncludeStack) {
+      debug.PrintStack()
+    }
 		log.Fatal("Failed executing ", programName, args, ": ", string(out), err)
 	}
 	if options.TrimSpace {
