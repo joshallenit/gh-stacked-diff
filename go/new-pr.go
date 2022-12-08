@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 )
 
@@ -11,6 +12,7 @@ func main() {
 	Execute("git", "switch", branchInfo.BranchName)
 	_, cherryPickError := ExecuteFailable("git", "cherry-pick", branchInfo.CommitHash)
 	if cherryPickError != nil {
+		log.Println("Could not cherry-pick, aborting...", cherryPickError)
 		Execute("git", "cherry-pick", "--abort")
 		Execute("git", "switch", "main")
 		return

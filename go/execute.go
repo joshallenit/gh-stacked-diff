@@ -39,8 +39,5 @@ func ExecuteWithOptions(options ExecuteOptions, programName string, args ...stri
 func ExecuteFailable(programName string, args ...string) (string, error) {
 	cmd := exec.Command(programName, args...)
 	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Println("Failed executing ", programName, args, ": ", string(out), err)
-	}
 	return strings.TrimSpace(string(out)), err
 }
