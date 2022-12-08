@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 )
 
@@ -20,4 +19,10 @@ func main() {
 	Execute("gh", "pr", "create" /*"--draft", */, "--title", prText.Title, "--body", prText.Description, "--fill")
 	Execute("gh", "pr", "view", "--web")
 	Execute("git", "switch", "main")
+    /*
+    This avoids this hint when using `git fetch && git-rebase origin/main` which is not appropriate for stacked diff workflow:
+    > hint: use --reapply-cherry-picks to include skipped commits
+    > hint: Disable this message with "git config advice.skippedCherryPicks false"
+    */
+    Execute("git", "config", "advice.skippedCherryPicks", "false")
 }
