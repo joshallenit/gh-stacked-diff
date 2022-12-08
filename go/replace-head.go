@@ -1,11 +1,11 @@
 package main
 
 import (
-	"os"
-	"strings"
-	"strconv"
 	"log"
+	"os"
 	"regexp"
+	"strconv"
+	"strings"
 )
 
 /*
@@ -24,7 +24,7 @@ func getCommitWithConflicts() string {
 	statusLines := strings.Split(Execute("git", "status"), "\n")
 	var commandsDoneLine = -1
 	for i, line := range statusLines {
-		if (strings.HasPrefix(line, "Last ")) {
+		if strings.HasPrefix(line, "Last ") {
 			commandsDoneLine = i
 		}
 	}
@@ -34,9 +34,9 @@ func getCommitWithConflicts() string {
 	expression := regexp.MustCompile(".*\\(([[:digit:]]+).*")
 	summaryMatches := expression.FindStringSubmatch(statusLines[commandsDoneLine])
 	totalCommandsDone, err := strconv.Atoi(summaryMatches[1])
-	if (err != nil) {
+	if err != nil {
 		log.Fatal("Cannot parse number of done tasks from", summaryMatches)
 	}
 	// Return the 2nd field, from a string such as "pick f52e867 next1"
-	return strings.Fields(statusLines[commandsDoneLine + totalCommandsDone])[1]
+	return strings.Fields(statusLines[commandsDoneLine+totalCommandsDone])[1]
 }

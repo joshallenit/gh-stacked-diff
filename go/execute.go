@@ -8,9 +8,9 @@ import (
 )
 
 type ExecuteOptions struct {
-	TrimSpace bool
-  IncludeStack bool
-  Stdin *string
+	TrimSpace    bool
+	IncludeStack bool
+	Stdin        *string
 }
 
 func Execute(programName string, args ...string) string {
@@ -19,15 +19,15 @@ func Execute(programName string, args ...string) string {
 
 func ExecuteWithOptions(options ExecuteOptions, programName string, args ...string) string {
 	cmd := exec.Command(programName, args...)
-  if (options.Stdin != nil) {
-    println("stdin", "x" + *options.Stdin + "x")
-    cmd.Stdin = strings.NewReader(*options.Stdin)
-  }
-  out, err := cmd.CombinedOutput()
+	if options.Stdin != nil {
+		println("stdin", "x"+*options.Stdin+"x")
+		cmd.Stdin = strings.NewReader(*options.Stdin)
+	}
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-    if (options.IncludeStack) {
-      debug.PrintStack()
-    }
+		if options.IncludeStack {
+			debug.PrintStack()
+		}
 		log.Fatal("Failed executing ", programName, args, ": ", string(out), err)
 	}
 	if options.TrimSpace {
