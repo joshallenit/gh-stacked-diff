@@ -20,7 +20,6 @@ func Execute(programName string, args ...string) string {
 func ExecuteWithOptions(options ExecuteOptions, programName string, args ...string) string {
 	cmd := exec.Command(programName, args...)
 	if options.Stdin != nil {
-		println("stdin", "x"+*options.Stdin+"x")
 		cmd.Stdin = strings.NewReader(*options.Stdin)
 	}
 	out, err := cmd.CombinedOutput()
