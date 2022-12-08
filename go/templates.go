@@ -40,6 +40,9 @@ type templateData struct {
 }
 
 func GetBranchInfo(commitOrBranch string) BranchInfo {
+	if (commitOrBranch == "") {
+		commitOrBranch = "main"
+	}
 	// So next step would be to parse a file instead of embedded text
 	result := Execute("git", "cat-file", "-t", commitOrBranch)
 	if result == "commit" {
