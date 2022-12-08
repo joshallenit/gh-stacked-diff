@@ -40,7 +40,7 @@ type templateData struct {
 }
 
 func GetBranchInfo(commitOrBranch string) BranchInfo {
-	if (commitOrBranch == "") {
+	if commitOrBranch == "" {
 		commitOrBranch = "main"
 	}
 	// So next step would be to parse a file instead of embedded text
@@ -115,4 +115,13 @@ func getConfigFile(filenameWithoutPath string) *string {
 	} else {
 		return nil
 	}
+}
+
+// Returns first commit of the given branch that is on origin/main.
+func FirstMainCommit(branchName string) string {
+	allNewCommits := strings.Fields(Execute("git", "--no-pager", "log", "origin/main.."+branchName, "--pretty=format:%h", "--abbrev-commit"))
+	if len(allNewCommits) == 0 {
+		log.Fatal("No commits on ", branchName, "other than what is on main, nothing to create a commit from")
+	}
+	return allNewCommits[len(allNewCommits)-1] + "~1"
 }

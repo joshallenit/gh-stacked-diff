@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,9 +12,9 @@ replace the current commit during a rebase with the diff of a branch
 */
 func main() {
 	var commitWithConflicts = getCommitWithConflicts()
-	log.Println(commitWithConflicts, "commitWithConflicts")
 	branchInfo := GetBranchInfo(commitWithConflicts)
 	Execute("git", "reset", "--hard", "HEAD")
+	log.Println("Replacing HEAD for commit", commitWithConflicts, "with changes from branch", branchInfo.BranchName)
 	diff := ExecuteWithOptions(ExecuteOptions{TrimSpace: false}, "git", "diff", "--binary", "origin/main", branchInfo.BranchName)
 	ExecuteWithOptions(ExecuteOptions{Stdin: &diff}, "git", "apply")
 }

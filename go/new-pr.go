@@ -12,8 +12,9 @@ func main() {
 
 	branchInfo := GetBranchInfo(flag.Arg(0))
 	prText := GetPullRequestText(branchInfo.CommitHash)
-	log.Println("Switching to branch", branchInfo.BranchName)
-	ExecuteFailable("git", "branch", "--no-track", branchInfo.BranchName, "origin/main")
+	commitToBranchFrom := FirstMainCommit("main")
+	log.Println("Switching to branch", branchInfo.BranchName, "based off commit", commitToBranchFrom)
+	ExecuteFailable("git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
 	Execute("git", "switch", branchInfo.BranchName)
 	log.Println("Cherry picking", branchInfo.CommitHash)
 	cherryPickOutput, cherryPickError := ExecuteFailable("git", "cherry-pick", branchInfo.CommitHash)

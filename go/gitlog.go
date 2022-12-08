@@ -12,8 +12,15 @@ import (
 func main() {
 	logsColor := strings.Split(Execute("git", "--no-pager", "log", "origin/main..HEAD", "--pretty=oneline", "--abbrev-commit", "--color=always"), "\n")
 	logsNoColor := strings.Split(Execute("git", "--no-pager", "log", "origin/main..HEAD", "--pretty=oneline", "--abbrev-commit"), "\n")
+	if len(logsNoColor) == 0 {
+		return
+	}
 	for i, _ := range logsNoColor {
-		commit := logsNoColor[i][0:strings.Index(logsNoColor[i], " ")]
+		index := strings.Index(logsNoColor[i], " ")
+		if index == -1 {
+			continue
+		}
+		commit := logsNoColor[i][0:index]
 		branchInfo := GetBranchInfo(commit)
 		_, err := ExecuteFailable("git", "rev-parse", "--verify", branchInfo.BranchName)
 		if err != nil {

@@ -60,7 +60,7 @@ func main() {
 func getChecksStatus(pullRequest string) PullRequestChecksStatus {
 	// jq  ~/Downloads/test.json
 	var summary PullRequestChecksStatus
-	stateString := ExecuteWithOptions(ExecuteOptions{trimSpace: false}, "gh", "pr", "view", pullRequest, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
+	stateString := ExecuteWithOptions(ExecuteOptions{TrimSpace: false}, "gh", "pr", "view", pullRequest, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
 	scanner := bufio.NewScanner(strings.NewReader(stateString))
 	for scanner.Scan() {
 		status := scanner.Text()
