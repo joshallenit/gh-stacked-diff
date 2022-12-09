@@ -114,7 +114,9 @@ brew install gh
 # Setup login for Github CLI
 gh auth login 
 # Add the /bin directory to your PATH. Replace the directory below to wherever you cloned the repository.
+# For example if using zsh:
 echo "export PATH=\$PATH:\$HOME/dev/stacked-diff-workflow/bin" >> ~/.zshrc
+source ~/.zshrc
 ```
 
 ## Automatically adding PR Reviewers
