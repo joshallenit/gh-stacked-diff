@@ -51,7 +51,6 @@ The [possible values](config/templates) for the templates are:
 - **CommitSummary** - Summary line of the commit message
 - **CommitSummaryCleaned** - Summary line of the commit message without spaces or special characters
 - **CommitSummaryWithoutTicket** - Summary line of the commit message without the prefix of the ticket number
-```
 
 #### replace-commit
 
