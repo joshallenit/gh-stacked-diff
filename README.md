@@ -24,9 +24,16 @@ Add the topmost commit to the PR with the given commit hash
 
 Abbreviated git log that only shows what has changed, useful for copying commit hashes.
 
-#### newpr
+#### new-pr
 
 Create a new PR with a cherry-pick of the given commit hash
+
+```
+new-pr <commitHash>
+Usage of new-pr:
+  -draft
+    	Whether to create the PR as draft (default true)
+```
 
 ###### Ticket Number
 
