@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Warning: Either use command line build or IDE build but avoid mixing both during your workflow, 
+# as it can slow down build times
+# See https://issuetracker.google.com/issues/164145066
+# Note: use bash instead of golang to propertly display the rich text output of ./gradle.
+
+trap ctrl_c INT
+
+# Kill entire script, not just currently running command, and also avoid say command on ctrl-c
+function ctrl_c() {
+    if [[ $say_pid ]]; then
+        kill $say_pid
+    fi
+    exit 1
+}
+
+# Whether script should be silent (true), or use say (false). "-s" flag.
+silent="false"
+
+# Process all options supplied on the command line 
+while getopts ':s' 'OPTKEY'; do
+    case ${OPTKEY} in
+        's')
+            silent="true"
+            shift
+            ;;
+        *)
+            ;;
+    esac
+done
+
+set -x # show executing lines
+
+./gradlew assembleInternalDebug "$@"
+    
+retVal=$?
+
+set +x
+
+if [ $retVal -ne 0 ]; then
+    if [[ "$silent" == "false" ]]; then
+        say not assembled &
+        say_pid=$!
+    fi
+    exit $retVal
+fi
+
+
+adb install -r -t ./app/build/outputs/apk/internal/debug/app-internal-arm64-v8a-debug.apk && \
+    adb shell am start -n com.Slack.internal.debug/slack.features.home.HomeActivity 2>&1
+
+retVal=$?
+
+if [ $retVal -eq 0 ]; then
+    if [[ "$silent" == "false" ]]; then
+        say install complete &
+        say_pid=$!
+    fi
+else
+    if [[ "$silent" == "false" ]]; then
+        say could not install &
+        say_pid=$!
+    fi
+    exit $retVal
+fi
+
+date
+exit $retVal

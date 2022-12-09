@@ -13,7 +13,7 @@ then
     readonly branch_name="$username/$(git show --no-patch --format="%f" "$pr_commit")"
 else
     # if the argument is a pr number
-    readonly username=`gh auth status 2>&1 | grep "Logged in" | sed 's/.*Logged in.* \(.*\) .*/\1/'`
+    readonly username=`gh api user | jq -r '.login'`
     readonly branch_name="$(gh pr view $arg --json headRefName -q '.headRefName')"
     readonly pr_commit="$(gh pr view $arg --json commits -q '[.commits[].oid] | first')"
 fi

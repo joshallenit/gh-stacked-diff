@@ -1,0 +1,57 @@
+#!/bin/bash
+ 
+trap ctrl_c INT
+
+# Kill entire script, not just currently running command, and also avoid say command on ctrl-c
+function ctrl_c() {
+    if [[ $say_pid ]]; then
+        kill $say_pid
+    fi
+    exit 1
+}
+
+# Whether script should be silent (true), or use say (false). "-s" flag.
+silent="false"
+
+# Process all options supplied on the command line 
+while getopts ':s' 'OPTKEY'; do
+    case ${OPTKEY} in
+        's')
+            silent="true"
+            shift
+            ;;
+        *)
+            ;;
+    esac
+done
+
+
+# Note: lintInternalDebug is omitted as it takes over 10 minutes.
+# Also omitted tasks from ci/common/lint.sh such as: assertModuleGraph dependencyGuard
+
+set -x # show executing lines
+
+./gradlew assembleInternalDebug \
+    compileReleaseUnitTestSources \
+    compileInternalDebugUnitTestSources \
+    app:assembleInternalDebugAndroidTest \
+    detekt \
+    assertAllowedModuleDependencies \
+    "$@"
+
+retVal=$?
+
+set +x
+
+if [ $retVal -eq 0 ]; then
+    if [[ "$silent" == "false" ]]; then
+        say assemble complete &
+        say_pid=$!
+    fi
+else
+    if [[ "$silent" == "false" ]]; then
+        say not assembled &
+        say_pid=$!
+    fi
+fi
+exit $retVal

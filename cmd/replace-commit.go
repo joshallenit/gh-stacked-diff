@@ -4,12 +4,17 @@ import (
 	"log"
 	"os"
 	"strings"
+	"fmt"
 )
 
 /*
 replace the a given commit with a squashed version of the commits on the associated branch.
 */
 func main() {
+	if len(os.Args) < 2 { 
+		fmt.Println("Missing commit hash or pull request number")
+		os.Exit(1)
+	}
 	branchInfo := GetBranchInfo(os.Args[1])
 	commitsAfter := strings.Fields(Execute("git", "--no-pager", "log", branchInfo.CommitHash+"..HEAD", "--pretty=format:%h"))
 	reverseArrayInPlace(commitsAfter)

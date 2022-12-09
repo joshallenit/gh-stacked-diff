@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"fmt"
 )
 
 type PullRequestChecksStatus struct {
@@ -18,13 +19,20 @@ type PullRequestChecksStatus struct {
 
 func main() {
 	var reviewers string
-	flag.StringVar(&reviewers, "reviewers", "", "Comma-separated list of Github usernames to add as reviewers")
+	flag.StringVar(&reviewers, "reviewers", "", "Comma-separated list of Github usernames to add as reviewers. Falls back to PR_REVIEWERS environment variable")
 	var whenChecksPass bool
 	var pollFrequency time.Duration
 	var defaultPollFrequency time.Duration = 5 * time.Minute
-	flag.BoolVar(&whenChecksPass, "when-checks-pass", false, "Poll until all checks pass before adding reviewers")
+	var silent bool
+	flag.BoolVar(&whenChecksPass, "when-checks-pass", true, "Poll until all checks pass before adding reviewers")
 	flag.DurationVar(&pollFrequency, "poll-frequency", defaultPollFrequency, "Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration")
+	flag.BoolVar(&silent, "silent", false, "Whether to use voice output")
 	flag.Parse()
+	if flag.NArg() == 0 { 
+		fmt.Println("Missing pullRequestNumber")
+		flag.Usage()
+    	os.Exit(1)
+	}
 	pullRequest := flag.Arg(0)
 	if reviewers == "" {
 		reviewers = os.Getenv("PR_REVIEWERS")
@@ -40,6 +48,9 @@ func main() {
 				break
 			}
 			if summary.Failing > 0 {
+				if (!silent) {
+					Execute("say", "Checks failed")
+				}
 				log.Println("Checks failed. Total: ", summary.Total, "| Passed: ", summary.Passing, "| Pending: ", summary.Pending, "| Failed: ", summary.Failing)
 				break
 			}
