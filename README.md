@@ -44,7 +44,7 @@ For example:
 
 ###### Templates
 
-The Pull Request Title, Body (aka Description), and Branch Name are created from golang templates. The defaults are:
+The Pull Request Title, Body (aka Description), and Branch Name are created from [golang templates](https://pkg.go.dev/text/template). The defaults are:
 
 [branch-name.template](cmd/config/branch-name.template)
 [pr-description.template](cmd/config/pr-description.template)
