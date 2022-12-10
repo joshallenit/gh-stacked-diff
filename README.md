@@ -14,13 +14,19 @@ Using a stacked diff workflow like this allows you to work on separate streams o
 
 #### git-checkout
 
+`git-checkout <commit hash or pr number>`
+
 Checkout the feature branch associated with a given PR or commit. For when you want to checkout the feature branch to rebase with origin/main, merge with origin/main, or for any other reason. After modifying the feature branch use `replac-commit` or `replace-head` to sync local `main`.
 
 #### git-updatepr
 
+`git-updatepr <commit hash or pr number>`
+
 Add the topmost commit to the PR with the given commit hash
 
 #### gitlog
+
+`gitlog`
 
 Abbreviated git log that only shows what has changed, useful for copying commit hashes.
 
@@ -63,9 +69,13 @@ To change a template, copy the default from [cmd/config/](cmd/config/) into `~/.
 
 #### replace-commit
 
+`replace-commit <commit hash or pr number>`
+
 Reset the main branch with the squashed contents of the given commits associated branch. Sometimes you might want to switch to a feature branch and make changes to it (rebase, amend). With this script you can then ensure that your `main` branch is up to date.
 
 #### replace-head
+
+`replace-head`
 
 Use during rebase of main branch to use the contents of a feature branch that already fixed the merge conflicts.
 
@@ -73,15 +83,21 @@ Use during rebase of main branch to use the contents of a feature branch that al
 
 #### assemble-app
 
+`assemble-app`
+
 Calls `./gradlew assembleInternalDebug` and build tests. Use "-s" (silent) flag to not use voice (`say`) to announce success/failure.
 
-#### install-app*
+#### install-app
+
+`install-app`
 
 Calls `./gradlew assembleInternalDebug` and install on real device. Use "-s" (silent) flag to not use voice (`say`) to announce success/failure.
 
 ### To Help with Github
 
 #### add-reviewers
+
+`add-reviewers <pull request number>`
 
 The `add-reviewers` command will mark your Draft PR as "Ready for Review" and automatically add reviewers that are specified in the PR_REVIEWERS environment variable.
 You can specify more than one reviewer using a comma-delimited string.
@@ -107,9 +123,13 @@ Usage of add-reviewers:
 
 #### git-merge-pr
 
+`git-merge-pr <pull request number>`
+
 Add the given PR to the merge queue
 
 #### git-prs
+
+`git-prs`
 
 Lists all of your open PRs. Useful for copying PR numbers.
 
@@ -184,6 +204,6 @@ rm /usr/local/bin/git-get-commit-branch
 rm /usr/local/bin/git-checkout
 ```
 
-## Collaborating
+## Building Scripts Yourself
 
 To build use `make build` from the project directory. The go output binaries are saved under [bin](bin)
