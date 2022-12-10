@@ -59,6 +59,8 @@ The [possible values](config/templates) for the templates are:
 - **CommitSummaryCleaned** - Summary line of the commit message without spaces or special characters
 - **CommitSummaryWithoutTicket** - Summary line of the commit message without the prefix of the ticket number
 
+To change a template, copy the default from [cmd/config/] into `~/.stacked-diff-workflow/` and modify.
+
 #### replace-commit
 
 Reset the main branch with the squashed contents of the given commits associated branch. Sometimes you might want to switch to a feature branch and make changes to it (rebase, amend). With this script you can then ensure that your `main` branch is up to date.
