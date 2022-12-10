@@ -185,3 +185,7 @@ rm /usr/local/bin/squash-commits.go
 rm /usr/local/bin/git-get-commit-branch
 rm /usr/local/bin/git-checkout
 ```
+
+## Collaborating
+
+To build use `make build` from the project directory. The go output binaries are saved under [bin](bin)
