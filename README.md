@@ -206,4 +206,4 @@ rm /usr/local/bin/git-checkout
 
 ## Building Scripts Yourself
 
-To build use `make build` from the project directory. The go output binaries are saved under [bin](bin)
+If you want to build the scripts yourself for some reason, perhaps to try out a change, use `make build` from the project directory. The go output binaries are saved under [bin](bin)
