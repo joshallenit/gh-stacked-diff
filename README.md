@@ -4,7 +4,7 @@ These scripts make it easier to build from the command line and to create and up
 
 Join the discussion in [#devel-stacked-diff-workflow](https://slack-pde.slack.com/archives/C03V94N2A84)
 
-### TL;DR
+## TL;DR
 
 Using a stacked diff workflow like this allows you to work on separate streams of work without changing branches.
 
@@ -35,14 +35,14 @@ Usage of new-pr:
     	Whether to create the PR as draft (default true)
 ```
 
-###### Ticket Number
+##### Ticket Number
 
 If you prefix the Jira ticket to the git commit summary then `newpr` will populate the `Ticket` section of the PR description.
 
 For example:
 `CONV-9999 Add new feature`
 
-###### Templates
+##### Templates
 
 The Pull Request Title, Body (aka Description), and Branch Name are created from [golang templates](https://pkg.go.dev/text/template). The defaults are:
 
@@ -69,7 +69,7 @@ Reset the main branch with the squashed contents of the given commits associated
 
 Use during rebase of main branch to use the contents of a feature branch that already fixed the merge conflicts.
 
-## To Help You Build
+### To Help You Build
 
 #### assemble-app
 
@@ -127,8 +127,6 @@ gh auth login
 echo "export PATH=\$PATH:\$HOME/stacked-diff-workflow/bin" >> ~/.zshrc
 source ~/.zshrc
 ```
-
-## Automatically adding PR Reviewers
 
 ## Example Workflow
 
