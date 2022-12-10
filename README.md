@@ -59,7 +59,7 @@ The [possible values](config/templates) for the templates are:
 - **CommitSummaryCleaned** - Summary line of the commit message without spaces or special characters
 - **CommitSummaryWithoutTicket** - Summary line of the commit message without the prefix of the ticket number
 
-To change a template, copy the default from [cmd/config/] into `~/.stacked-diff-workflow/` and modify.
+To change a template, copy the default from [cmd/config/](cmd/config/) into `~/.stacked-diff-workflow/` and modify.
 
 #### replace-commit
 
