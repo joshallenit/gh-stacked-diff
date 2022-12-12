@@ -29,6 +29,11 @@ type PullRequestText struct {
 	Description string
 }
 
+type branchTemplateData struct {
+	Username             string
+	CommitSummaryCleaned string
+}
+
 type templateData struct {
 	TicketNumber               string
 	Username                   string
@@ -43,16 +48,23 @@ func GetBranchInfo(commitOrBranch string) BranchInfo {
 	if commitOrBranch == "" {
 		commitOrBranch = "main"
 	}
-	// So next step would be to parse a file instead of embedded text
-	result := Execute("git", "cat-file", "-t", commitOrBranch)
+	result, _ := ExecuteFailable("git", "cat-file", "-t", commitOrBranch)
 	if result == "commit" {
-		branchName := runTemplate("branch-name.template", branchNameTemplateText, getTemplateData(commitOrBranch))
-		return BranchInfo{CommitHash: commitOrBranch, BranchName: branchName}
+		return BranchInfo{CommitHash: commitOrBranch, BranchName: GetBranchForCommit(commitOrBranch)}
 	} else {
-		branchName := Execute("gh", "pr", "view", commitOrBranch, "--json", "headRefName", "-q", "'.headRefName'")
-		commitHash := Execute("gh", "pr", "view", commitOrBranch, "--json", "commits", "-q", "'[.commits[].oid] | first'")
-		return BranchInfo{CommitHash: commitHash, BranchName: branchName}
+		branchName := Execute("gh", "pr", "view", commitOrBranch, "--json", "headRefName", "-q", ".headRefName")
+		prCommit := Execute("gh", "pr", "view", commitOrBranch, "--json", "commits", "-q", "[.commits[].oid] | first")
+		summary := Execute("git", "show", "--no-patch", "--format=%s", prCommit)
+		thisBranchCommit := Execute("git", "log", "--grep", summary, "--format=%h")
+		if thisBranchCommit == "" {
+			log.Fatal("Could not find associated commit for PR (\"", summary, "\") in main")
+		}
+		return BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
 	}
+}
+
+func GetBranchForCommit(commit string) string {
+	return runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(commit))
 }
 
 func GetPullRequestText(commitHash string) PullRequestText {
@@ -62,7 +74,7 @@ func GetPullRequestText(commitHash string) PullRequestText {
 	return PullRequestText{Description: description, Title: title}
 }
 
-func runTemplate(configFilename string, defaultTemplateText string, data templateData) string {
+func runTemplate(configFilename string, defaultTemplateText string, data any) string {
 	configFile := getConfigFile(configFilename)
 	var parsed *template.Template
 	var err error
@@ -99,6 +111,13 @@ func getTemplateData(commitHash string) templateData {
 	}
 }
 
+func getBranchTemplateData(commitHash string) branchTemplateData {
+	return branchTemplateData{
+		Username:             getUsername(),
+		CommitSummaryCleaned: Execute("git", "show", "--no-patch", "--format=%f", commitHash),
+	}
+}
+
 func getUsername() string {
 	email := Execute("git", "config", "user.email")
 	return email[0:strings.Index(email, "@")]
@@ -118,10 +137,20 @@ func getConfigFile(filenameWithoutPath string) *string {
 }
 
 // Returns first commit of the given branch that is on origin/main.
-func FirstMainCommit(branchName string) string {
+func FirstOriginMainCommit(branchName string) string {
 	allNewCommits := strings.Fields(Execute("git", "--no-pager", "log", "origin/main.."+branchName, "--pretty=format:%h", "--abbrev-commit"))
 	if len(allNewCommits) == 0 {
 		log.Fatal("No commits on ", branchName, "other than what is on main, nothing to create a commit from")
 	}
 	return allNewCommits[len(allNewCommits)-1] + "~1"
+}
+
+func RequireMainBranch() {
+	if GetCurrentBranchName() != "main" {
+		log.Fatal("Must be run from main branch")
+	}
+}
+
+func GetCurrentBranchName() string {
+	return Execute("git", "rev-parse", "--abbrev-ref", "HEAD")
 }

@@ -6,13 +6,14 @@ import (
 )
 
 func main() {
+	RequireMainBranch()
 	var draft bool
 	flag.BoolVar(&draft, "draft", true, "Whether to create the PR as draft")
 	flag.Parse()
 
 	branchInfo := GetBranchInfo(flag.Arg(0))
 	prText := GetPullRequestText(branchInfo.CommitHash)
-	commitToBranchFrom := FirstMainCommit("main")
+	commitToBranchFrom := FirstOriginMainCommit("main")
 	log.Println("Switching to branch", branchInfo.BranchName, "based off commit", commitToBranchFrom)
 	ExecuteFailable("git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
 	Execute("git", "switch", branchInfo.BranchName)

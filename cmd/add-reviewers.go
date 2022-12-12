@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 	"time"
-	"fmt"
 )
 
 type PullRequestChecksStatus struct {
@@ -28,10 +28,10 @@ func main() {
 	flag.DurationVar(&pollFrequency, "poll-frequency", defaultPollFrequency, "Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration")
 	flag.BoolVar(&silent, "silent", false, "Whether to use voice output")
 	flag.Parse()
-	if flag.NArg() == 0 { 
+	if flag.NArg() == 0 {
 		fmt.Println("Missing pullRequestNumber")
 		flag.Usage()
-    	os.Exit(1)
+		os.Exit(1)
 	}
 	pullRequest := flag.Arg(0)
 	if reviewers == "" {
@@ -48,7 +48,7 @@ func main() {
 				break
 			}
 			if summary.Failing > 0 {
-				if (!silent) {
+				if !silent {
 					Execute("say", "Checks failed")
 				}
 				log.Println("Checks failed. Total: ", summary.Total, "| Passed: ", summary.Passing, "| Pending: ", summary.Pending, "| Failed: ", summary.Failing)

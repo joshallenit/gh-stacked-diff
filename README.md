@@ -1,12 +1,30 @@
 # Developer Scripts for Stacked Diff Workflow
 
-These scripts make it easier to build from the command line and to create and update PR's. They facilitates a [stacked diff workflow](https://kastiglione.github.io/git/2020/09/11/git-stacked-commits.html), where you always commit on `main` branch and have can have multiple streams of work all on `main`.
+These scripts make it easier to build from the command line and to create and update PR's with Github. They facilitates a [stacked diff workflow](https://kastiglione.github.io/git/2020/09/11/git-stacked-commits.html), where you always commit on `main` branch and have can have multiple streams of work all on `main`.
 
 Join the discussion in [#devel-stacked-diff-workflow](https://slack-pde.slack.com/archives/C03V94N2A84)
+
+Note: these scripts do *not* facilitate Stacked *Pull Requests*. Github does some things that add friction to using Stacked PR's, even with support from third party software. For example, after merging one of the PR's in the stack, you may require a re-review of the other PR's in the stack. Instead, it's recommended to organize your PR's, as much as reasonably possible, so that they can be all be rebased against main at the same time. When there are dependencies, wait for dependant PR to be merged before putting up the next one. You may find that often you are still working on the next commit while the other is being reviewed/merged.
 
 ## TL;DR
 
 Using a stacked diff workflow like this allows you to work on separate streams of work without changing branches.
+
+## Installation
+
+Clone the repository or download the [latest release](releases), and then:
+
+```bash
+# Install Github CLI
+brew install gh 
+# Setup login for Github CLI
+gh auth login 
+# Add the /bin directory to your PATH. 
+# Replace the directory below to wherever you cloned the repository or unzipped the release.
+# For example if using zsh and cloned in your home directory:
+echo "export PATH=\$PATH:\$HOME/stacked-diff-workflow/bin" >> ~/.zshrc
+source ~/.zshrc
+```
 
 ## Scripts
 
@@ -132,21 +150,6 @@ Add the given PR to the merge queue
 `git-prs`
 
 Lists all of your open PRs. Useful for copying PR numbers.
-
-## Installation
-
-Clone repository and then:
-
-```bash
-# Install Github CLI
-brew install gh 
-# Setup login for Github CLI
-gh auth login 
-# Add the /bin directory to your PATH. Replace the directory below to wherever you cloned the repository.
-# For example if using zsh and cloned in your home directory:
-echo "export PATH=\$PATH:\$HOME/stacked-diff-workflow/bin" >> ~/.zshrc
-source ~/.zshrc
-```
 
 ## Example Workflow
 
