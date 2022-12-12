@@ -36,12 +36,6 @@ source ~/.zshrc
 
 Checkout the feature branch associated with a given PR or commit. For when you want to checkout the feature branch to rebase with origin/main, merge with origin/main, or for any other reason. After modifying the feature branch use `replac-commit` or `replace-head` to sync local `main`.
 
-#### git-updatepr
-
-`git-updatepr <commit hash or pr number>`
-
-Add the topmost commit to the PR with the given commit hash
-
 #### gitlog
 
 `gitlog`
@@ -58,6 +52,12 @@ Usage of new-pr:
   -draft
     	Whether to create the PR as draft (default true)
 ```
+
+#### update-pr
+
+`update-pr <commitHash or pullRequestNumber> [fixup commit (defaults to top commit)] [other fixup commit...]`
+
+Add one or more commits to a PR.
 
 ##### Ticket Number
 
@@ -155,7 +155,7 @@ Lists all of your open PRs. Useful for copying PR numbers.
 
 ### Creating and Updating PRs
 
-Use **new-pr** and **git-update-pr** to create and update PR's while always staying on `main` branch.
+Use **new-pr** and **update-pr** to create and update PR's while always staying on `main` branch.
 
 ### To Update Main
 
