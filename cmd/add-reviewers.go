@@ -29,11 +29,11 @@ func main() {
 	flag.BoolVar(&silent, "silent", false, "Whether to use voice output")
 	flag.Parse()
 	if flag.NArg() == 0 {
-		fmt.Println("Missing pullRequestNumber")
+		fmt.Println("Missing pullRequestNumber or commitHash")
 		flag.Usage()
 		os.Exit(1)
 	}
-	pullRequest := flag.Arg(0)
+	branchName := GetBranchInfo(flag.Arg(0)).BranchName
 	if reviewers == "" {
 		reviewers = os.Getenv("PR_REVIEWERS")
 		if reviewers == "" {
@@ -42,7 +42,7 @@ func main() {
 	}
 	if whenChecksPass {
 		for {
-			summary := getChecksStatus(pullRequest)
+			summary := getChecksStatus(branchName)
 			if summary.Passing == summary.Total {
 				log.Println("All", summary.Total, "checks passed")
 				break
@@ -62,16 +62,17 @@ func main() {
 			time.Sleep(pollFrequency)
 		}
 	}
-	log.Println("Added reviewers", reviewers, "to", Execute("gh", "pr", "edit", pullRequest, "--add-reviewer", reviewers))
+	prUrl := Execute("gh", "pr", "edit", branchName, "--add-reviewer", reviewers)
+	log.Println("Added reviewers", reviewers, "to", prUrl)
 }
 
 /*
  * Logic copied from https://github.com/cli/cli/blob/57fbe4f317ca7d0849eeeedb16c1abc21a81913b/api/queries_pr.go#L258-L274
  */
-func getChecksStatus(pullRequest string) PullRequestChecksStatus {
+func getChecksStatus(branchName string) PullRequestChecksStatus {
 	// jq  ~/Downloads/test.json
 	var summary PullRequestChecksStatus
-	stateString := ExecuteWithOptions(ExecuteOptions{TrimSpace: false}, "gh", "pr", "view", pullRequest, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
+	stateString := ExecuteWithOptions(ExecuteOptions{TrimSpace: false}, "gh", "pr", "view", branchName, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
 	scanner := bufio.NewScanner(strings.NewReader(stateString))
 	for scanner.Scan() {
 		status := scanner.Text()
