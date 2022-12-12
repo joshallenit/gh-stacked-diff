@@ -53,20 +53,14 @@ Usage of new-pr:
     	Whether to create the PR as draft (default true)
 ```
 
-#### update-pr
-
-`update-pr <commitHash or pullRequestNumber> [fixup commit (defaults to top commit)] [other fixup commit...]`
-
-Add one or more commits to a PR.
-
-##### Ticket Number
+###### Ticket Number
 
 If you prefix the Jira ticket to the git commit summary then `newpr` will populate the `Ticket` section of the PR description.
 
 For example:
 `CONV-9999 Add new feature`
 
-##### Templates
+###### Templates
 
 The Pull Request Title, Body (aka Description), and Branch Name are created from [golang templates](https://pkg.go.dev/text/template). The defaults are:
 
@@ -96,6 +90,12 @@ Reset the main branch with the squashed contents of the given commits associated
 `replace-head`
 
 Use during rebase of main branch to use the contents of a feature branch that already fixed the merge conflicts.
+
+#### update-pr
+
+`update-pr <commitHash or pullRequestNumber> [fixup commit (defaults to top commit)] [other fixup commit...]`
+
+Add one or more commits to a PR.
 
 ### To Help You Build
 
