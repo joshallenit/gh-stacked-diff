@@ -115,7 +115,7 @@ Calls `./gradlew assembleInternalDebug` and install on real device. Use "-s" (si
 
 #### add-reviewers
 
-`add-reviewers <pull request number>`
+`add-reviewers <pullRequestNumber or commitHash>`
 
 The `add-reviewers` command will mark your Draft PR as "Ready for Review" and automatically add reviewers that are specified in the PR_REVIEWERS environment variable.
 You can specify more than one reviewer using a comma-delimited string.
