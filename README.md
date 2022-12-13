@@ -103,13 +103,13 @@ Add one or more commits to a PR.
 
 `assemble-app`
 
-Calls `./gradlew assembleInternalDebug` and build tests. Use "-s" (silent) flag to not use voice (`say`) to announce success/failure.
+Calls `./gradlew assembleInternalDebug` and build tests. Use "-s" (silent) flag to not use voice (`say`) to announce success/failure. Any options after, or in-lieu of, "-s" will be passed to the `./gradle` command, for example `--rerun-tasks`.
 
 #### install-app
 
 `install-app`
 
-Calls `./gradlew assembleInternalDebug` and install on real device. Use "-s" (silent) flag to not use voice (`say`) to announce success/failure.
+Calls `./gradlew assembleInternalDebug` and install on real device. Use "-s" (silent) flag to not use voice (`say`) to announce success/failure. Any options after, or in-lieu of, "-s" will be passed to the `./gradle` command, for example `--rerun-tasks`.
 
 ### To Help with Github
 
