@@ -52,7 +52,7 @@ func main() {
 					Execute("say", "Checks failed")
 				}
 				log.Println("Checks failed. Total: ", summary.Total, "| Passed: ", summary.Passing, "| Pending: ", summary.Pending, "| Failed: ", summary.Failing)
-				break
+				os.Exit(1)
 			}
 			if summary.Passing == 0 {
 				log.Println("Checks pending. Completed: 0%", summary.Passing)
@@ -62,6 +62,7 @@ func main() {
 			time.Sleep(pollFrequency)
 		}
 	}
+	Execute("gh", "pr", "ready", branchName)
 	prUrl := Execute("gh", "pr", "edit", branchName, "--add-reviewer", reviewers)
 	log.Println("Added reviewers", reviewers, "to", prUrl)
 }
