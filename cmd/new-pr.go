@@ -8,13 +8,23 @@ import (
 func main() {
 	RequireMainBranch()
 	var draft bool
+	var featureFlag string
+	var baseBranch string
 	flag.BoolVar(&draft, "draft", true, "Whether to create the PR as draft")
+	flag.StringVar(&featureFlag, "feature-flag", "None", "Value for FEATURE_FLAG in PR description")
+	flag.StringVar(&baseBranch, "base", "main", "Base branch for Pull Request")
 	flag.Parse()
 
 	branchInfo := GetBranchInfo(flag.Arg(0))
-	prText := GetPullRequestText(branchInfo.CommitHash)
-	commitToBranchFrom := FirstOriginMainCommit("main")
-	log.Println("Switching to branch", branchInfo.BranchName, "based off commit", commitToBranchFrom)
+	prText := GetPullRequestText(branchInfo.CommitHash, featureFlag)
+	var commitToBranchFrom string
+	if baseBranch == "main" {
+		commitToBranchFrom = FirstOriginMainCommit("main")
+		log.Println("Switching to branch", branchInfo.BranchName, "based off commit", commitToBranchFrom)
+	} else {
+		commitToBranchFrom = baseBranch
+		log.Println("Switching to branch", branchInfo.BranchName, "based off branch", baseBranch)
+	}
 	ExecuteFailable("git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
 	Execute("git", "switch", branchInfo.BranchName)
 	log.Println("Cherry picking", branchInfo.CommitHash)
@@ -28,12 +38,11 @@ func main() {
 	log.Println("Pushing to remote")
 	Execute("git", "-c", "push.default=current", "push", "-f")
 	log.Println("Creating PR via gh")
-	var createPrOutput string
+	createPrArgs := []string{"pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--base", baseBranch}
 	if draft {
-		createPrOutput = Execute("gh", "pr", "create", "--draft", "--title", prText.Title, "--body", prText.Description, "--fill")
-	} else {
-		createPrOutput = Execute("gh", "pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill")
+		createPrArgs = append(createPrArgs, "--draft")
 	}
+	createPrOutput := Execute("gh", createPrArgs...)
 	log.Println("Created PR", createPrOutput)
 	Execute("gh", "pr", "view", "--web")
 	log.Println("Switching back to main")

@@ -67,8 +67,8 @@ func GetBranchForCommit(commit string) string {
 	return runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(commit))
 }
 
-func GetPullRequestText(commitHash string) PullRequestText {
-	data := getTemplateData(commitHash)
+func GetPullRequestText(commitHash string, featureFlag string) PullRequestText {
+	data := getTemplateData(commitHash, featureFlag)
 	title := runTemplate("pr-title.template", prTitleTemplateText, data)
 	description := runTemplate("pr-description.template", prDescriptionTemplateText, data)
 	return PullRequestText{Description: description, Title: title}
@@ -94,7 +94,7 @@ func runTemplate(configFilename string, defaultTemplateText string, data any) st
 	return output.String()
 }
 
-func getTemplateData(commitHash string) templateData {
+func getTemplateData(commitHash string, featureFlag string) templateData {
 	commitSummary := Execute("git", "--no-pager", "show", "--no-patch", "--format=%s", commitHash)
 	commitBody := Execute("git", "--no-pager", "show", "--no-patch", "--format=%b", commitHash)
 	commitSummaryCleaned := Execute("git", "show", "--no-patch", "--format=%f", commitHash)
@@ -107,7 +107,7 @@ func getTemplateData(commitHash string) templateData {
 		CommitSummary:              commitSummary,
 		CommitSummaryWithoutTicket: summaryMatches[2],
 		CommitSummaryCleaned:       commitSummaryCleaned,
-		FeatureFlag:                "",
+		FeatureFlag:                featureFlag,
 	}
 }
 
