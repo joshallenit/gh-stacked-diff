@@ -2,8 +2,6 @@ package main
 
 import (
 	"log"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -17,25 +15,32 @@ func main() {
 	log.Println("Replacing HEAD for commit", commitWithConflicts, "with changes from branch", branchInfo.BranchName)
 	diff := ExecuteWithOptions(ExecuteOptions{TrimSpace: false}, "git", "diff", "--binary", "origin/main", branchInfo.BranchName)
 	ExecuteWithOptions(ExecuteOptions{Stdin: &diff}, "git", "apply")
+	log.Println("Adding changes and continuing rebase")
+	Execute("git", "add", ".")
+	continueOptions := ExecuteOptions{EnvironmentVariables: make([]string, 1)}
+	continueOptions.EnvironmentVariables[0] = "GIT_EDITOR=true"
+	ExecuteWithOptions(continueOptions, "git", "rebase", "--continue")
 }
 
 func getCommitWithConflicts() string {
 	statusLines := strings.Split(Execute("git", "status"), "\n")
-	var commandsDoneLine = -1
+	lastCommandDoneLine := -1
+	inLast := false
 	for i, line := range statusLines {
 		if strings.HasPrefix(line, "Last ") {
-			commandsDoneLine = i
+			// find last pick line
+			inLast = true
+		} else if inLast {
+			if strings.HasPrefix(line, "   ") {
+				lastCommandDoneLine = i
+			} else {
+				break
+			}
 		}
 	}
-	if commandsDoneLine == -1 {
-		log.Fatal("Cannot determine which commit is being rebased with because \"git status\" does not have a \"Last commands done\" line. To use this command you must be in the middle of a rebase")
-	}
-	expression := regexp.MustCompile(".*\\(([[:digit:]]+).*")
-	summaryMatches := expression.FindStringSubmatch(statusLines[commandsDoneLine])
-	totalCommandsDone, err := strconv.Atoi(summaryMatches[1])
-	if err != nil {
-		log.Fatal("Cannot parse number of done tasks from", summaryMatches)
+	if lastCommandDoneLine == -1 {
+		log.Fatal("Cannot determine which commit is being rebased with because \"git status\" does not have a \"Last commands done\" section. To use this command you must be in the middle of a rebase")
 	}
 	// Return the 2nd field, from a string such as "pick f52e867 next1"
-	return strings.Fields(statusLines[commandsDoneLine+totalCommandsDone])[1]
+	return strings.Fields(statusLines[lastCommandDoneLine])[1]
 }
