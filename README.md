@@ -48,7 +48,7 @@ Create a new PR with a cherry-pick of the given commit hash
 
 ```
 new-pr [commitHash, default is top commit]
-sage of new-pr:
+Usage of new-pr:
   -base string
     	Base branch for Pull Request (default "main")
   -draft
