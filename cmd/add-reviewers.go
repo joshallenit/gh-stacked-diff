@@ -71,7 +71,6 @@ func main() {
  * Logic copied from https://github.com/cli/cli/blob/57fbe4f317ca7d0849eeeedb16c1abc21a81913b/api/queries_pr.go#L258-L274
  */
 func getChecksStatus(branchName string) PullRequestChecksStatus {
-	// jq  ~/Downloads/test.json
 	var summary PullRequestChecksStatus
 	stateString := ExecuteWithOptions(ExecuteOptions{TrimSpace: false}, "gh", "pr", "view", branchName, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
 	scanner := bufio.NewScanner(strings.NewReader(stateString))
