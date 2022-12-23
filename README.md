@@ -190,6 +190,20 @@ git add . && git rebase --continue
 # All done... now both the feature branch and your local main are rebased with main, and the merge conflicts only had to be fixed once
 ```
 
+If you just are rebasing with `main` and the commit with merge conflict has already been **merged**, then the process is simpler. For example, perhaps you have accepted changes on a PR comment and committed from the Github web-ui, and now you are just rebasing main.
+
+```
+# Checkout main if not already there:
+git checkout main
+# Rebase as normal:
+git fetch && git rebase origin/main
+# rebase complains about a merge conflict from the merged PR...
+# Essentially delete the commit locally:
+git reset --hard HEAD
+# Then continue:
+git rebase --continue
+```
+
 ## Migration from create-symlinks
 
 The pre 1.0 version of these scripts use symlinks. They are no longer required with 1.0+.
