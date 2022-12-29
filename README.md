@@ -48,7 +48,7 @@ Create a new PR with a cherry-pick of the given commit hash
 
 ```
 new-pr [flags] [commit hash to make PR for (default is top commit on main)]
-Flags
+Flags:
   -base string
     	Base branch for Pull Request (default "main")
   -draft
@@ -119,7 +119,18 @@ Calls `./gradlew assembleInternalDebug` and install on real device. Use "-s" (si
 
 #### add-reviewers
 
-`add-reviewers <pullRequestNumber or commitHash>`
+```
+add-reviewers <pullRequestNumber or commitHash>
+Flags:
+  -poll-frequency duration
+    	Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration (default 5m0s)
+  -reviewers string
+    	Comma-separated list of Github usernames to add as reviewers
+  -silent
+    	Whether to use voice output
+  -when-checks-pass
+    	Poll until all checks pass before adding reviewers (default true)
+```
 
 The `add-reviewers` command will mark your Draft PR as "Ready for Review" and automatically add reviewers that are specified in the PR_REVIEWERS environment variable.
 You can specify more than one reviewer using a comma-delimited string.
@@ -129,19 +140,6 @@ export PR_REVIEWERS=first-user,second-user,third-user
 ```
 
 Add this to your shell rc file (`~/.zshrc` or `~/.bashrc`) and run `source <rc-file>`
-
-```
-Usage of add-reviewers:
-  -poll-frequency duration
-    	Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration (default 5m0s)
-  -reviewers string
-    	Comma-separated list of Github usernames to add as reviewers
-  -silent
-    	Whether to use voice output
-  -when-checks-pass
-    	Poll until all checks pass before adding reviewers (default true)
-  <pullRequestNumber>
-```
 
 #### git-merge-pr
 
