@@ -18,17 +18,10 @@ function ctrl_c() {
 # Whether script should be silent (true), or use say (false). "-s" flag.
 silent="false"
 
-# Process all options supplied on the command line 
-while getopts ':s' 'OPTKEY'; do
-    case ${OPTKEY} in
-        's')
-            silent="true"
-            shift
-            ;;
-        *)
-            ;;
-    esac
-done
+if [[ "$1" == "--silent" || "$1" == "-s" ]]; then
+  silent="true"
+  shift
+fi
 
 set -x # show executing lines
 
