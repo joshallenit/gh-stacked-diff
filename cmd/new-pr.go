@@ -68,7 +68,7 @@ func main() {
 		commitToBranchFrom = baseBranch
 		log.Println("Switching to branch", branchInfo.BranchName, "based off branch", baseBranch)
 	}
-	ExecuteFailable("git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
+	Execute("git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
 	Execute("git", "switch", branchInfo.BranchName)
 	log.Println("Cherry picking", branchInfo.CommitHash)
 	cherryPickOutput, cherryPickError := ExecuteFailable("git", "cherry-pick", branchInfo.CommitHash)
@@ -76,6 +76,8 @@ func main() {
 		log.Println("Could not cherry-pick, aborting...", cherryPickOutput, cherryPickError)
 		Execute("git", "cherry-pick", "--abort")
 		Execute("git", "switch", "main")
+		log.Println("Deleting created branch", branchInfo.BranchName)
+		Execute("git", "branch", "-D", branchInfo.BranchName)
 		return
 	}
 	log.Println("Pushing to remote")
