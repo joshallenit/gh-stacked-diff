@@ -47,8 +47,8 @@ Abbreviated git log that only shows what has changed, useful for copying commit 
 Create a new PR with a cherry-pick of the given commit hash
 
 ```
-new-pr [commitHash, default is top commit]
-Usage of new-pr:
+new-pr [flags] [commit hash to make PR for (default is top commit on main)]
+Flags
   -base string
     	Base branch for Pull Request (default "main")
   -draft
