@@ -8,9 +8,6 @@ import (
 )
 
 func main() {
-	var White = "\033[97m"
-	// var Red = "\033[31m"
-	var Reset = "\033[0m"
 	RequireMainBranch()
 	var draft bool
 	var featureFlag string
@@ -50,7 +47,7 @@ func main() {
 				"\n"+
 				"To change a template, copy the default from [cmd/config/](cmd/config/) into `~/.stacked-diff-workflow/` and modify.\n"+
 				"\n"+
-				White+"Flags"+Reset+"\n")
+				White+"Flags:"+Reset+"\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()

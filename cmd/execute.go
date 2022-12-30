@@ -8,6 +8,9 @@ import (
 	"strings"
 )
 
+var White = "\033[97m"
+var Reset = "\033[0m"
+
 type ExecuteOptions struct {
 	TrimSpace    bool
 	IncludeStack bool

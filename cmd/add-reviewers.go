@@ -19,7 +19,9 @@ type PullRequestChecksStatus struct {
 
 func main() {
 	var reviewers string
-	flag.StringVar(&reviewers, "reviewers", "", "Comma-separated list of Github usernames to add as reviewers. Falls back to PR_REVIEWERS environment variable")
+	flag.StringVar(&reviewers, "reviewers", "", "Comma-separated list of Github usernames to add as reviewers. "+
+		"Falls back to "+White+"PR_REVIEWERS"+Reset+" environment variable. "+
+		"You can specify more than one reviewer using a comma-delimited string.")
 	var whenChecksPass bool
 	var pollFrequency time.Duration
 	var defaultPollFrequency time.Duration = 5 * time.Minute
@@ -27,6 +29,15 @@ func main() {
 	flag.BoolVar(&whenChecksPass, "when-checks-pass", true, "Poll until all checks pass before adding reviewers")
 	flag.DurationVar(&pollFrequency, "poll-frequency", defaultPollFrequency, "Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration")
 	flag.BoolVar(&silent, "silent", false, "Whether to use voice output")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr,
+			Reset+"Mark a Draft PR as \"Ready for Review\" and automatically add reviewers.\n"+
+				"\n"+
+				"add-reviewers [flags] [commit hash or pull request number]\n"+
+				"\n"+
+				White+"Flags:"+Reset+"\n")
+		flag.PrintDefaults()
+	}
 	flag.Parse()
 	if flag.NArg() == 0 {
 		fmt.Println("Missing pullRequestNumber or commitHash")
