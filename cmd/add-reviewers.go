@@ -33,14 +33,13 @@ func main() {
 		fmt.Fprintf(os.Stderr,
 			Reset+"Mark a Draft PR as \"Ready for Review\" and automatically add reviewers.\n"+
 				"\n"+
-				"add-reviewers [flags] [commit hash or pull request number]\n"+
+				"add-reviewers [flags] <commit hash or pull request number>\n"+
 				"\n"+
 				White+"Flags:"+Reset+"\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
 	if flag.NArg() == 0 {
-		fmt.Println("Missing pullRequestNumber or commitHash")
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -62,13 +61,18 @@ func main() {
 				if !silent {
 					Execute("say", "Checks failed")
 				}
-				log.Println("Checks failed. Total: ", summary.Total, "| Passed: ", summary.Passing, "| Pending: ", summary.Pending, "| Failed: ", summary.Failing)
+				log.Print("Checks failed for ", flag.Arg(0), ". "+
+					"Total: ", summary.Total,
+					" | Passed: ", summary.Passing,
+					" | Pending: ", summary.Pending,
+					" | Failed: ", summary.Failing,
+					"\n")
 				os.Exit(1)
 			}
 			if summary.Passing == 0 {
-				log.Println("Checks pending. Completed: 0%", summary.Passing)
+				log.Print("Checks pending for ", flag.Arg(0), ". Completed: 0%", summary.Passing, "\n")
 			} else {
-				log.Println("Checks pending. Completed:", int32(float32(summary.Passing)/float32(summary.Total)*100), "%")
+				log.Print("Checks pending for ", flag.Arg(0), ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%\n")
 			}
 			time.Sleep(pollFrequency)
 		}
