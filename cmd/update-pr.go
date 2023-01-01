@@ -38,7 +38,7 @@ func main() {
 		log.Println("Could not cherry-pick, aborting...", cherryPickArgs, cherryPickOutput, cherryPickError)
 		Execute("git", "cherry-pick", "--abort")
 		Execute("git", "switch", "main")
-		return
+		os.Exit(1)
 	}
 	log.Println("Pushing to remote")
 	Execute("git", "push", "origin", branchInfo.BranchName)
