@@ -11,9 +11,17 @@ import (
 func main() {
 	var silent bool
 	flag.BoolVar(&silent, "silent", false, "Whether to use voice output")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr,
+			Reset+"Waits for a pull request to be merged. Polls PR every 5 minutes. Useful for custom scripting.\n"+
+				"\n"+
+				"wait-for-merge [flags] <commit hash or pull request number>\n"+
+				"\n"+
+				White+"Flags:"+Reset+"\n")
+		flag.PrintDefaults()
+	}
 	flag.Parse()
 	if flag.NArg() == 0 {
-		fmt.Println("Missing pullRequestNumber or commitHash")
 		flag.Usage()
 		os.Exit(1)
 	}
