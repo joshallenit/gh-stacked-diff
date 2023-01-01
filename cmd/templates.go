@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 )
@@ -44,25 +45,30 @@ type templateData struct {
 	FeatureFlag                string
 }
 
-func GetBranchInfo(commitOrBranch string) BranchInfo {
-	if commitOrBranch == "" {
-		commitOrBranch = "main"
+func GetBranchInfo(commitOrPullRequest string) BranchInfo {
+	if commitOrPullRequest == "" {
+		commitOrPullRequest = "main"
 	}
-	result, _ := ExecuteFailable("git", "cat-file", "-t", commitOrBranch)
-	if result == "commit" {
-		return BranchInfo{CommitHash: commitOrBranch, BranchName: GetBranchForCommit(commitOrBranch)}
-	} else {
-		branchName := Execute("gh", "pr", "view", commitOrBranch, "--json", "headRefName", "-q", ".headRefName")
+	var info BranchInfo
+	if _, err := strconv.Atoi(commitOrPullRequest); len(commitOrPullRequest) < 9 && err == nil {
+		// Pull request number
+		branchName := Execute("gh", "pr", "view", commitOrPullRequest, "--json", "headRefName", "-q", ".headRefName")
 		// Fetch the branch in case the lastest commit is only on GitHub.
 		Execute("git", "fetch", "origin", branchName)
-		prCommit := Execute("gh", "pr", "view", commitOrBranch, "--json", "commits", "-q", "[.commits[].oid] | first")
+		prCommit := Execute("gh", "pr", "view", commitOrPullRequest, "--json", "commits", "-q", "[.commits[].oid] | first")
 		summary := Execute("git", "show", "--no-patch", "--format=%s", prCommit)
 		thisBranchCommit := Execute("git", "log", "--grep", summary, "--format=%h")
 		if thisBranchCommit == "" {
 			log.Fatal("Could not find associated commit for PR (\"", summary, "\") in main")
 		}
-		return BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
+		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
+		log.Print("Using pull request ", commitOrPullRequest, ", commit ", info.CommitHash, ", branch ", info.BranchName, "\n")
+	} else {
+		info = BranchInfo{CommitHash: commitOrPullRequest, BranchName: GetBranchForCommit(commitOrPullRequest)}
+		log.Print("Using commit ", info.CommitHash, ", branch ", info.BranchName, "\n")
 	}
+	return info
+
 }
 
 func GetBranchForCommit(commit string) string {
