@@ -75,7 +75,7 @@ func main() {
 		Execute("git", "switch", "main")
 		log.Println("Deleting created branch", branchInfo.BranchName)
 		Execute("git", "branch", "-D", branchInfo.BranchName)
-		return
+		os.Exit(1)
 	}
 	log.Println("Pushing to remote")
 	Execute("git", "-c", "push.default=current", "push", "-f")
