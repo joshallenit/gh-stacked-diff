@@ -54,7 +54,7 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 		// Pull request number
 		branchName := Execute("gh", "pr", "view", commitOrPullRequest, "--json", "headRefName", "-q", ".headRefName")
 		// Fetch the branch in case the lastest commit is only on GitHub.
-		Execute("git", "fetch", "origin", branchName)
+		ExecuteFailable("git", "fetch", "origin", branchName)
 		prCommit := Execute("gh", "pr", "view", commitOrPullRequest, "--json", "commits", "-q", "[.commits[].oid] | first")
 		summary := Execute("git", "show", "--no-patch", "--format=%s", prCommit)
 		thisBranchCommit := Execute("git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h")
