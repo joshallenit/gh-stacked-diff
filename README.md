@@ -193,7 +193,7 @@ git add . && git rebase --continue
 
 If you just are rebasing with `main` and the commit with merge conflict has already been **merged**, then the process is simpler. For example, perhaps you have accepted changes on a PR comment and committed from the Github web-ui, and now you are just rebasing main.
 
-```
+```bash
 # Checkout main if not already there:
 git switch main
 # Rebase as normal:
