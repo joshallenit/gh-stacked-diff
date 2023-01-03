@@ -103,6 +103,8 @@ Add one or more commits to a PR.
 
 ### To Help You Build
 
+*Note: Only [Android](https://github.com/tinyspeck/slack-android-ng) build scripts are currently supported.*
+
 #### assemble-app
 
 `assemble-app`
@@ -167,18 +169,19 @@ Once a PR has been merged, just rebase main normally. The local PR commit will b
 git fetch && git rebase origin/main
 ```
 
-### To Fix a Merge Conflict
+#### To Fix Merge Conflicts
 
-If you have a merge conflict on your PR, you can use **replace-head** to keep your local `main` up to date.
+If you have a merge conflict that you need to fix before merging your PR, you can use **replace-head** to keep your local `main` up to date.
 
 ```bash
 # switch to feature branch that has a merge conflict
 git-checkout <commit hash or PR number> 
 # rebase or merge
-git fetch && git rebase origin/main
+git fetch && git merge origin/main
 # ... and address any merge conflicts
 # Update your PR
 git push origin/xxx 
+# Rebase your local main branch.
 git switch main
 git rebase origin/main
 # hit same merge conflicts, use the replace-merge script to copy the fixes you just made
@@ -192,7 +195,7 @@ If you just are rebasing with `main` and the commit with merge conflict has alre
 
 ```
 # Checkout main if not already there:
-git checkout main
+git switch main
 # Rebase as normal:
 git fetch && git rebase origin/main
 # rebase complains about a merge conflict from the merged PR...
@@ -200,25 +203,4 @@ git fetch && git rebase origin/main
 git reset --hard HEAD
 # Then continue:
 git rebase --continue
-```
-
-## Migration from create-symlinks
-
-The pre 1.0 version of these scripts use symlinks. They are no longer required with 1.0+.
-
-```
-rm /usr/local/bin/full-assemble
-rm /usr/local/bin/assemble
-rm /usr/local/bin/git-updatepr
-rm /usr/local/bin/git-newpr
-rm /usr/local/bin/installapp
-rm /usr/local/bin/gitlog
-rm /usr/local/bin/git-amendpr
-rm /usr/local/bin/git-reset-main
-rm /usr/local/bin/git-prs
-rm /usr/local/bin/git-review
-rm /usr/local/bin/git-merge-pr
-rm /usr/local/bin/squash-commits.go
-rm /usr/local/bin/git-get-commit-branch
-rm /usr/local/bin/git-checkout
 ```
