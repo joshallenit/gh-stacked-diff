@@ -147,6 +147,8 @@ export PR_REVIEWERS=first-user,second-user,third-user
 
 Add this to your shell rc file (`~/.zshrc` or `~/.bashrc`) and run `source <rc-file>`
 
+<img width="904" alt="image" src="https://user-images.githubusercontent.com/79605685/210428712-bcea3ce7-e70f-4982-aa54-48e166221a1d.png">
+
 #### git-merge-pr
 
 `git-merge-pr <pull request number>`
