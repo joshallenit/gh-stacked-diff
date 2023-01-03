@@ -85,6 +85,8 @@ The [possible values](config/templates) for the templates are:
 
 To change a template, copy the default from [cmd/config/](cmd/config/) into `~/.stacked-diff-workflow/` and modify.
 
+<img width="938" alt="image" src="https://user-images.githubusercontent.com/79605685/210406914-9b43f0e0-ac11-498f-bdd7-5a48e07dcbc0.png">
+
 #### replace-commit
 
 `replace-commit <commit hash or pr number>`
