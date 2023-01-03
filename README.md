@@ -40,7 +40,9 @@ Checkout the feature branch associated with a given PR or commit. For when you w
 
 `gitlog`
 
-Abbreviated git log that only shows what has changed, useful for copying commit hashes.
+Abbreviated git log that only shows what has changed, useful for copying commit hashes. A ✅ means that there is a PR associated with the commit (actually means there is a branch, but having a branch means there is a PR when using this workflow).
+
+<img width="663" alt="image" src="https://user-images.githubusercontent.com/79605685/210386995-9c3e7179-24ed-4d59-9b3e-2b3b34aa6ccc.png">
 
 #### new-pr
 
