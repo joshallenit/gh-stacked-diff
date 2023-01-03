@@ -57,7 +57,7 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 		Execute("git", "fetch", "origin", branchName)
 		prCommit := Execute("gh", "pr", "view", commitOrPullRequest, "--json", "commits", "-q", "[.commits[].oid] | first")
 		summary := Execute("git", "show", "--no-patch", "--format=%s", prCommit)
-		thisBranchCommit := Execute("git", "log", "--grep", summary, "--format=%h")
+		thisBranchCommit := Execute("git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h")
 		if thisBranchCommit == "" {
 			log.Fatal("Could not find associated commit for PR (\"", summary, "\") in main")
 		}

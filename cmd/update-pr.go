@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -8,15 +9,23 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("usage: update-pr <pr-commit> [fixup commit (defaults to top commit)] [other fixup commit...]")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr,
+			Reset+"Add one or more commits to a PR.\n"+
+				"\n"+
+				"update-pr <pr-commit> [fixup commit (defaults to top commit)] [other fixup commit...]\n")
+		flag.PrintDefaults()
+	}
+	flag.Parse()
+	if flag.NArg() == 0 {
+		flag.Usage()
 		os.Exit(1)
 	}
 	RequireMainBranch()
-	branchInfo := GetBranchInfo(os.Args[1])
+	branchInfo := GetBranchInfo(flag.Arg(0))
 	var commitsToCherryPick []string
-	if len(os.Args) > 2 {
-		commitsToCherryPick = os.Args[2:]
+	if len(flag.Args()) > 1 {
+		commitsToCherryPick = flag.Args()[1:]
 	} else {
 		commitsToCherryPick = make([]string, 1)
 		commitsToCherryPick[0] = Execute("git", "rev-parse", "--short", "HEAD")
