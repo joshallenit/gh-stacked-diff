@@ -34,8 +34,10 @@ func main() {
 	Execute("git", "switch", branchInfo.BranchName)
 	log.Println("Fast forwarding in case there were any commits made via github web interface")
 	Execute("git", "fetch", "origin", branchInfo.BranchName)
-	Execute("git", "merge", "--ff-only", "origin/"+branchInfo.BranchName)
-
+	if _, err := ExecuteFailable("git", "merge", "--ff-only", "origin/"+branchInfo.BranchName); err != nil {
+		log.Println("Could not fast forward to match origin. Rebasing instead.", err)
+		Execute("git", "rebase", "origin", branchInfo.BranchName)
+	}
 	log.Println("Cherry picking", commitsToCherryPick)
 	cherryPickArgs := make([]string, 1+len(commitsToCherryPick))
 	cherryPickArgs[0] = "cherry-pick"
