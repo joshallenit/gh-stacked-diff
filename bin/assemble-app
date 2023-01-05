@@ -30,6 +30,7 @@ set -x # show executing lines
     compileInternalDebugUnitTestSources \
     app:assembleInternalDebugAndroidTest \
     detekt \
+    detektRelease \
     assertAllowedModuleDependencies \
     "$@"
 
