@@ -34,9 +34,12 @@ func main() {
 	Execute("git", "switch", branchInfo.BranchName)
 	log.Println("Fast forwarding in case there were any commits made via github web interface")
 	Execute("git", "fetch", "origin", branchInfo.BranchName)
+	forcePush := false
 	if _, err := ExecuteFailable("git", "merge", "--ff-only", "origin/"+branchInfo.BranchName); err != nil {
 		log.Println("Could not fast forward to match origin. Rebasing instead.", err)
 		Execute("git", "rebase", "origin", branchInfo.BranchName)
+		// As we rebased, a force push may be required.
+		forcePush = true
 	}
 	log.Println("Cherry picking", commitsToCherryPick)
 	cherryPickArgs := make([]string, 1+len(commitsToCherryPick))
@@ -52,7 +55,14 @@ func main() {
 		os.Exit(1)
 	}
 	log.Println("Pushing to remote")
-	Execute("git", "push", "origin", branchInfo.BranchName)
+	if forcePush {
+		if _, err := ExecuteFailable("git", "push", "origin", branchInfo.BranchName); err != nil {
+			log.Println("Regular push failed, force pushing.", err)
+			Execute("git", "push", "-f", "origin", branchInfo.BranchName)
+		}
+	} else {
+		Execute("git", "push", "origin", branchInfo.BranchName)
+	}
 	log.Println("Switching back to main")
 	Execute("git", "switch", "main")
 	log.Println("Rebasing, marking as fixup", commitsToCherryPick, "for target", branchInfo.CommitHash)
