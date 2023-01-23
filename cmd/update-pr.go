@@ -9,11 +9,14 @@ import (
 )
 
 func main() {
+	var logFlags int
+	flag.IntVar(&logFlags, "logFlags", 0, "Log flags, see https://pkg.go.dev/log#pkg-constants")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr,
 			Reset+"Add one or more commits to a PR.\n"+
 				"\n"+
-				"update-pr <pr-commit> [fixup commit (defaults to top commit)] [other fixup commit...]\n")
+				"update-pr <pr-commit> [fixup commit (defaults to top commit)] [other fixup commit...]\n"+
+				White+"Flags:"+Reset+"\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -21,6 +24,7 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
+	log.SetFlags(logFlags)
 	RequireMainBranch()
 	branchInfo := GetBranchInfo(flag.Arg(0))
 	var commitsToCherryPick []string

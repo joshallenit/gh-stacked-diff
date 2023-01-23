@@ -12,9 +12,11 @@ func main() {
 	var draft bool
 	var featureFlag string
 	var baseBranch string
+	var logFlags int
 	flag.BoolVar(&draft, "draft", true, "Whether to create the PR as draft")
 	flag.StringVar(&featureFlag, "feature-flag", "None", "Value for FEATURE_FLAG in PR description")
 	flag.StringVar(&baseBranch, "base", "main", "Base branch for Pull Request")
+	flag.IntVar(&logFlags, "logFlags", 0, "Log flags, see https://pkg.go.dev/log#pkg-constants")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr,
 			Reset+"Create a new PR with a cherry-pick of the given commit hash\n"+
@@ -55,6 +57,7 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
+	log.SetFlags(logFlags)
 	branchInfo := GetBranchInfo(flag.Arg(0))
 	prText := GetPullRequestText(branchInfo.CommitHash, featureFlag)
 	var commitToBranchFrom string
