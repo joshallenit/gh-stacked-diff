@@ -33,9 +33,7 @@ func replaceCommit(branchInfo BranchInfo) {
 	Execute("git", "add", ".")
 	commitSummary := Execute("git", "--no-pager", "show", "--no-patch", "--format=%s", branchInfo.CommitHash)
 	Execute("git", "commit", "-m", commitSummary)
-	if len(commitsAfter) == 0 {
-		log.Println("No commits between ", branchInfo.CommitHash, "..HEAD that need to be cherry-picked")
-	} else {
+	if len(commitsAfter) != 0 {
 		log.Println("Cherry picking commits back on top ", commitsAfter)
 		cherryPickAndSkipAllEmpty(commitsAfter)
 	}
