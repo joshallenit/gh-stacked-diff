@@ -45,6 +45,7 @@ func main() {
 		// As we rebased, a force push may be required.
 		forcePush = true
 	}
+
 	log.Println("Cherry picking", commitsToCherryPick)
 	cherryPickArgs := make([]string, 1+len(commitsToCherryPick))
 	cherryPickArgs[0] = "cherry-pick"
@@ -53,15 +54,32 @@ func main() {
 	}
 	cherryPickOutput, cherryPickError := ExecuteFailable("git", cherryPickArgs...)
 	if cherryPickError != nil {
-		log.Println("Could not cherry-pick, aborting...", cherryPickArgs, cherryPickOutput, cherryPickError)
+		log.Println("First attempt at cherry-xpick failed")
 		Execute("git", "cherry-pick", "--abort")
-		Execute("git", "switch", "main")
-		os.Exit(1)
+		rebaseBranch := FirstOriginMainCommit("main")
+		log.Println("Rebasing with the base commit on main branch, ", rebaseBranch,
+			", in case the local main was rebased with origin/main")
+		rebaseOutput, rebaseError := ExecuteFailable("git", "rebase", rebaseBranch)
+		if rebaseError != nil {
+			log.Println("Could not rebase, aborting...", rebaseOutput)
+			Execute("git", "rebase", "--abort")
+			Execute("git", "switch", "main")
+			os.Exit(1)
+		}
+		log.Println("Cherry picking again", commitsToCherryPick)
+		cherryPickOutput, cherryPickError = ExecuteFailable("git", cherryPickArgs...)
+		if cherryPickError != nil {
+			log.Println("Could not cherry-pick, aborting...", cherryPickArgs, cherryPickOutput, cherryPickError)
+			Execute("git", "cherry-pick", "--abort")
+			Execute("git", "switch", "main")
+			os.Exit(1)
+		}
+		forcePush = true
 	}
 	log.Println("Pushing to remote")
 	if forcePush {
 		if _, err := ExecuteFailable("git", "push", "origin", branchInfo.BranchName); err != nil {
-			log.Println("Regular push failed, force pushing.", err)
+			log.Println("Regular push failed, force pushing instead.")
 			Execute("git", "push", "-f", "origin", branchInfo.BranchName)
 		}
 	} else {
