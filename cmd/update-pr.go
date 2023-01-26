@@ -34,6 +34,12 @@ func main() {
 		commitsToCherryPick = make([]string, 1)
 		commitsToCherryPick[0] = Execute("git", "rev-parse", "--short", "HEAD")
 	}
+	shouldPopStash := false
+	stashResult := Execute("git", "stash", "save", "-u", "before update-pr "+flag.Arg(0))
+	if strings.HasPrefix(stashResult, "Saved working") {
+		log.Println(stashResult)
+		shouldPopStash = true
+	}
 	log.Println("Switching to branch", branchInfo.BranchName)
 	Execute("git", "switch", branchInfo.BranchName)
 	log.Println("Fast forwarding in case there were any commits made via github web interface")
@@ -64,6 +70,7 @@ func main() {
 			log.Println("Could not rebase, aborting...", rebaseOutput)
 			Execute("git", "rebase", "--abort")
 			Execute("git", "switch", "main")
+			popStash(shouldPopStash)
 			os.Exit(1)
 		}
 		log.Println("Cherry picking again", commitsToCherryPick)
@@ -72,6 +79,7 @@ func main() {
 			log.Println("Could not cherry-pick, aborting...", cherryPickArgs, cherryPickOutput, cherryPickError)
 			Execute("git", "cherry-pick", "--abort")
 			Execute("git", "switch", "main")
+			popStash(shouldPopStash)
 			os.Exit(1)
 		}
 		forcePush = true
@@ -91,4 +99,12 @@ func main() {
 	options := ExecuteOptions{EnvironmentVariables: make([]string, 1)}
 	options.EnvironmentVariables[0] = "GIT_SEQUENCE_EDITOR=sequence-editor-mark-as-fixup " + branchInfo.CommitHash + " " + strings.Join(commitsToCherryPick, " ")
 	ExecuteWithOptions(options, "git", "rebase", "-i", branchInfo.CommitHash+"^")
+	popStash(shouldPopStash)
+}
+
+func popStash(popStash bool) {
+	if popStash {
+		Execute("git", "stash", "pop")
+		log.Println("Popped stash back")
+	}
 }
