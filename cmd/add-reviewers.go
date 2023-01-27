@@ -70,7 +70,7 @@ func main() {
 				os.Exit(1)
 			}
 			if summary.Passing == 0 {
-				log.Print("Checks pending for ", flag.Arg(0), ". Completed: 0%", summary.Passing, "\n")
+				log.Print("Checks pending for ", flag.Arg(0), ". Completed: 0%\n")
 			} else {
 				log.Print("Checks pending for ", flag.Arg(0), ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%\n")
 			}
