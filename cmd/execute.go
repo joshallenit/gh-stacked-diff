@@ -8,8 +8,9 @@ import (
 	"strings"
 )
 
-var White = "\033[97m"
+var Red = "\033[31m"
 var Reset = "\033[0m"
+var White = "\033[97m"
 
 type ExecuteOptions struct {
 	TrimSpace    bool

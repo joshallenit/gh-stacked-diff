@@ -67,19 +67,19 @@ func main() {
 			", in case the local main was rebased with origin/main")
 		rebaseOutput, rebaseError := ExecuteFailable("git", "rebase", rebaseBranch)
 		if rebaseError != nil {
-			log.Println("Could not rebase, aborting...", rebaseOutput)
+			log.Println(Red+"Could not rebase, aborting..."+Reset, rebaseOutput)
 			Execute("git", "rebase", "--abort")
 			Execute("git", "switch", "main")
-			popStash(shouldPopStash)
+			PopStash(shouldPopStash)
 			os.Exit(1)
 		}
 		log.Println("Cherry picking again", commitsToCherryPick)
 		cherryPickOutput, cherryPickError = ExecuteFailable("git", cherryPickArgs...)
 		if cherryPickError != nil {
-			log.Println("Could not cherry-pick, aborting...", cherryPickArgs, cherryPickOutput, cherryPickError)
+			log.Println(Red+"Could not cherry-pick, aborting..."+Reset, cherryPickArgs, cherryPickOutput, cherryPickError)
 			Execute("git", "cherry-pick", "--abort")
 			Execute("git", "switch", "main")
-			popStash(shouldPopStash)
+			PopStash(shouldPopStash)
 			os.Exit(1)
 		}
 		forcePush = true
@@ -99,12 +99,5 @@ func main() {
 	options := ExecuteOptions{EnvironmentVariables: make([]string, 1)}
 	options.EnvironmentVariables[0] = "GIT_SEQUENCE_EDITOR=sequence-editor-mark-as-fixup " + branchInfo.CommitHash + " " + strings.Join(commitsToCherryPick, " ")
 	ExecuteWithOptions(options, "git", "rebase", "-i", branchInfo.CommitHash+"^")
-	popStash(shouldPopStash)
-}
-
-func popStash(popStash bool) {
-	if popStash {
-		Execute("git", "stash", "pop")
-		log.Println("Popped stash back")
-	}
+	PopStash(shouldPopStash)
 }

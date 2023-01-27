@@ -162,3 +162,10 @@ func RequireMainBranch() {
 func GetCurrentBranchName() string {
 	return Execute("git", "rev-parse", "--abbrev-ref", "HEAD")
 }
+
+func PopStash(popStash bool) {
+	if popStash {
+		Execute("git", "stash", "pop")
+		log.Println("Popped stash back")
+	}
+}

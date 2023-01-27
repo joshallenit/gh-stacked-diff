@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -61,6 +62,12 @@ func main() {
 	branchInfo := GetBranchInfo(flag.Arg(0))
 	prText := GetPullRequestText(branchInfo.CommitHash, featureFlag)
 	var commitToBranchFrom string
+	shouldPopStash := false
+	stashResult := Execute("git", "stash", "save", "-u", "before update-pr "+flag.Arg(0))
+	if strings.HasPrefix(stashResult, "Saved working") {
+		log.Println(stashResult)
+		shouldPopStash = true
+	}
 	if baseBranch == "main" {
 		commitToBranchFrom = FirstOriginMainCommit("main")
 		log.Println("Switching to branch", branchInfo.BranchName, "based off commit", commitToBranchFrom)
@@ -73,11 +80,12 @@ func main() {
 	log.Println("Cherry picking", branchInfo.CommitHash)
 	cherryPickOutput, cherryPickError := ExecuteFailable("git", "cherry-pick", branchInfo.CommitHash)
 	if cherryPickError != nil {
-		log.Println("Could not cherry-pick, aborting...", cherryPickOutput, cherryPickError)
+		log.Println(Red+"Could not cherry-pick, aborting..."+Reset, cherryPickOutput, cherryPickError)
 		Execute("git", "cherry-pick", "--abort")
 		Execute("git", "switch", "main")
 		log.Println("Deleting created branch", branchInfo.BranchName)
 		Execute("git", "branch", "-D", branchInfo.BranchName)
+		PopStash(shouldPopStash)
 		os.Exit(1)
 	}
 	log.Println("Pushing to remote")
@@ -87,11 +95,23 @@ func main() {
 	if draft {
 		createPrArgs = append(createPrArgs, "--draft")
 	}
-	createPrOutput := Execute("gh", createPrArgs...)
-	log.Println("Created PR", createPrOutput)
-	Execute("gh", "pr", "view", "--web")
+	createPrOutput, createPrErr := ExecuteFailable("gh", createPrArgs...)
+	if createPrErr != nil {
+		log.Println(Red+"Could not create PR:"+Reset, createPrOutput, createPrErr)
+		Execute("git", "switch", "main")
+		log.Println("Deleting created branch", branchInfo.BranchName)
+		Execute("git", "branch", "-D", branchInfo.BranchName)
+		PopStash(shouldPopStash)
+		os.Exit(1)
+	} else {
+		log.Println("Created PR", createPrOutput)
+	}
+	if prViewOutput, prViewErr := ExecuteFailable("gh", "pr", "view", "--web"); prViewErr != nil {
+		log.Println(Red+"Could not open browser to PR:"+Reset, prViewOutput, prViewErr)
+	}
 	log.Println("Switching back to main")
 	Execute("git", "switch", "main")
+	PopStash(shouldPopStash)
 	/*
 	   This avoids this hint when using `git fetch && git-rebase origin/main` which is not appropriate for stacked diff workflow:
 	   > hint: use --reapply-cherry-picks to include skipped commits
