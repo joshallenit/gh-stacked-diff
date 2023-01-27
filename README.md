@@ -57,6 +57,8 @@ Flags:
     	Whether to create the PR as draft (default true)
   -feature-flag string
     	Value for FEATURE_FLAG in PR description (default "None")
+  -logFlags int
+    	Log flags, see https://pkg.go.dev/log#pkg-constants
 ```
 
 ###### Ticket Number
@@ -101,7 +103,12 @@ Use during rebase of main branch to use the contents of a feature branch that al
 
 #### update-pr
 
-`update-pr <commitHash or pullRequestNumber> [fixup commit (defaults to top commit)] [other fixup commit...]`
+```bash
+update-pr <commitHash or pullRequestNumber> [fixup commit (defaults to top commit)] [other fixup commit...]
+Flags:
+  -logFlags int
+    	Log flags, see https://pkg.go.dev/log#pkg-constants
+```
 
 Add one or more commits to a PR.
 
