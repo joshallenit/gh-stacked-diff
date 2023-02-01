@@ -8,7 +8,7 @@ Note: these scripts do *not* facilitate Stacked *Pull Requests*. Github does som
 
 ## TL;DR
 
-Using a stacked diff workflow like this allows you to work on separate streams of work without changing branches. It also makes creating and updating Pull Requests faster as you do not have to manually switch branches, and there are [some scripts](#to-help-with-github) that automate some of the process.
+Using a stacked diff workflow like this allows you to work on separate streams of work without changing branches. It also makes creating and updating Pull Requests faster as you do not have to manually switch branches.
 
 ## Installation
 
