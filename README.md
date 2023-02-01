@@ -30,7 +30,7 @@ source ~/.zshrc
 
 ### For Stacked Diff Workflow
 
-*Note: currently these scripts assume that `main` is the main branch, which is the case for our iOS and Android repositories. If you want to use these scripts in webapp where `master` is the main branch, let us know in [#devel-stacked-diff-workflow](https://slack-pde.slack.com/archives/C03V94N2A84) so support can be added.*
+*Note: the scripts attempts to use `main` as the main branch, and if that branch does not exist it looks for `master`.*
 
 #### Script: git-checkout
 
