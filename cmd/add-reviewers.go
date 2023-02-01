@@ -26,9 +26,15 @@ func main() {
 	var pollFrequency time.Duration
 	var defaultPollFrequency time.Duration = 5 * time.Minute
 	var silent bool
+	var minChecks int
 	flag.BoolVar(&whenChecksPass, "when-checks-pass", true, "Poll until all checks pass before adding reviewers")
-	flag.DurationVar(&pollFrequency, "poll-frequency", defaultPollFrequency, "Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration")
+	flag.DurationVar(&pollFrequency, "poll-frequency", defaultPollFrequency,
+		"Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration")
 	flag.BoolVar(&silent, "silent", false, "Whether to use voice output")
+	flag.IntVar(&minChecks, "min-checks", 4,
+		"Minimum number of checks to wait for before verifying that checks have passed. "+
+			"It takes some time for checks to be added to a PR by Github, "+
+			"and if you add-reviewers too soon it will think that they have all passed.")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr,
 			Reset+"Mark a Draft PR as \"Ready for Review\" and automatically add reviewers.\n"+
@@ -53,10 +59,6 @@ func main() {
 	if whenChecksPass {
 		for {
 			summary := getChecksStatus(branchName)
-			if summary.Passing == summary.Total {
-				log.Println("All", summary.Total, "checks passed")
-				break
-			}
 			if summary.Failing > 0 {
 				if !silent {
 					Execute("say", "Checks failed")
@@ -69,7 +71,13 @@ func main() {
 					"\n")
 				os.Exit(1)
 			}
-			if summary.Passing == 0 {
+
+			if summary.Total < minChecks {
+				log.Println("Waiting for at least", minChecks, "checks to be added to PR. Currently only ", summary.Total)
+			} else if summary.Passing == summary.Total {
+				log.Println("All", summary.Total, "checks passed")
+				break
+			} else if summary.Passing == 0 {
 				log.Print("Checks pending for ", flag.Arg(0), ". Completed: 0%\n")
 			} else {
 				log.Print("Checks pending for ", flag.Arg(0), ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%\n")
