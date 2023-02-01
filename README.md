@@ -12,7 +12,7 @@ Using a stacked diff workflow like this allows you to work on separate streams o
 
 ## Installation
 
-Clone the repository or download the [latest release](releases), and then:
+Clone the repository or download the [latest release](https://github.com/tinyspeck/stacked-diff-workflow/releases), and then:
 
 ```bash
 # Install Github CLI
