@@ -8,7 +8,7 @@ Note: these scripts do *not* facilitate Stacked *Pull Requests*. Github does som
 
 ## TL;DR
 
-Using a stacked diff workflow like this allows you to work on separate streams of work without changing branches. It also makes creating and updating Pull Requests faster as you do not have to manually switch branches.
+Using a stacked diff workflow like this allows you to work on separate streams of work without changing branches. It also makes creating and updating Pull Requests faster as you do not have to manually switch branches, and there are [some scripts](#to-help-with-github) that automate some of the process.
 
 ## Installation
 
@@ -32,13 +32,13 @@ source ~/.zshrc
 
 *Note: currently these scripts assume that `main` is the main branch, which is the case for our iOS and Android repositories. If you want to use these scripts in webapp where `master` is the main branch, let us know in [#devel-stacked-diff-workflow](https://slack-pde.slack.com/archives/C03V94N2A84) so support can be added.*
 
-#### git-checkout
+#### Script: git-checkout
 
 `git-checkout <commit hash or pr number>`
 
 Checkout the feature branch associated with a given PR or commit. For when you want to checkout the feature branch to rebase with origin/main, merge with origin/main, or for any other reason. After modifying the feature branch use `replac-commit` or `replace-head` to sync local `main`.
 
-#### gitlog
+#### Script: gitlog
 
 `gitlog`
 
@@ -46,7 +46,7 @@ Abbreviated git log that only shows what has changed, useful for copying commit 
 
 <img width="663" alt="image" src="https://user-images.githubusercontent.com/79605685/210386995-9c3e7179-24ed-4d59-9b3e-2b3b34aa6ccc.png">
 
-#### new-pr
+#### Script: new-pr
 
 Create a new PR with a cherry-pick of the given commit hash
 
@@ -91,19 +91,19 @@ To change a template, copy the default from [cmd/config/](cmd/config/) into `~/.
 
 <img width="938" alt="image" src="https://user-images.githubusercontent.com/79605685/210406914-9b43f0e0-ac11-498f-bdd7-5a48e07dcbc0.png">
 
-#### replace-commit
+#### Script: replace-commit
 
 `replace-commit <commit hash or pr number>`
 
 Reset the main branch with the squashed contents of the given commits associated branch. Sometimes you might want to switch to a feature branch and make changes to it (rebase, amend). With this script you can then ensure that your `main` branch is up to date.
 
-#### replace-head
+#### Script: replace-head
 
 `replace-head`
 
 Use during rebase of main branch to use the contents of a feature branch that already fixed the merge conflicts.
 
-#### update-pr
+#### Script: update-pr
 
 ```bash
 update-pr <commitHash or pullRequestNumber> [fixup commit (defaults to top commit)] [other fixup commit...]
@@ -118,13 +118,13 @@ Add one or more commits to a PR.
 
 *Note: Only [Android](https://github.com/tinyspeck/slack-android-ng) build scripts are currently supported.*
 
-#### assemble-app
+#### Script: assemble-app
 
 `assemble-app`
 
 Calls `./gradlew assembleInternalDebug` and build tests. Use "-s" (silent) flag to not use voice (`say`) to announce success/failure. Any options after, or in-lieu of, "-s" will be passed to the `./gradle` command, for example `--rerun-tasks`.
 
-#### install-app
+#### Script: install-app
 
 `install-app`
 
@@ -132,7 +132,7 @@ Calls `./gradlew assembleInternalDebug` and install on real device. Use "-s" (si
 
 ### To Help with Github
 
-#### add-reviewers
+#### Script: add-reviewers
 
 ```
 add-reviewers <pullRequestNumber or commitHash>
@@ -158,13 +158,13 @@ Add this to your shell rc file (`~/.zshrc` or `~/.bashrc`) and run `source <rc-f
 
 <img width="904" alt="image" src="https://user-images.githubusercontent.com/79605685/210428712-bcea3ce7-e70f-4982-aa54-48e166221a1d.png">
 
-#### git-merge-pr
+#### Script: git-merge-pr
 
 `git-merge-pr <pull request number>`
 
 Add the given PR to the merge queue
 
-#### git-prs
+#### Script: git-prs
 
 `git-prs`
 
