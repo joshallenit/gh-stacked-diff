@@ -74,7 +74,11 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 }
 
 func GetBranchForCommit(commit string) string {
-	return runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(commit))
+	name := runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(commit))
+	if GetMainBranch() == "master" {
+		return strings.Replace(name, "/", "-", -1)
+	}
+	return name
 }
 
 func GetPullRequestText(commitHash string, featureFlag string) PullRequestText {
