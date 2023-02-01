@@ -20,6 +20,8 @@ var prTitleTemplateText string
 //go:embed config/pr-description.template
 var prDescriptionTemplateText string
 
+var mainBranchName string
+
 type BranchInfo struct {
 	CommitHash string
 	BranchName string
@@ -47,7 +49,7 @@ type templateData struct {
 
 func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 	if commitOrPullRequest == "" {
-		commitOrPullRequest = "main"
+		commitOrPullRequest = GetMainBranch()
 	}
 	var info BranchInfo
 	if _, err := strconv.Atoi(commitOrPullRequest); len(commitOrPullRequest) < 9 && err == nil {
@@ -59,7 +61,7 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 		summary := Execute("git", "show", "--no-patch", "--format=%s", prCommit)
 		thisBranchCommit := Execute("git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h")
 		if thisBranchCommit == "" {
-			log.Fatal("Could not find associated commit for PR (\"", summary, "\") in main")
+			log.Fatal("Could not find associated commit for PR (\"", summary, "\") in "+GetMainBranch())
 		}
 		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
 		log.Print("Using pull request ", commitOrPullRequest, ", commit ", info.CommitHash, ", branch ", info.BranchName, "\n")
@@ -146,16 +148,16 @@ func getConfigFile(filenameWithoutPath string) *string {
 
 // Returns first commit of the given branch that is on origin/main.
 func FirstOriginMainCommit(branchName string) string {
-	allNewCommits := strings.Fields(Execute("git", "--no-pager", "log", "origin/main.."+branchName, "--pretty=format:%h", "--abbrev-commit"))
+	allNewCommits := strings.Fields(Execute("git", "--no-pager", "log", "origin/"+GetMainBranch()+".."+branchName, "--pretty=format:%h", "--abbrev-commit"))
 	if len(allNewCommits) == 0 {
-		log.Fatal("No commits on ", branchName, "other than what is on main, nothing to create a commit from")
+		log.Fatal("No commits on ", branchName, "other than what is on "+GetMainBranch()+", nothing to create a commit from")
 	}
 	return allNewCommits[len(allNewCommits)-1] + "~1"
 }
 
 func RequireMainBranch() {
-	if GetCurrentBranchName() != "main" {
-		log.Fatal("Must be run from main branch")
+	if GetCurrentBranchName() != GetMainBranch() {
+		log.Fatal("Must be run from " + GetMainBranch() + " branch")
 	}
 }
 
@@ -168,4 +170,18 @@ func PopStash(popStash bool) {
 		Execute("git", "stash", "pop")
 		log.Println("Popped stash back")
 	}
+}
+
+func GetMainBranch() string {
+	if mainBranchName == "" {
+		if _, mainErr := ExecuteFailable("git", "rev-parse", "--verify", "main"); mainErr != nil {
+			if _, masterErr := ExecuteFailable("git", "rev-parse", "--verify", "master"); masterErr != nil {
+				log.Fatal(Red + "Could not find main or master branch" + Reset)
+			}
+			mainBranchName = "master"
+		} else {
+			mainBranchName = "main"
+		}
+	}
+	return mainBranchName
 }

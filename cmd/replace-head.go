@@ -13,7 +13,7 @@ func main() {
 	branchInfo := GetBranchInfo(commitWithConflicts)
 	Execute("git", "reset", "--hard", "HEAD")
 	log.Println("Replacing HEAD for commit", commitWithConflicts, "with changes from branch", branchInfo.BranchName)
-	diff := ExecuteWithOptions(ExecuteOptions{TrimSpace: false}, "git", "diff", "--binary", "origin/main", branchInfo.BranchName)
+	diff := ExecuteWithOptions(ExecuteOptions{TrimSpace: false}, "git", "diff", "--binary", "origin/"+GetMainBranch(), branchInfo.BranchName)
 	ExecuteWithOptions(ExecuteOptions{Stdin: &diff}, "git", "apply")
 	log.Println("Adding changes and continuing rebase")
 	Execute("git", "add", ".")

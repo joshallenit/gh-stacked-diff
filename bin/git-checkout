@@ -5,6 +5,6 @@
 
 set -euo pipefail
 
-read username pr_commit branch_name < <(git-get-commit-branch.sh ${1:-main})
+read username pr_commit branch_name < <(git-get-commit-branch.sh ${1:-`get-main-branch`})
 
 git checkout $branch_name

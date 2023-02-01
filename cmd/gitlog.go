@@ -10,13 +10,13 @@ Outputs abbreviated git log that only shows what has changed, useful for copying
 Adds a checkmark beside commits that have an associated branch.
 */
 func main() {
-	logsColorRaw := Execute("git", "--no-pager", "log", "origin/main..HEAD", "--pretty=oneline", "--abbrev-commit", "--color=always")
+	logsColorRaw := Execute("git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit", "--color=always")
 	logsColor := strings.Split(logsColorRaw, "\n")
-	logsNoColor := strings.Split(Execute("git", "--no-pager", "log", "origin/main..HEAD", "--pretty=oneline", "--abbrev-commit"), "\n")
+	logsNoColor := strings.Split(Execute("git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit"), "\n")
 	if len(logsNoColor) == 0 {
 		return
 	}
-	if GetCurrentBranchName() == "main" {
+	if GetCurrentBranchName() == GetMainBranch() {
 		for i, _ := range logsNoColor {
 			index := strings.Index(logsNoColor[i], " ")
 			if index == -1 {

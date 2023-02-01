@@ -62,14 +62,14 @@ func main() {
 	if cherryPickError != nil {
 		log.Println("First attempt at cherry-xpick failed")
 		Execute("git", "cherry-pick", "--abort")
-		rebaseBranch := FirstOriginMainCommit("main")
-		log.Println("Rebasing with the base commit on main branch, ", rebaseBranch,
-			", in case the local main was rebased with origin/main")
+		rebaseBranch := FirstOriginMainCommit(GetMainBranch())
+		log.Println("Rebasing with the base commit on "+GetMainBranch()+" branch, ", rebaseBranch,
+			", in case the local "+GetMainBranch()+" was rebased with origin/"+GetMainBranch())
 		rebaseOutput, rebaseError := ExecuteFailable("git", "rebase", rebaseBranch)
 		if rebaseError != nil {
 			log.Println(Red+"Could not rebase, aborting..."+Reset, rebaseOutput)
 			Execute("git", "rebase", "--abort")
-			Execute("git", "switch", "main")
+			Execute("git", "switch", GetMainBranch())
 			PopStash(shouldPopStash)
 			os.Exit(1)
 		}
@@ -78,7 +78,7 @@ func main() {
 		if cherryPickError != nil {
 			log.Println(Red+"Could not cherry-pick, aborting..."+Reset, cherryPickArgs, cherryPickOutput, cherryPickError)
 			Execute("git", "cherry-pick", "--abort")
-			Execute("git", "switch", "main")
+			Execute("git", "switch", GetMainBranch())
 			PopStash(shouldPopStash)
 			os.Exit(1)
 		}
@@ -93,8 +93,8 @@ func main() {
 	} else {
 		Execute("git", "push", "origin", branchInfo.BranchName)
 	}
-	log.Println("Switching back to main")
-	Execute("git", "switch", "main")
+	log.Println("Switching back to " + GetMainBranch())
+	Execute("git", "switch", GetMainBranch())
 	log.Println("Rebasing, marking as fixup", commitsToCherryPick, "for target", branchInfo.CommitHash)
 	options := ExecuteOptions{EnvironmentVariables: make([]string, 1)}
 	options.EnvironmentVariables[0] = "GIT_SEQUENCE_EDITOR=sequence-editor-mark-as-fixup " + branchInfo.CommitHash + " " + strings.Join(commitsToCherryPick, " ")

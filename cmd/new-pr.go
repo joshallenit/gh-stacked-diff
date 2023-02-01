@@ -16,13 +16,13 @@ func main() {
 	var logFlags int
 	flag.BoolVar(&draft, "draft", true, "Whether to create the PR as draft")
 	flag.StringVar(&featureFlag, "feature-flag", "None", "Value for FEATURE_FLAG in PR description")
-	flag.StringVar(&baseBranch, "base", "main", "Base branch for Pull Request")
+	flag.StringVar(&baseBranch, "base", GetMainBranch(), "Base branch for Pull Request")
 	flag.IntVar(&logFlags, "logFlags", 0, "Log flags, see https://pkg.go.dev/log#pkg-constants")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr,
 			Reset+"Create a new PR with a cherry-pick of the given commit hash\n"+
 				"\n"+
-				"new-pr [flags] [commit hash to make PR for (default is top commit on main)]\n"+
+				"new-pr [flags] [commit hash to make PR for (default is top commit on "+GetMainBranch()+")]\n"+
 				"\n"+
 				White+"Note on Ticket Number:"+Reset+"\n"+
 				"\n"+
@@ -68,8 +68,8 @@ func main() {
 		log.Println(stashResult)
 		shouldPopStash = true
 	}
-	if baseBranch == "main" {
-		commitToBranchFrom = FirstOriginMainCommit("main")
+	if baseBranch == GetMainBranch() {
+		commitToBranchFrom = FirstOriginMainCommit(GetMainBranch())
 		log.Println("Switching to branch", branchInfo.BranchName, "based off commit", commitToBranchFrom)
 	} else {
 		commitToBranchFrom = baseBranch
@@ -82,7 +82,7 @@ func main() {
 	if cherryPickError != nil {
 		log.Println(Red+"Could not cherry-pick, aborting..."+Reset, cherryPickOutput, cherryPickError)
 		Execute("git", "cherry-pick", "--abort")
-		Execute("git", "switch", "main")
+		Execute("git", "switch", GetMainBranch())
 		log.Println("Deleting created branch", branchInfo.BranchName)
 		Execute("git", "branch", "-D", branchInfo.BranchName)
 		PopStash(shouldPopStash)
@@ -98,7 +98,7 @@ func main() {
 	createPrOutput, createPrErr := ExecuteFailable("gh", createPrArgs...)
 	if createPrErr != nil {
 		log.Println(Red+"Could not create PR:"+Reset, createPrOutput, createPrErr)
-		Execute("git", "switch", "main")
+		Execute("git", "switch", GetMainBranch())
 		log.Println("Deleting created branch", branchInfo.BranchName)
 		Execute("git", "branch", "-D", branchInfo.BranchName)
 		PopStash(shouldPopStash)
@@ -109,8 +109,8 @@ func main() {
 	if prViewOutput, prViewErr := ExecuteFailable("gh", "pr", "view", "--web"); prViewErr != nil {
 		log.Println(Red+"Could not open browser to PR:"+Reset, prViewOutput, prViewErr)
 	}
-	log.Println("Switching back to main")
-	Execute("git", "switch", "main")
+	log.Println("Switching back to " + GetMainBranch())
+	Execute("git", "switch", GetMainBranch())
 	PopStash(shouldPopStash)
 	/*
 	   This avoids this hint when using `git fetch && git-rebase origin/main` which is not appropriate for stacked diff workflow:
