@@ -49,45 +49,47 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	branchName := GetBranchInfo(flag.Arg(0)).BranchName
 	if reviewers == "" {
 		reviewers = os.Getenv("PR_REVIEWERS")
 		if reviewers == "" {
 			log.Fatal("Use reviewers flag or set PR_REVIEWERS environment variable")
 		}
 	}
-	if whenChecksPass {
-		for {
-			summary := getChecksStatus(branchName)
-			if summary.Failing > 0 {
-				if !silent {
-					Execute("say", "Checks failed")
+	for i := 0; i < flag.NArg(); i++ {
+		branchName := GetBranchInfo(flag.Arg(i)).BranchName
+		if whenChecksPass {
+			for {
+				summary := getChecksStatus(branchName)
+				if summary.Failing > 0 {
+					if !silent {
+						Execute("say", "Checks failed")
+					}
+					log.Print("Checks failed for ", flag.Arg(i), ". "+
+						"Total: ", summary.Total,
+						" | Passed: ", summary.Passing,
+						" | Pending: ", summary.Pending,
+						" | Failed: ", summary.Failing,
+						"\n")
+					os.Exit(1)
 				}
-				log.Print("Checks failed for ", flag.Arg(0), ". "+
-					"Total: ", summary.Total,
-					" | Passed: ", summary.Passing,
-					" | Pending: ", summary.Pending,
-					" | Failed: ", summary.Failing,
-					"\n")
-				os.Exit(1)
-			}
 
-			if summary.Total < minChecks {
-				log.Println("Waiting for at least", minChecks, "checks to be added to PR. Currently only ", summary.Total)
-			} else if summary.Passing == summary.Total {
-				log.Println("All", summary.Total, "checks passed")
-				break
-			} else if summary.Passing == 0 {
-				log.Print("Checks pending for ", flag.Arg(0), ". Completed: 0%\n")
-			} else {
-				log.Print("Checks pending for ", flag.Arg(0), ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%\n")
+				if summary.Total < minChecks {
+					log.Println("Waiting for at least", minChecks, "checks to be added to PR. Currently only ", summary.Total)
+				} else if summary.Passing == summary.Total {
+					log.Println("All", summary.Total, "checks passed")
+					break
+				} else if summary.Passing == 0 {
+					log.Print("Checks pending for ", flag.Arg(i), ". Completed: 0%\n")
+				} else {
+					log.Print("Checks pending for ", flag.Arg(i), ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%\n")
+				}
+				time.Sleep(pollFrequency)
 			}
-			time.Sleep(pollFrequency)
 		}
+		Execute("gh", "pr", "ready", branchName)
+		prUrl := Execute("gh", "pr", "edit", branchName, "--add-reviewer", reviewers)
+		log.Println("Added reviewers", reviewers, "to", prUrl)
 	}
-	Execute("gh", "pr", "ready", branchName)
-	prUrl := Execute("gh", "pr", "edit", branchName, "--add-reviewer", reviewers)
-	log.Println("Added reviewers", reviewers, "to", prUrl)
 }
 
 /*
