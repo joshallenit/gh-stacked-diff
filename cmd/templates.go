@@ -66,6 +66,7 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
 		log.Print("Using pull request ", commitOrPullRequest, ", commit ", info.CommitHash, ", branch ", info.BranchName, "\n")
 	} else {
+		// commit hash
 		info = BranchInfo{CommitHash: commitOrPullRequest, BranchName: GetBranchForCommit(commitOrPullRequest)}
 		log.Print("Using commit ", info.CommitHash, ", branch ", info.BranchName, "\n")
 	}
@@ -76,9 +77,20 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 func GetBranchForCommit(commit string) string {
 	name := runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(commit))
 	if GetMainBranch() == "master" {
-		return strings.Replace(name, "/", "-", -1)
+		name = strings.Replace(name, "/", "-", -1)
+		name = strings.Replace(name, ".", "-", -1)
 	}
+	name = truncateString(name, 120)
 	return name
+}
+
+func truncateString(str string, maxBytes int) string {
+	for i, _ := range str {
+		if i >= maxBytes {
+			return str[:i]
+		}
+	}
+	return str
 }
 
 func GetPullRequestText(commitHash string, featureFlag string) PullRequestText {
