@@ -63,6 +63,10 @@ Flags:
     	Log flags, see https://pkg.go.dev/log#pkg-constants
 ```
 
+###### Note on Commit Messages
+
+Keep your commit summary to a [reasonable length](https://www.midori-global.com/blog/2018/04/02/git-50-72-rule). The commit summary is used as the branch name. To add more detail use the [commit description](https://stackoverflow.com/questions/40505643/how-to-do-a-git-commit-with-a-subject-line-and-message-body/40506149#40506149).
+
 ###### Ticket Number
 
 If you prefix the Jira ticket to the git commit summary then `newpr` will populate the `Ticket` section of the PR description.
