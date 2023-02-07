@@ -86,7 +86,10 @@ func main() {
 				time.Sleep(pollFrequency)
 			}
 		}
+		log.Println("Marking PR as ready for review")
 		Execute("gh", "pr", "ready", branchName)
+		log.Println("Waiting 10 seconds for any automatically assigned reviewers to be added...")
+		time.Sleep(10 * time.Second)
 		prUrl := Execute("gh", "pr", "edit", branchName, "--add-reviewer", reviewers)
 		log.Println("Added reviewers", reviewers, "to", prUrl)
 	}
