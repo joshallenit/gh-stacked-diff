@@ -89,7 +89,15 @@ func main() {
 		os.Exit(1)
 	}
 	log.Println("Pushing to remote")
-	Execute("git", "-c", "push.default=current", "push", "-f")
+	pushOutput, pushErr := ExecuteFailable("git", "-c", "push.default=current", "push", "-f")
+	if pushErr != nil {
+		log.Println(Red+"Could not push: "+Reset, pushOutput)
+		Execute("git", "switch", GetMainBranch())
+		log.Println("Deleting created branch", branchInfo.BranchName)
+		Execute("git", "branch", "-D", branchInfo.BranchName)
+		PopStash(shouldPopStash)
+		os.Exit(1)
+	}
 	log.Println("Creating PR via gh")
 	createPrArgs := []string{"pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--base", baseBranch}
 	if draft {

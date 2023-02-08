@@ -38,7 +38,7 @@ func ExecuteWithOptions(options ExecuteOptions, programName string, args ...stri
 		if options.IncludeStack {
 			debug.PrintStack()
 		}
-		log.Fatal("Failed executing ", programName, args, ": ", string(out), err)
+		log.Fatal(Red+"Failed executing `", programName, " ", strings.Join(args, " "), "`: "+Reset, string(out), err)
 	}
 	if options.TrimSpace {
 		return strings.TrimSpace(string(out))
