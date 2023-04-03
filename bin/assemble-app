@@ -5,6 +5,7 @@ set -uo pipefail
 trap ctrl_c INT
 
 # Kill entire script, not just currently running command, and also avoid say command on ctrl-c
+say_pid=""
 function ctrl_c() {
     if [[ $say_pid ]]; then
         kill $say_pid
