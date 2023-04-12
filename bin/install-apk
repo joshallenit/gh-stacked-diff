@@ -1,0 +1,59 @@
+#!/bin/bash
+
+set -uo pipefail
+
+trap ctrl_c INT
+
+# Kill entire script, not just currently running command, and also avoid say command on ctrl-c
+say_pid=""
+
+function ctrl_c() {
+    if [[ $say_pid ]]; then
+        kill $say_pid
+    fi
+    exit 1
+}
+
+# Whether script should be silent (true), or use say (false). "-s" flag.
+silent="false"
+
+if [[ "${1-}" == "--silent" || "${1-}" == "-s" ]]; then
+  silent="true"
+  shift
+fi
+
+# Use tee to display output as it runs, but also save the output so that 
+# install completes entirely before continuing including printing:
+# "All files should be loaded. Notifying the device."
+output=$(adb install -r -t ./app/build/outputs/apk/internal/debug/app-internal-arm64-v8a-debug.apk 2>&1 | tee /dev/tty)
+retVal=$?
+
+if [ $retVal -eq 0 ]; then
+    output=$(adb shell am start -n com.Slack.internal.debug/slack.features.home.HomeActivity 2>&1 | tee /dev/tty)
+    if [[ "$silent" == "false" ]]; then
+        say install complete &
+        say_pid=$!
+    fi
+else
+    adb kill-server
+    output=$(adb install -r -t ./app/build/outputs/apk/internal/debug/app-internal-arm64-v8a-debug.apk 2>&1 | tee /dev/tty)
+    retVal=$?
+
+    if [ $retVal -eq 0 ]; then
+        output=$(adb shell am start -n com.Slack.internal.debug/slack.features.home.HomeActivity 2>&1 | tee /dev/tty)
+        if [[ "$silent" == "false" ]]; then
+            say install complete &
+            say_pid=$!
+        fi
+    else
+        if [[ "$silent" == "false" ]]; then
+            say could not install &
+            say_pid=$!
+        fi
+        adb devices
+        exit $retVal
+    fi
+fi
+
+date
+exit $retVal
