@@ -36,6 +36,7 @@ set -x # show executing lines
     assertAllowedModuleDependencies \
     assertMaxHeight \
     assembleReleaseAndroidTest \
+    spotlessCheck \
     "$@"
 
 retVal=$?
