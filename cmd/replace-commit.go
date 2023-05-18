@@ -16,7 +16,15 @@ func main() {
 		os.Exit(1)
 	}
 	branchInfo := GetBranchInfo(os.Args[1])
+	shouldPopStash := false
+	stashResult := Execute("git", "stash", "save", "-u", "before update-pr "+os.Args[1])
+	if strings.HasPrefix(stashResult, "Saved working") {
+		log.Println(stashResult)
+		shouldPopStash = true
+	}
 	replaceCommit(branchInfo)
+
+	PopStash(shouldPopStash)
 }
 
 // Replaces commit `branchInfo.CommitHash“ with the contents of branch `branchInfo.BranchName`
