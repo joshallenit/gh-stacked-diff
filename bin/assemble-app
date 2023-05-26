@@ -37,6 +37,7 @@ set -x # show executing lines
     assertMaxHeight \
     assembleReleaseAndroidTest \
     spotlessCheck \
+    :app:dependencyGuard \
     "$@"
 
 retVal=$?
