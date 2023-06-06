@@ -206,6 +206,7 @@ git push origin/xxx
 ```
 
 2\. Merge PR via Github
+
 3\. Update your Main Branch
 
 ```bash
