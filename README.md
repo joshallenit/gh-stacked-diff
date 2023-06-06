@@ -190,7 +190,39 @@ git fetch && git rebase origin/main
 
 #### To Fix Merge Conflicts
 
-If you have a merge conflict that you need to fix before merging your PR, you can use **replace-head** to keep your local `main` up to date.
+##### Easy Flow
+
+If you just are rebasing with `main` and the commit with merge conflict has already been **merged**, then the process is simpler.
+
+1. Fix Merge Conflict
+
+```bash
+# switch to feature branch that has a merge conflict
+git-checkout <commit hash or PR number> 
+git fetch && git merge origin/main
+# ... and address any merge conflicts
+# Update your PR
+git push origin/xxx 
+```
+
+2\. Merge PR via Github
+3\. Update your Main Branch
+
+```bash
+# Checkout main if not already there:
+git switch main
+# Rebase as normal:
+git fetch && git rebase origin/main
+# rebase complains about a merge conflict from the merged PR...
+# Essentially delete the commit locally, it's already been merged so there is no need to fix it again:
+git reset --hard HEAD
+# Then continue:
+git rebase --continue
+```
+
+##### Longer Running Flow
+
+If you want to update your main branch *before* you merge your PR, you can use **replace-head** to keep your local `main` up to date.
 
 ```bash
 # switch to feature branch that has a merge conflict
@@ -208,18 +240,4 @@ replace-head
 # continue with the rebase
 git add . && git rebase --continue
 # All done... now both the feature branch and your local main are rebased with main, and the merge conflicts only had to be fixed once
-```
-
-If you just are rebasing with `main` and the commit with merge conflict has already been **merged**, then the process is simpler. For example, perhaps you have accepted changes on a PR comment and committed from the Github web-ui, and now you are just rebasing main.
-
-```bash
-# Checkout main if not already there:
-git switch main
-# Rebase as normal:
-git fetch && git rebase origin/main
-# rebase complains about a merge conflict from the merged PR...
-# Essentially delete the commit locally:
-git reset --hard HEAD
-# Then continue:
-git rebase --continue
 ```
