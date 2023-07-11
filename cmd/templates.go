@@ -20,8 +20,6 @@ var prTitleTemplateText string
 //go:embed config/pr-description.template
 var prDescriptionTemplateText string
 
-var mainBranchName string
-
 type BranchInfo struct {
 	CommitHash string
 	BranchName string
@@ -45,6 +43,7 @@ type templateData struct {
 	CommitSummaryCleaned       string
 	CommitSummaryWithoutTicket string
 	FeatureFlag                string
+	CodeOwners                 string
 }
 
 func GetBranchInfo(commitOrPullRequest string) BranchInfo {
@@ -134,6 +133,7 @@ func getTemplateData(commitHash string, featureFlag string) templateData {
 		CommitSummaryWithoutTicket: summaryMatches[2],
 		CommitSummaryCleaned:       commitSummaryCleaned,
 		FeatureFlag:                featureFlag,
+		CodeOwners:                 ChangedFilesOwners(),
 	}
 }
 
@@ -186,18 +186,4 @@ func PopStash(popStash bool) {
 		Execute("git", "stash", "pop")
 		log.Println("Popped stash back")
 	}
-}
-
-func GetMainBranch() string {
-	if mainBranchName == "" {
-		if _, mainErr := ExecuteFailable("git", "rev-parse", "--verify", "main"); mainErr != nil {
-			if _, masterErr := ExecuteFailable("git", "rev-parse", "--verify", "master"); masterErr != nil {
-				log.Fatal(Red + "Could not find main or master branch" + Reset)
-			}
-			mainBranchName = "master"
-		} else {
-			mainBranchName = "main"
-		}
-	}
-	return mainBranchName
 }

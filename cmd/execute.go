@@ -11,6 +11,7 @@ import (
 var Red = "\033[31m"
 var Reset = "\033[0m"
 var White = "\033[97m"
+var mainBranchName string
 
 type ExecuteOptions struct {
 	TrimSpace    bool
@@ -51,4 +52,18 @@ func ExecuteFailable(programName string, args ...string) (string, error) {
 	cmd := exec.Command(programName, args...)
 	out, err := cmd.CombinedOutput()
 	return strings.TrimSpace(string(out)), err
+}
+
+func GetMainBranch() string {
+	if mainBranchName == "" {
+		if _, mainErr := ExecuteFailable("git", "rev-parse", "--verify", "main"); mainErr != nil {
+			if _, masterErr := ExecuteFailable("git", "rev-parse", "--verify", "master"); masterErr != nil {
+				log.Fatal(Red + "Could not find main or master branch" + Reset)
+			}
+			mainBranchName = "master"
+		} else {
+			mainBranchName = "main"
+		}
+	}
+	return mainBranchName
 }

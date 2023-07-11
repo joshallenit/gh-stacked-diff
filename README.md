@@ -90,6 +90,8 @@ The [possible values](config/templates) for the templates are:
 - **CommitSummary** - Summary line of the commit message
 - **CommitSummaryCleaned** - Summary line of the commit message without spaces or special characters
 - **CommitSummaryWithoutTicket** - Summary line of the commit message without the prefix of the ticket number
+- **FeatureFlag** - Name of feature flag given from command line
+- **CodeOwners** - List of matching files and owners from the CODEOWNERS of the repository, if any
 
 To change a template, copy the default from [cmd/config/](cmd/config/) into `~/.stacked-diff-workflow/` and modify.
 

@@ -46,6 +46,7 @@ func main() {
 				"- **CommitSummary** - Summary line of the commit message\n"+
 				"- **CommitSummaryCleaned** - Summary line of the commit message without spaces or special characters\n"+
 				"- **CommitSummaryWithoutTicket** - Summary line of the commit message without the prefix of the ticket number\n"+
+				"- **CodeOwners** - Code owners from CODEOWNERS of any matching files\n"+
 				"- **FeatureFlag** - Value passed to feature-flag flag\n"+
 				"\n"+
 				"To change a template, copy the default from [cmd/config/](cmd/config/) into `~/.stacked-diff-workflow/` and modify.\n"+
@@ -60,7 +61,6 @@ func main() {
 	}
 	log.SetFlags(logFlags)
 	branchInfo := GetBranchInfo(flag.Arg(0))
-	prText := GetPullRequestText(branchInfo.CommitHash, featureFlag)
 	var commitToBranchFrom string
 	shouldPopStash := false
 	stashResult := Execute("git", "stash", "save", "-u", "before update-pr "+flag.Arg(0))
@@ -98,6 +98,7 @@ func main() {
 		PopStash(shouldPopStash)
 		os.Exit(1)
 	}
+	prText := GetPullRequestText(branchInfo.CommitHash, featureFlag)
 	log.Println("Creating PR via gh")
 	createPrArgs := []string{"pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--base", baseBranch}
 	if draft {
