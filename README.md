@@ -176,6 +176,8 @@ Add the given PR to the merge queue
 
 Lists all of your open PRs. Useful for copying PR numbers.
 
+<img width="904" alt="image" src="https://github.com/tinyspeck/stacked-diff-workflow/assets/79605685/7e7a5708-58dc-4060-96b9-89615a86c009">
+
 ## Example Workflow
 
 ### Creating and Updating PRs
