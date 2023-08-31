@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -55,44 +56,52 @@ func main() {
 			log.Fatal("Use reviewers flag or set PR_REVIEWERS environment variable")
 		}
 	}
+	var wg sync.WaitGroup
 	for i := 0; i < flag.NArg(); i++ {
-		branchName := GetBranchInfo(flag.Arg(i)).BranchName
-		if whenChecksPass {
-			for {
-				summary := getChecksStatus(branchName)
-				if summary.Failing > 0 {
-					if !silent {
-						Execute("say", "Checks failed")
-					}
-					log.Print("Checks failed for ", flag.Arg(i), ". "+
-						"Total: ", summary.Total,
-						" | Passed: ", summary.Passing,
-						" | Pending: ", summary.Pending,
-						" | Failed: ", summary.Failing,
-						"\n")
-					os.Exit(1)
-				}
-
-				if summary.Total < minChecks {
-					log.Println("Waiting for at least", minChecks, "checks to be added to PR. Currently only ", summary.Total)
-				} else if summary.Passing == summary.Total {
-					log.Println("All", summary.Total, "checks passed")
-					break
-				} else if summary.Passing == 0 {
-					log.Print("Checks pending for ", flag.Arg(i), ". Completed: 0%\n")
-				} else {
-					log.Print("Checks pending for ", flag.Arg(i), ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%\n")
-				}
-				time.Sleep(pollFrequency)
-			}
-		}
-		log.Println("Marking PR as ready for review")
-		Execute("gh", "pr", "ready", branchName)
-		log.Println("Waiting 10 seconds for any automatically assigned reviewers to be added...")
-		time.Sleep(10 * time.Second)
-		prUrl := Execute("gh", "pr", "edit", branchName, "--add-reviewer", reviewers)
-		log.Println("Added reviewers", reviewers, "to", prUrl)
+		wg.Add(1)
+		go checkBranch(&wg, flag.Arg(i), whenChecksPass, silent, minChecks, reviewers, pollFrequency)
 	}
+	wg.Wait()
+}
+
+func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+	branchName := GetBranchInfo(commitOrPullRequest).BranchName
+	if whenChecksPass {
+		for {
+			summary := getChecksStatus(branchName)
+			if summary.Failing > 0 {
+				if !silent {
+					Execute("say", "Checks failed")
+				}
+				log.Print("Checks failed for ", commitOrPullRequest, ". "+
+					"Total: ", summary.Total,
+					" | Passed: ", summary.Passing,
+					" | Pending: ", summary.Pending,
+					" | Failed: ", summary.Failing,
+					"\n")
+				os.Exit(1)
+			}
+
+			if summary.Total < minChecks {
+				log.Println("Waiting for at least", minChecks, "checks to be added to PR. Currently only ", summary.Total)
+			} else if summary.Passing == summary.Total {
+				log.Println("All", summary.Total, "checks passed")
+				break
+			} else if summary.Passing == 0 {
+				log.Print("Checks pending for ", commitOrPullRequest, ". Completed: 0%\n")
+			} else {
+				log.Print("Checks pending for ", commitOrPullRequest, ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%\n")
+			}
+			time.Sleep(pollFrequency)
+		}
+	}
+	log.Println("Marking PR as ready for review")
+	Execute("gh", "pr", "ready", branchName)
+	log.Println("Waiting 10 seconds for any automatically assigned reviewers to be added...")
+	time.Sleep(10 * time.Second)
+	prUrl := Execute("gh", "pr", "edit", branchName, "--add-reviewer", reviewers)
+	log.Println("Added reviewers", reviewers, "to", prUrl)
+	wg.Done()
 }
 
 /*
