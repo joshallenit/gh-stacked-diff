@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// Next `gh pr view 83824 --json latestReviews` and ensure developer is already not approved so that the review is not dismissed
 type PullRequestChecksStatus struct {
 	Pending int
 	Failing int
