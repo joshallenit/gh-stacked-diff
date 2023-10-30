@@ -38,6 +38,7 @@ set -x # show executing lines
     assembleReleaseAndroidTest \
     spotlessCheck \
     :app:dependencyGuard \
+    lintRelease \
     "$@"
 
 retVal=$?

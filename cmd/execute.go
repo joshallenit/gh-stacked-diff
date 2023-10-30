@@ -19,10 +19,11 @@ type ExecuteOptions struct {
 	Stdin        *string
 	// For example "MY_VAR=some_value"
 	EnvironmentVariables []string
+	AbortOnFailure       bool
 }
 
 func Execute(programName string, args ...string) string {
-	return ExecuteWithOptions(ExecuteOptions{TrimSpace: true, IncludeStack: true}, programName, args...)
+	return ExecuteWithOptions(ExecuteOptions{TrimSpace: true, IncludeStack: true, AbortOnFailure: true}, programName, args...)
 }
 
 func ExecuteWithOptions(options ExecuteOptions, programName string, args ...string) string {
@@ -35,7 +36,7 @@ func ExecuteWithOptions(options ExecuteOptions, programName string, args ...stri
 		cmd.Stdin = strings.NewReader(*options.Stdin)
 	}
 	out, err := cmd.CombinedOutput()
-	if err != nil {
+	if options.AbortOnFailure && err != nil {
 		if options.IncludeStack {
 			debug.PrintStack()
 		}

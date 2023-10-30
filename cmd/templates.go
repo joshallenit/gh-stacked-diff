@@ -133,7 +133,7 @@ func getTemplateData(commitHash string, featureFlag string) templateData {
 		CommitSummaryWithoutTicket: summaryMatches[2],
 		CommitSummaryCleaned:       commitSummaryCleaned,
 		FeatureFlag:                featureFlag,
-		CodeOwners:                 ChangedFilesOwners(),
+		CodeOwners:                 ChangedFilesOwnersString(true),
 	}
 }
 

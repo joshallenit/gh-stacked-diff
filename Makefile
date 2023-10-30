@@ -13,6 +13,7 @@ build:
 	go build -o bin/update-pr cmd/update-pr.go cmd/execute.go cmd/templates.go cmd/get-code-owners.go 
 	go build -o bin/wait-for-merge cmd/wait-for-merge.go cmd/execute.go cmd/templates.go cmd/get-code-owners.go 
 	go build -o bin/get-code-owners cmd/get-code-owners-main.go cmd/get-code-owners.go cmd/execute.go
+	go build -o bin/split-by-code-owners cmd/split-by-code-owners.go cmd/execute.go cmd/templates.go cmd/get-code-owners.go 
 
 release: build
 ifndef RELEASE_VERSION

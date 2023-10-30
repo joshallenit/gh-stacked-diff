@@ -22,10 +22,6 @@
   
 </details>
 
-CODEOWNERS:
-
-{{.CodeOwners}}
-
 -->
 
 #### Ticket: [{{.TicketNumber}}](https://jira.tinyspeck.com/browse/{{.TicketNumber}})
