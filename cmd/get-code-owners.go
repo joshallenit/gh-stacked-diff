@@ -32,7 +32,7 @@ func ChangedFilesOwners(useGithub bool, changedFiles []string) map[string][]stri
 Returns changed files against main.
 */
 func GetChangedFiles(commit string) []string {
-	filenamesRaw := Execute("git", "--no-pager", "log", "origin/"+GetMainBranch()+".."+commit, "--pretty=format:\"\"", "--name-only")
+	filenamesRaw := Execute("git", "--no-pager", "log", commit+"~.."+commit, "--pretty=format:\"\"", "--name-only")
 	return strings.Split(filenamesRaw, "\n")
 }
 

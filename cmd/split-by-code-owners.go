@@ -21,10 +21,14 @@ func main() {
 	slackToGithubTeamMap["Enterprise - Mobile"] = "enterprise"
 	// There is no Android files team at the moment.
 	slackToGithubTeamMap["Files"] = "csc"
-	var createPrs bool
 	var shouldCreateBranches bool
-	flag.BoolVar(&createPrs, "create-prs", true, "Create pull requests for each branch")
+	var shouldPush bool
+	var createPrs bool
+	var processTeam string
 	flag.BoolVar(&shouldCreateBranches, "create-branches", true, "Create branches")
+	flag.BoolVar(&shouldPush, "push-branches", true, "Push branches")
+	flag.BoolVar(&createPrs, "create-prs", true, "Create pull requests for each branch")
+	flag.StringVar(&processTeam, "process-team", "", "team to process if not all")
 	flag.Parse()
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr,
@@ -42,32 +46,39 @@ func main() {
 		log.Println("Splitting up", len(changedFiles), "files")
 		branchInfo := GetBranchInfo(flag.Arg(0))
 
-		branches := createBranches(branchInfo, true, shouldCreateBranches)
-		branches = append(branches, createBranches(branchInfo, false, shouldCreateBranches)...)
+		branches := createBranches(branchInfo, true, shouldCreateBranches, processTeam)
+		branches = append(branches, createBranches(branchInfo, false, shouldCreateBranches, processTeam)...)
 		if len(changedFiles) != 0 {
 			log.Fatal("Impossible, not all files included:", len(changedFiles), changedFiles)
 		}
-		if createPrs {
+
+		if shouldPush {
+			originalBranch := GetCurrentBranchName()
 			for _, branchName := range branches {
-				log.Println("Creating PR for", branchName)
+				log.Println("Pushing branch", branchName)
 				Execute("git", "switch", branchName)
-				commitHash := Execute("git", "rev-parse", "HEAD")
-				prText := GetPullRequestText(commitHash, "")
 				// Sleep to avoid github crapping out with kex_exchange_identification or LFS lock.
 				time.Sleep(10 * time.Second)
 				Execute("git", "-c", "push.default=current", "push", "-f")
-				time.Sleep(10 * time.Second)
-				if url, err := ExecuteFailable("gh", "pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--draft"); err != nil {
-					log.Println("Could not create PR", err)
-				} else {
-					log.Println("Created PR", url)
+				if createPrs {
+					log.Println("Creating PR", branchName)
+					commitHash := Execute("git", "rev-parse", "HEAD")
+					prText := GetPullRequestText(commitHash, "")
+					time.Sleep(10 * time.Second)
+					if url, err := ExecuteFailable("gh", "pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--draft"); err != nil {
+						log.Println("Could not create PR", err)
+					} else {
+						log.Println("Created PR", url)
+					}
 				}
 			}
+			log.Println("Switching back to original branch")
+			Execute("git", "switch", originalBranch)
 		}
 	}
 }
 
-func createBranches(branchInfo BranchInfo, useGithub bool, shouldCreateBranches bool) []string {
+func createBranches(branchInfo BranchInfo, useGithub bool, shouldCreateBranches bool, processBranch string) []string {
 	originalBranch := GetCurrentBranchName()
 	var branches []string
 	for ownerName, filenames := range ChangedFilesOwners(useGithub, changedFiles) {
@@ -77,12 +88,20 @@ func createBranches(branchInfo BranchInfo, useGithub bool, shouldCreateBranches 
 		shortTeamName := gitTeamToShortName(ownerName)
 		branchName := branchInfo.BranchName + "-for-" + shortTeamName
 		branches = append(branches, branchName)
-		if shouldCreateBranches {
+		shouldCreateThisBranch := shouldCreateBranches && (processBranch == "" || processBranch == shortTeamName)
+		if shouldCreateThisBranch {
 			log.Println("Creating branch", branchName, "with", len(filenames), "files")
 			if _, err := ExecuteFailable("git", "checkout", "-b", branchName); err != nil {
-				log.Println("Adding to existing branch")
-				Execute("git", "checkout", branchName)
-				Execute("git", "reset", "--hard", "head")
+				if useGithub {
+					log.Println("Resetting existing branch")
+					Execute("git", "checkout", branchName)
+					Execute("git", "reset", "--hard", "origin/"+GetMainBranch())
+				} else {
+					log.Println("Adding to existing branch")
+					Execute("git", "checkout", branchName)
+					Execute("git", "reset", "--hard", "head")
+				}
+
 			} else {
 				Execute("git", "reset", "--hard", "origin/"+GetMainBranch())
 			}
@@ -94,7 +113,7 @@ func createBranches(branchInfo BranchInfo, useGithub bool, shouldCreateBranches 
 			changedFiles = deleteFromSlice(changedFiles, filename)
 			gitAddArgs = append(gitAddArgs, filename)
 		}
-		if shouldCreateBranches {
+		if shouldCreateThisBranch {
 			Execute("git", gitAddArgs...)
 			summary := Execute("git", "show", "--no-patch", "--format=%s", branchInfo.CommitHash)
 			Execute("git", "commit", "-m", summary+" for "+shortTeamName)
@@ -102,10 +121,8 @@ func createBranches(branchInfo BranchInfo, useGithub bool, shouldCreateBranches 
 			Execute("git", "clean", "--force")
 		}
 	}
-	if shouldCreateBranches {
-		log.Println("Switching back to original branch")
-		Execute("git", "switch", originalBranch)
-	}
+	log.Println("Switching back to original branch")
+	Execute("git", "switch", originalBranch)
 	return branches
 }
 
