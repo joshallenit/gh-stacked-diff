@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -62,12 +61,7 @@ func main() {
 	log.SetFlags(logFlags)
 	branchInfo := GetBranchInfo(flag.Arg(0))
 	var commitToBranchFrom string
-	shouldPopStash := false
-	stashResult := Execute("git", "stash", "save", "-u", "before update-pr "+flag.Arg(0))
-	if strings.HasPrefix(stashResult, "Saved working") {
-		log.Println(stashResult)
-		shouldPopStash = true
-	}
+	shouldPopStash := Stash("update-pr " + flag.Arg(0))
 	if baseBranch == GetMainBranch() {
 		commitToBranchFrom = FirstOriginMainCommit(GetMainBranch())
 		log.Println("Switching to branch", branchInfo.BranchName, "based off commit", commitToBranchFrom)

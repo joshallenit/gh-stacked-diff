@@ -14,6 +14,8 @@ build:
 	go build -o bin/wait-for-merge cmd/wait-for-merge.go cmd/execute.go cmd/templates.go cmd/get-code-owners.go 
 	go build -o bin/get-code-owners cmd/get-code-owners-main.go cmd/get-code-owners.go cmd/execute.go
 	go build -o bin/split-by-code-owners cmd/split-by-code-owners.go cmd/execute.go cmd/templates.go cmd/get-code-owners.go 
+	go build -o bin/sequence-editor-drop-already-merged cmd/sequence-editor-drop-already-merged.go cmd/execute.go cmd/templates.go cmd/get-code-owners.go 
+	go build -o bin/rebase-main cmd/rebase-main.go cmd/execute.go cmd/templates.go cmd/get-code-owners.go 
 
 release: build
 ifndef RELEASE_VERSION

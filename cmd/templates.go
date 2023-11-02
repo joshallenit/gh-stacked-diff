@@ -126,7 +126,7 @@ func getTemplateData(commitHash string, featureFlag string) templateData {
 	expression := regexp.MustCompile("^(\\S+[[:digit:]]+ )?(.*)")
 	summaryMatches := expression.FindStringSubmatch(commitSummary)
 	return templateData{
-		Username:                   getUsername(),
+		Username:                   GetUsername(),
 		TicketNumber:               strings.TrimSpace(summaryMatches[1]),
 		CommitBody:                 commitBody,
 		CommitSummary:              commitSummary,
@@ -139,12 +139,12 @@ func getTemplateData(commitHash string, featureFlag string) templateData {
 
 func getBranchTemplateData(commitHash string) branchTemplateData {
 	return branchTemplateData{
-		Username:             getUsername(),
+		Username:             GetUsername(),
 		CommitSummaryCleaned: Execute("git", "show", "--no-patch", "--format=%f", commitHash),
 	}
 }
 
-func getUsername() string {
+func GetUsername() string {
 	email := Execute("git", "config", "user.email")
 	return email[0:strings.Index(email, "@")]
 }
@@ -179,6 +179,15 @@ func RequireMainBranch() {
 
 func GetCurrentBranchName() string {
 	return Execute("git", "rev-parse", "--abbrev-ref", "HEAD")
+}
+
+func Stash(forName string) bool {
+	stashResult := Execute("git", "stash", "save", "-u", "before "+forName)
+	if strings.HasPrefix(stashResult, "Saved working") {
+		log.Println(stashResult)
+		return true
+	}
+	return false
 }
 
 func PopStash(popStash bool) {
