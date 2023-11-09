@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"strings"
 )
@@ -11,11 +12,15 @@ them to avoid having to deal with merge conflicts that have already been fixed
 in main.
 */
 func main() {
+	var logFlags int
+	flag.IntVar(&logFlags, "logFlags", 0, "Log flags, see https://pkg.go.dev/log#pkg-constants")
+	flag.Parse()
+	log.SetFlags(logFlags)
+
 	RequireMainBranch()
 	Stash("rebase-main")
 
 	Execute("git", "fetch")
-
 	username := GetUsername()
 	originCommits := strings.Split(Execute("git", "--no-pager", "log", "origin/main", "-n", "30", "--format=%s", "--author="+username), "\n")
 	localCommits := strings.Split(Execute("git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--format=%h %s"), "\n")
@@ -46,10 +51,9 @@ func main() {
 
 func contains(s []string, str string) bool {
 	for _, v := range s {
-		if v == str {
+		if strings.HasPrefix(v, str+" (#") {
 			return true
 		}
 	}
-
 	return false
 }
