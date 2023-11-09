@@ -40,9 +40,6 @@ func main() {
 			newText.WriteString("\n")
 		}
 	}
-	if i != len(dropCommits) {
-		log.Fatal("Could only find ", i, " of ", len(dropCommits), " fixup commits ", dropCommits, " in ", lines)
-	}
 
 	err = os.WriteFile(rebaseFilename, []byte(newText.String()), 0)
 	if err != nil {
