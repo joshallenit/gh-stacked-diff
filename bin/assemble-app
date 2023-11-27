@@ -23,8 +23,7 @@ if [[ "${1-}" == "--silent" || "${1-}" == "-s" ]]; then
 fi
 
 
-# Note: lintInternalDebug is omitted as it takes over 10 minutes.
-# Also omitted tasks from ci/common/lint.sh such as: assertModuleGraph dependencyGuard
+# Note: lint is omitted as it often hangs the process during configuration.
 
 set -x # show executing lines
 
@@ -38,7 +37,6 @@ set -x # show executing lines
     assembleReleaseAndroidTest \
     spotlessCheck \
     :app:dependencyGuard \
-    lintRelease \
     "$@"
 
 retVal=$?
