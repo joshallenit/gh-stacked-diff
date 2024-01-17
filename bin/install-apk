@@ -25,7 +25,7 @@ fi
 # Use tee to display output as it runs, but also save the output so that 
 # install completes entirely before continuing including printing:
 # "All files should be loaded. Notifying the device."
-output=$(timeout --kill-after=1 10 adb install -r -t ./app/build/outputs/apk/internal/debug/app-internal-arm64-v8a-debug.apk 2>&1 | tee /dev/tty)
+output=$(timeout --kill-after=1 10 adb install -r -t -d ./app/build/outputs/apk/internal/debug/app-internal-arm64-v8a-debug.apk 2>&1 | tee /dev/tty)
 retVal=$?
 
 if [ $retVal -eq 0 ]; then
@@ -38,7 +38,7 @@ else
     sleep 1.1 # wait for previous command to be killed.
     adb kill-server
     sleep 1 # Wait a bit after kill-server for better chances retry will succeed.
-    output=$(timeout --kill-after=1 20 adb install -r -t ./app/build/outputs/apk/internal/debug/app-internal-arm64-v8a-debug.apk 2>&1 | tee /dev/tty)
+    output=$(timeout --kill-after=1 20 adb install -r -t -d ./app/build/outputs/apk/internal/debug/app-internal-arm64-v8a-debug.apk 2>&1 | tee /dev/tty)
     retVal=$?
 
     if [ $retVal -eq 0 ]; then
