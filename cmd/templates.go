@@ -123,7 +123,7 @@ func getTemplateData(commitHash string, featureFlag string) templateData {
 	commitSummary := Execute("git", "--no-pager", "show", "--no-patch", "--format=%s", commitHash)
 	commitBody := Execute("git", "--no-pager", "show", "--no-patch", "--format=%b", commitHash)
 	commitSummaryCleaned := Execute("git", "show", "--no-patch", "--format=%f", commitHash)
-	expression := regexp.MustCompile("^(\\S+[[:digit:]]+ )?(.*)")
+	expression := regexp.MustCompile("^(\\S+-[[:digit:]]+ )?(.*)")
 	summaryMatches := expression.FindStringSubmatch(commitSummary)
 	return templateData{
 		Username:                   GetUsername(),
