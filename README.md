@@ -140,7 +140,7 @@ Calls `./gradlew assembleInternalDebug` and install on real device. Use "-s" (si
 
 `install-apk`
 
-Installs the already compiled APK on a real devices. Useful for after you have run `install-app` but forgot to plugin in your phone 😄.
+Installs the already compiled APK on a real devices. Useful for after you have run `install-app` but forgot to plugin in your phone 😄. It's faster than running `install-app` again as it doesn't run gradle.
 
 ### To Help with Github
 
