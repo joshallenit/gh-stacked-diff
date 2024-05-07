@@ -198,6 +198,12 @@ Once a PR has been merged, just rebase main normally. The local PR commit will b
 git fetch && git rebase origin/main
 ```
 
+If you run into conflicts with a commit that has already been merged you can just ignore it. This can happen, for example, if a change was made on github.com and is not reflected in your local commit. Obviously, only do this if the commit has actually already been committed to main! The error message from rebase will let you know which commit has conflicts.
+
+```bash
+git reset --hard head && git rebase --continue
+```
+
 #### To Fix Merge Conflicts
 
 ##### Easy Flow
