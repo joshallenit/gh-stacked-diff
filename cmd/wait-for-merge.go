@@ -28,7 +28,7 @@ func main() {
 	branchName := GetBranchInfo(flag.Arg(0)).BranchName
 	for getMergedAt(branchName) == "" {
 		log.Println("Not merged yet...")
-		time.Sleep(5 * time.Minute)
+		time.Sleep(30 * time.Second)
 	}
 	log.Println("Merged!")
 	if !silent {

@@ -26,7 +26,7 @@ func main() {
 		"You can specify more than one reviewer using a comma-delimited string.")
 	var whenChecksPass bool
 	var pollFrequency time.Duration
-	var defaultPollFrequency time.Duration = 5 * time.Minute
+	var defaultPollFrequency time.Duration = 30 * time.Second
 	var silent bool
 	var minChecks int
 	flag.BoolVar(&whenChecksPass, "when-checks-pass", true, "Poll until all checks pass before adding reviewers")
