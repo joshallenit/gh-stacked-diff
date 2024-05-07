@@ -136,6 +136,12 @@ Calls `./gradlew assembleInternalDebug` and build tests. Use "-s" (silent) flag 
 
 Calls `./gradlew assembleInternalDebug` and install on real device. Use "-s" (silent) flag to not use voice (`say`) to announce success/failure. Any options after, or in-lieu of, "-s" will be passed to the `./gradle` command, for example `--rerun-tasks`.
 
+#### Script: install-apk
+
+`install-apk`
+
+Installs the already compiled APK on a real devices. Useful for after you have run `install-app` but forgot to plugin in your phone 😄.
+
 ### To Help with Github
 
 #### Script: add-reviewers
