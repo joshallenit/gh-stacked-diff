@@ -60,7 +60,7 @@ func main() {
 	}
 	cherryPickOutput, cherryPickError := ExecuteFailable("git", cherryPickArgs...)
 	if cherryPickError != nil {
-		log.Println("First attempt at cherry-xpick failed")
+		log.Println("First attempt at cherry-pick failed")
 		Execute("git", "cherry-pick", "--abort")
 		rebaseBranch := FirstOriginMainCommit(GetMainBranch())
 		log.Println("Rebasing with the base commit on "+GetMainBranch()+" branch, ", rebaseBranch,
