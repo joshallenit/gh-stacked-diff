@@ -12,6 +12,8 @@ Using a stacked diff workflow like this allows you to work on separate streams o
 
 ## Installation
 
+Everything is terminal based, so do yourself a favor and install [iTerm](https://iterm2.com/) and [zsh](https://ohmyz.sh/) to make your life better.
+
 Clone the repository or download the [latest release](https://github.com/tinyspeck/stacked-diff-workflow/releases), and then:
 
 ```bash
