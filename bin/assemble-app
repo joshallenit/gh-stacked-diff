@@ -25,7 +25,23 @@ fi
 
 # Note: lint is omitted as it often hangs the process during configuration.
 
+# Run compileCiUnitTest first as the full assemble command has not been able to run
+# recently without crashing gradle unless it has a huge amount of memory allocated.
+
 set -x # show executing lines
+
+./gradlew compileCiUnitTest \
+    "$@"
+
+retVal=$?
+
+if [ $retVal -ne 0 ]; then
+    if [[ "$silent" == "false" ]]; then
+        say could not compile unit tests &
+        say_pid=$!
+    fi
+    exit $retVal
+fi
 
 ./gradlew assembleInternalDebug \
     compileReleaseUnitTestSources \
