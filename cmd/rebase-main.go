@@ -26,8 +26,8 @@ func main() {
 	}
 	Execute(fetchOptions, "git", "fetch")
 	username := GetUsername()
-	originCommits := strings.Split(Execute(DefaultExecuteOptions(), "git", "--no-pager", "log", "origin/main", "-n", "30", "--format=%s", "--author="+username), "\n")
-	localCommits := strings.Split(Execute(DefaultExecuteOptions(), "git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--format=%h %s"), "\n")
+	originCommits := strings.Split(Execute(AbortOnFailureOptions(), "git", "--no-pager", "log", "origin/main", "-n", "30", "--format=%s", "--author="+username), "\n")
+	localCommits := strings.Split(Execute(AbortOnFailureOptions(), "git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--format=%h %s"), "\n")
 	// Look for matching summaries between localCommits and originCommits
 	var dropCommits []string
 	for _, localLine := range localCommits {

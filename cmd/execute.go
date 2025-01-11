@@ -29,7 +29,7 @@ type ExecuteOptions struct {
 	PipeToStdout bool
 }
 
-func DefaultExecuteOptions() ExecuteOptions {
+func AbortOnFailureOptions() ExecuteOptions {
 	return ExecuteOptions{TrimSpace: true, AbortOnFailure: true}
 }
 
@@ -73,8 +73,8 @@ func Execute(options ExecuteOptions, programName string, args ...string) string 
 
 func GetMainBranch() string {
 	if mainBranchName == "" {
-		if _, mainErr := ExecuteFailable("git", "rev-parse", "--verify", "main"); mainErr != nil {
-			if _, masterErr := ExecuteFailable("git", "rev-parse", "--verify", "master"); masterErr != nil {
+		if _, mainErr := ExecuteFailable(ExecuteOptions{}, "git", "rev-parse", "--verify", "main"); mainErr != nil {
+			if _, masterErr := ExecuteFailable(ExecuteOptions{}, "git", "rev-parse", "--verify", "master"); masterErr != nil {
 				log.Fatal(Red + "Could not find main or master branch" + Reset)
 			}
 			mainBranchName = "master"
