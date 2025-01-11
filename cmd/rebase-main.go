@@ -20,10 +20,14 @@ func main() {
 	RequireMainBranch()
 	Stash("rebase-main")
 
-	Execute("git", "fetch")
+	fetchOptions := ExecuteOptions{
+		PipeToStdout:   true,
+		AbortOnFailure: true,
+	}
+	Execute(fetchOptions, "git", "fetch")
 	username := GetUsername()
-	originCommits := strings.Split(Execute("git", "--no-pager", "log", "origin/main", "-n", "30", "--format=%s", "--author="+username), "\n")
-	localCommits := strings.Split(Execute("git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--format=%h %s"), "\n")
+	originCommits := strings.Split(Execute(DefaultExecuteOptions(), "git", "--no-pager", "log", "origin/main", "-n", "30", "--format=%s", "--author="+username), "\n")
+	localCommits := strings.Split(Execute(DefaultExecuteOptions(), "git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--format=%h %s"), "\n")
 	// Look for matching summaries between localCommits and originCommits
 	var dropCommits []string
 	for _, localLine := range localCommits {
@@ -39,13 +43,16 @@ func main() {
 		environmentVariables := []string{"GIT_SEQUENCE_EDITOR=sequence-editor-drop-already-merged " + strings.Join(dropCommits, " ")}
 		options := ExecuteOptions{
 			EnvironmentVariables: environmentVariables,
+			PipeToStdout:         true,
 			AbortOnFailure:       false,
 		}
-		out := ExecuteWithOptions(options, "git", "rebase", "-i", "origin/main")
-		log.Println(out)
+		Execute(options, "git", "rebase", "-i", "origin/main")
 	} else {
-		out, _ := ExecuteFailable("git", "rebase", "origin/main")
-		log.Println(out)
+		options := ExecuteOptions{
+			PipeToStdout:   true,
+			AbortOnFailure: false,
+		}
+		Execute(options, "git", "rebase", "origin/main")
 	}
 }
 

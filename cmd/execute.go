@@ -13,20 +13,27 @@ var Reset = "\033[0m"
 var White = "\033[97m"
 var mainBranchName string
 
+/*
+Options for [ExecuteWithOptions].
+*/
 type ExecuteOptions struct {
-	TrimSpace    bool
-	IncludeStack bool
-	Stdin        *string
+	// Whether to trim to whitespace from the output. Simplifies parsing output.
+	TrimSpace bool
+	// String to use for stdin. Useful for "git apply".
+	Stdin *string
 	// For example "MY_VAR=some_value"
 	EnvironmentVariables []string
-	AbortOnFailure       bool
+	// Whether to call [log.Fatal] on failure.
+	AbortOnFailure bool
+	// Whether to pipe output to stdout and stderr instead of returning it.
+	PipeToStdout bool
 }
 
-func Execute(programName string, args ...string) string {
-	return ExecuteWithOptions(ExecuteOptions{TrimSpace: true, IncludeStack: true, AbortOnFailure: true}, programName, args...)
+func DefaultExecuteOptions() ExecuteOptions {
+	return ExecuteOptions{TrimSpace: true, AbortOnFailure: true}
 }
 
-func ExecuteWithOptions(options ExecuteOptions, programName string, args ...string) string {
+func ExecuteFailable(options ExecuteOptions, programName string, args ...string) (string, error) {
 	cmd := exec.Command(programName, args...)
 	if options.EnvironmentVariables != nil {
 		cmd.Env = os.Environ()
@@ -35,24 +42,33 @@ func ExecuteWithOptions(options ExecuteOptions, programName string, args ...stri
 	if options.Stdin != nil {
 		cmd.Stdin = strings.NewReader(*options.Stdin)
 	}
-	out, err := cmd.CombinedOutput()
+	var out []byte
+	var err error
+	if options.PipeToStdout {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+
+	} else {
+		out, err = cmd.CombinedOutput()
+	}
 	if options.AbortOnFailure && err != nil {
-		if options.IncludeStack {
-			debug.PrintStack()
-		}
+		debug.PrintStack()
 		log.Fatal(Red+"Failed executing `", programName, " ", strings.Join(args, " "), "`: "+Reset, string(out), err)
 	}
 	if options.TrimSpace {
-		return strings.TrimSpace(string(out))
+		return strings.TrimSpace(string(out)), err
 	} else {
-		return string(out)
+		return string(out), err
 	}
 }
 
-func ExecuteFailable(programName string, args ...string) (string, error) {
-	cmd := exec.Command(programName, args...)
-	out, err := cmd.CombinedOutput()
-	return strings.TrimSpace(string(out)), err
+/*
+Simplified [ExecuteFailable] that discards err.
+*/
+func Execute(options ExecuteOptions, programName string, args ...string) string {
+	out, _ := ExecuteFailable(options, programName, args...)
+	return out
 }
 
 func GetMainBranch() string {
