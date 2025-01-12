@@ -20,14 +20,12 @@ func main() {
 	RequireMainBranch()
 	Stash("rebase-main")
 
-	fetchOptions := ExecuteOptions{
-		PipeToStdout:   true,
-		AbortOnFailure: true,
-	}
-	Execute(fetchOptions, "git", "fetch")
+	ExecuteOrDie(ExecuteOptions{
+		PipeToStdout: true,
+	}, "git", "fetch")
 	username := GetUsername()
-	originCommits := strings.Split(Execute(AbortOnFailureOptions(), "git", "--no-pager", "log", "origin/main", "-n", "30", "--format=%s", "--author="+username), "\n")
-	localCommits := strings.Split(Execute(AbortOnFailureOptions(), "git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--format=%h %s"), "\n")
+	originCommits := strings.Split(strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "log", "origin/main", "-n", "30", "--format=%s", "--author="+username)), "\n")
+	localCommits := strings.Split(strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--format=%h %s")), "\n")
 	// Look for matching summaries between localCommits and originCommits
 	var dropCommits []string
 	for _, localLine := range localCommits {
@@ -44,15 +42,13 @@ func main() {
 		options := ExecuteOptions{
 			EnvironmentVariables: environmentVariables,
 			PipeToStdout:         true,
-			AbortOnFailure:       false,
 		}
-		Execute(options, "git", "rebase", "-i", "origin/main")
+		ExecuteOrDie(options, "git", "rebase", "-i", "origin/main")
 	} else {
 		options := ExecuteOptions{
-			PipeToStdout:   true,
-			AbortOnFailure: false,
+			PipeToStdout: true,
 		}
-		Execute(options, "git", "rebase", "origin/main")
+		ExecuteOrDie(options, "git", "rebase", "origin/main")
 	}
 }
 

@@ -69,26 +69,26 @@ func main() {
 		commitToBranchFrom = baseBranch
 		log.Println("Switching to branch", branchInfo.BranchName, "based off branch", baseBranch)
 	}
-	Execute("git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
-	Execute("git", "switch", branchInfo.BranchName)
+	ExecuteOrDie(ExecuteOptions{}, "git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
+	ExecuteOrDie(ExecuteOptions{}, "git", "switch", branchInfo.BranchName)
 	log.Println("Cherry picking", branchInfo.CommitHash)
-	cherryPickOutput, cherryPickError := ExecuteFailable("git", "cherry-pick", branchInfo.CommitHash)
+	cherryPickOutput, cherryPickError := Execute(ExecuteOptions{}, "git", "cherry-pick", branchInfo.CommitHash)
 	if cherryPickError != nil {
 		log.Println(Red+"Could not cherry-pick, aborting..."+Reset, cherryPickOutput, cherryPickError)
-		Execute("git", "cherry-pick", "--abort")
-		Execute("git", "switch", GetMainBranch())
+		ExecuteOrDie(ExecuteOptions{}, "git", "cherry-pick", "--abort")
+		ExecuteOrDie(ExecuteOptions{}, "git", "switch", GetMainBranch())
 		log.Println("Deleting created branch", branchInfo.BranchName)
-		Execute("git", "branch", "-D", branchInfo.BranchName)
+		ExecuteOrDie(ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 		PopStash(shouldPopStash)
 		os.Exit(1)
 	}
 	log.Println("Pushing to remote")
-	pushOutput, pushErr := ExecuteFailable("git", "-c", "push.default=current", "push", "-f")
+	pushOutput, pushErr := Execute(ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f")
 	if pushErr != nil {
 		log.Println(Red+"Could not push: "+Reset, pushOutput)
-		Execute("git", "switch", GetMainBranch())
+		ExecuteOrDie(ExecuteOptions{}, "git", "switch", GetMainBranch())
 		log.Println("Deleting created branch", branchInfo.BranchName)
-		Execute("git", "branch", "-D", branchInfo.BranchName)
+		ExecuteOrDie(ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 		PopStash(shouldPopStash)
 		os.Exit(1)
 	}
@@ -98,27 +98,27 @@ func main() {
 	if draft {
 		createPrArgs = append(createPrArgs, "--draft")
 	}
-	createPrOutput, createPrErr := ExecuteFailable("gh", createPrArgs...)
+	createPrOutput, createPrErr := Execute(ExecuteOptions{}, "gh", createPrArgs...)
 	if createPrErr != nil {
 		log.Println(Red+"Could not create PR:"+Reset, createPrOutput, createPrErr)
-		Execute("git", "switch", GetMainBranch())
+		ExecuteOrDie(ExecuteOptions{}, "git", "switch", GetMainBranch())
 		log.Println("Deleting created branch", branchInfo.BranchName)
-		Execute("git", "branch", "-D", branchInfo.BranchName)
+		ExecuteOrDie(ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 		PopStash(shouldPopStash)
 		os.Exit(1)
 	} else {
 		log.Println("Created PR", createPrOutput)
 	}
-	if prViewOutput, prViewErr := ExecuteFailable("gh", "pr", "view", "--web"); prViewErr != nil {
+	if prViewOutput, prViewErr := Execute(ExecuteOptions{}, "gh", "pr", "view", "--web"); prViewErr != nil {
 		log.Println(Red+"Could not open browser to PR:"+Reset, prViewOutput, prViewErr)
 	}
 	log.Println("Switching back to " + GetMainBranch())
-	Execute("git", "switch", GetMainBranch())
+	ExecuteOrDie(ExecuteOptions{}, "git", "switch", GetMainBranch())
 	PopStash(shouldPopStash)
 	/*
 	   This avoids this hint when using `git fetch && git-rebase origin/main` which is not appropriate for stacked diff workflow:
 	   > hint: use --reapply-cherry-picks to include skipped commits
 	   > hint: Disable this message with "git config advice.skippedCherryPicks false"
 	*/
-	Execute("git", "config", "advice.skippedCherryPicks", "false")
+	ExecuteOrDie(ExecuteOptions{}, "git", "config", "advice.skippedCherryPicks", "false")
 }

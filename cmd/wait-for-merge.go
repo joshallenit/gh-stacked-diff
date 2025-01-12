@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -32,10 +33,10 @@ func main() {
 	}
 	log.Println("Merged!")
 	if !silent {
-		Execute("say", "P R has been merged")
+		ExecuteOrDie(ExecuteOptions{}, "say", "P R has been merged")
 	}
 }
 
 func getMergedAt(branchName string) string {
-	return Execute("gh", "pr", "view", branchName, "--json", "mergedAt", "--jq", ".mergedAt")
+	return strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "mergedAt", "--jq", ".mergedAt"))
 }

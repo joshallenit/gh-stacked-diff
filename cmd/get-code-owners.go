@@ -32,8 +32,8 @@ func ChangedFilesOwners(useGithub bool, changedFiles []string) map[string][]stri
 Returns changed files against main.
 */
 func GetChangedFiles(commit string) []string {
-	filenamesRaw := Execute(AbortOnFailureOptions(), "git", "--no-pager", "log", commit+"~.."+commit, "--pretty=format:\"\"", "--name-only")
-	return strings.Split(filenamesRaw, "\n")
+	filenamesRaw := ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "log", commit+"~.."+commit, "--pretty=format:\"\"", "--name-only")
+	return strings.Split(strings.TrimSpace(filenamesRaw), "\n")
 }
 
 func getCodeOwners(useGithub bool, filenames []string) map[string][]string {

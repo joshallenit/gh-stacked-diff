@@ -10,9 +10,10 @@ Outputs abbreviated git log that only shows what has changed, useful for copying
 Adds a checkmark beside commits that have an associated branch.
 */
 func main() {
-	logsColorRaw := Execute("git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit", "--color=always")
-	logsColor := strings.Split(logsColorRaw, "\n")
-	logsNoColor := strings.Split(Execute("git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit"), "\n")
+	logsColorRaw := ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit", "--color=always")
+	logsColor := strings.Split(strings.TrimSpace(logsColorRaw), "\n")
+	logsNoColorRaw := ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit")
+	logsNoColor := strings.Split(strings.TrimSpace(logsNoColorRaw), "\n")
 	if len(logsNoColor) == 0 {
 		return
 	}
@@ -25,7 +26,7 @@ func main() {
 			commit := logsNoColor[i][0:index]
 
 			branchName := GetBranchForCommit(commit)
-			checkedBranch := Execute("git", "branch", "-l", branchName)
+			checkedBranch := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "branch", "-l", branchName))
 			if checkedBranch == "" {
 				fmt.Print("   ")
 			} else {

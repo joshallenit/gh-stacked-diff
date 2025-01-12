@@ -72,7 +72,7 @@ func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, whenChecksPass 
 			summary := getChecksStatus(branchName)
 			if summary.Failing > 0 {
 				if !silent {
-					Execute("say", "Checks failed")
+					ExecuteOrDie(ExecuteOptions{}, "say", "Checks failed")
 				}
 				log.Print("Checks failed for ", commitOrPullRequest, ". "+
 					"Total: ", summary.Total,
@@ -97,10 +97,10 @@ func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, whenChecksPass 
 		}
 	}
 	log.Println("Marking PR as ready for review")
-	Execute("gh", "pr", "ready", branchName)
+	ExecuteOrDie(ExecuteOptions{}, "gh", "pr", "ready", branchName)
 	log.Println("Waiting 10 seconds for any automatically assigned reviewers to be added...")
 	time.Sleep(10 * time.Second)
-	prUrl := Execute("gh", "pr", "edit", branchName, "--add-reviewer", reviewers)
+	prUrl := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "gh", "pr", "edit", branchName, "--add-reviewer", reviewers))
 	log.Println("Added reviewers", reviewers, "to", prUrl)
 	wg.Done()
 }
@@ -110,8 +110,8 @@ func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, whenChecksPass 
  */
 func getChecksStatus(branchName string) PullRequestChecksStatus {
 	var summary PullRequestChecksStatus
-	stateString := ExecuteWithOptions(ExecuteOptions{TrimSpace: false}, "gh", "pr", "view", branchName, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
-	scanner := bufio.NewScanner(strings.NewReader(stateString))
+	stateString := ExecuteOrDie(ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
+	scanner := bufio.NewScanner(strings.NewReader(strings.TrimSpace(stateString)))
 	for scanner.Scan() {
 		status := scanner.Text()
 		scanner.Scan()

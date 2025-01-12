@@ -56,16 +56,16 @@ func main() {
 			originalBranch := GetCurrentBranchName()
 			for _, branchName := range branches {
 				log.Println("Pushing branch", branchName)
-				Execute("git", "switch", branchName)
+				ExecuteOrDie(ExecuteOptions{}, "git", "switch", branchName)
 				// Sleep to avoid github crapping out with kex_exchange_identification or LFS lock.
 				time.Sleep(10 * time.Second)
-				Execute("git", "-c", "push.default=current", "push", "-f")
+				ExecuteOrDie(ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f")
 				if createPrs {
 					log.Println("Creating PR", branchName)
-					commitHash := Execute("git", "rev-parse", "HEAD")
+					commitHash := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "rev-parse", "HEAD"))
 					prText := GetPullRequestText(commitHash, "")
 					time.Sleep(10 * time.Second)
-					if url, err := ExecuteFailable("gh", "pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--draft"); err != nil {
+					if url, err := Execute(ExecuteOptions{}, "gh", "pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--draft"); err != nil {
 						log.Println("Could not create PR", err)
 					} else {
 						log.Println("Created PR", url)
@@ -73,7 +73,7 @@ func main() {
 				}
 			}
 			log.Println("Switching back to original branch")
-			Execute("git", "switch", originalBranch)
+			ExecuteOrDie(ExecuteOptions{}, "git", "switch", originalBranch)
 		}
 	}
 }
@@ -91,22 +91,22 @@ func createBranches(branchInfo BranchInfo, useGithub bool, shouldCreateBranches 
 		shouldCreateThisBranch := shouldCreateBranches && (processBranch == "" || processBranch == shortTeamName)
 		if shouldCreateThisBranch {
 			log.Println("Creating branch", branchName, "with", len(filenames), "files")
-			if _, err := ExecuteFailable("git", "checkout", "-b", branchName); err != nil {
+			if _, err := Execute(ExecuteOptions{}, "git", "checkout", "-b", branchName); err != nil {
 				if useGithub {
 					log.Println("Resetting existing branch")
-					Execute("git", "checkout", branchName)
-					Execute("git", "reset", "--hard", "origin/"+GetMainBranch())
+					ExecuteOrDie(ExecuteOptions{}, "git", "checkout", branchName)
+					ExecuteOrDie(ExecuteOptions{}, "git", "reset", "--hard", "origin/"+GetMainBranch())
 				} else {
 					log.Println("Adding to existing branch")
-					Execute("git", "checkout", branchName)
-					Execute("git", "reset", "--hard", "head")
+					ExecuteOrDie(ExecuteOptions{}, "git", "checkout", branchName)
+					ExecuteOrDie(ExecuteOptions{}, "git", "reset", "--hard", "head")
 				}
 
 			} else {
-				Execute("git", "reset", "--hard", "origin/"+GetMainBranch())
+				ExecuteOrDie(ExecuteOptions{}, "git", "reset", "--hard", "origin/"+GetMainBranch())
 			}
-			diff := ExecuteWithOptions(ExecuteOptions{TrimSpace: false}, "git", "diff", "--binary", branchInfo.CommitHash+"~", branchInfo.CommitHash)
-			ExecuteWithOptions(ExecuteOptions{Stdin: &diff, AbortOnFailure: false}, "git", "apply", "--reject")
+			diff := ExecuteOrDie(ExecuteOptions{}, "git", "diff", "--binary", branchInfo.CommitHash+"~", branchInfo.CommitHash)
+			ExecuteOrDie(ExecuteOptions{Stdin: &diff}, "git", "apply", "--reject")
 		}
 		gitAddArgs := []string{"add"}
 		for _, filename := range filenames {
@@ -114,15 +114,15 @@ func createBranches(branchInfo BranchInfo, useGithub bool, shouldCreateBranches 
 			gitAddArgs = append(gitAddArgs, filename)
 		}
 		if shouldCreateThisBranch {
-			Execute("git", gitAddArgs...)
-			summary := Execute("git", "show", "--no-patch", "--format=%s", branchInfo.CommitHash)
-			Execute("git", "commit", "-m", summary+" for "+shortTeamName)
-			Execute("git", "reset", "--hard", "HEAD")
-			Execute("git", "clean", "--force")
+			ExecuteOrDie(ExecuteOptions{}, "git", gitAddArgs...)
+			summary := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", branchInfo.CommitHash))
+			ExecuteOrDie(ExecuteOptions{}, "git", "commit", "-m", summary+" for "+shortTeamName)
+			ExecuteOrDie(ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
+			ExecuteOrDie(ExecuteOptions{}, "git", "clean", "--force")
 		}
 	}
 	log.Println("Switching back to original branch")
-	Execute("git", "switch", originalBranch)
+	ExecuteOrDie(ExecuteOptions{}, "git", "switch", originalBranch)
 	return branches
 }
 

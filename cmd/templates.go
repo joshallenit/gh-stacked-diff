@@ -53,12 +53,12 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 	var info BranchInfo
 	if _, err := strconv.Atoi(commitOrPullRequest); len(commitOrPullRequest) < 9 && err == nil {
 		// Pull request number
-		branchName := Execute(AbortOnFailureOptions(), "gh", "pr", "view", commitOrPullRequest, "--json", "headRefName", "-q", ".headRefName")
+		branchName := ExecuteOrDie(ExecuteOptions{}, "gh", "pr", "view", commitOrPullRequest, "--json", "headRefName", "-q", ".headRefName")
 		// Fetch the branch in case the lastest commit is only on GitHub.
-		ExecuteFailable(ExecuteOptions{}, "git", "fetch", "origin", branchName)
-		prCommit := Execute(AbortOnFailureOptions(), "gh", "pr", "view", commitOrPullRequest, "--json", "commits", "-q", "[.commits[].oid] | first")
-		summary := Execute(AbortOnFailureOptions(), "git", "show", "--no-patch", "--format=%s", prCommit)
-		thisBranchCommit := Execute(AbortOnFailureOptions(), "git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h")
+		ExecuteOrDie(ExecuteOptions{}, "git", "fetch", "origin", branchName)
+		prCommit := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "gh", "pr", "view", commitOrPullRequest, "--json", "commits", "-q", "[.commits[].oid] | first"))
+		summary := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", prCommit))
+		thisBranchCommit := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h"))
 		if thisBranchCommit == "" {
 			log.Fatal("Could not find associated commit for PR (\"", summary, "\") in "+GetMainBranch())
 		}
@@ -120,9 +120,9 @@ func runTemplate(configFilename string, defaultTemplateText string, data any) st
 }
 
 func getTemplateData(commitHash string, featureFlag string) templateData {
-	commitSummary := Execute(AbortOnFailureOptions(), "git", "--no-pager", "show", "--no-patch", "--format=%s", commitHash)
-	commitBody := Execute(AbortOnFailureOptions(), "git", "--no-pager", "show", "--no-patch", "--format=%b", commitHash)
-	commitSummaryCleaned := Execute(AbortOnFailureOptions(), "git", "show", "--no-patch", "--format=%f", commitHash)
+	commitSummary := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", commitHash))
+	commitBody := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%b", commitHash))
+	commitSummaryCleaned := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commitHash))
 	expression := regexp.MustCompile("^(\\S+-[[:digit:]]+ )?(.*)")
 	summaryMatches := expression.FindStringSubmatch(commitSummary)
 	return templateData{
@@ -140,12 +140,12 @@ func getTemplateData(commitHash string, featureFlag string) templateData {
 func getBranchTemplateData(commitHash string) branchTemplateData {
 	return branchTemplateData{
 		Username:             GetUsername(),
-		CommitSummaryCleaned: Execute(AbortOnFailureOptions(), "git", "show", "--no-patch", "--format=%f", commitHash),
+		CommitSummaryCleaned: strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commitHash)),
 	}
 }
 
 func GetUsername() string {
-	email := Execute(AbortOnFailureOptions(), "git", "config", "user.email")
+	email := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "config", "user.email"))
 	return email[0:strings.Index(email, "@")]
 }
 
@@ -164,7 +164,7 @@ func getConfigFile(filenameWithoutPath string) *string {
 
 // Returns first commit of the given branch that is on origin/main.
 func FirstOriginMainCommit(branchName string) string {
-	allNewCommits := strings.Fields(Execute(AbortOnFailureOptions(), "git", "--no-pager", "log", "origin/"+GetMainBranch()+".."+branchName, "--pretty=format:%h", "--abbrev-commit"))
+	allNewCommits := strings.Fields(strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranch()+".."+branchName, "--pretty=format:%h", "--abbrev-commit")))
 	if len(allNewCommits) == 0 {
 		log.Fatal("No commits on ", branchName, "other than what is on "+GetMainBranch()+", nothing to create a commit from")
 	}
@@ -178,11 +178,11 @@ func RequireMainBranch() {
 }
 
 func GetCurrentBranchName() string {
-	return Execute(AbortOnFailureOptions(), "git", "rev-parse", "--abbrev-ref", "HEAD")
+	return strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD"))
 }
 
 func Stash(forName string) bool {
-	stashResult := Execute(AbortOnFailureOptions(), "git", "stash", "save", "-u", "before "+forName)
+	stashResult := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName))
 	if strings.HasPrefix(stashResult, "Saved working") {
 		log.Println(stashResult)
 		return true
@@ -192,7 +192,7 @@ func Stash(forName string) bool {
 
 func PopStash(popStash bool) {
 	if popStash {
-		Execute(AbortOnFailureOptions(), "git", "stash", "pop")
+		ExecuteOrDie(ExecuteOptions{}, "git", "stash", "pop")
 		log.Println("Popped stash back")
 	}
 }

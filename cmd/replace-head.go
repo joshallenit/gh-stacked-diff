@@ -11,19 +11,19 @@ replace the current commit during a rebase with the diff of a branch
 func main() {
 	var commitWithConflicts = getCommitWithConflicts()
 	branchInfo := GetBranchInfo(commitWithConflicts)
-	Execute("git", "reset", "--hard", "HEAD")
+	ExecuteOrDie(ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
 	log.Println("Replacing HEAD for commit", commitWithConflicts, "with changes from branch", branchInfo.BranchName)
-	diff := ExecuteWithOptions(ExecuteOptions{TrimSpace: false}, "git", "diff", "--binary", "origin/"+GetMainBranch(), branchInfo.BranchName)
-	ExecuteWithOptions(ExecuteOptions{Stdin: &diff}, "git", "apply")
+	diff := ExecuteOrDie(ExecuteOptions{}, "git", "diff", "--binary", "origin/"+GetMainBranch(), branchInfo.BranchName)
+	ExecuteOrDie(ExecuteOptions{Stdin: &diff, PipeToStdout: true}, "git", "apply")
 	log.Println("Adding changes and continuing rebase")
-	Execute("git", "add", ".")
-	continueOptions := ExecuteOptions{EnvironmentVariables: make([]string, 1)}
+	ExecuteOrDie(ExecuteOptions{}, "git", "add", ".")
+	continueOptions := ExecuteOptions{EnvironmentVariables: make([]string, 1), PipeToStdout: true}
 	continueOptions.EnvironmentVariables[0] = "GIT_EDITOR=true"
-	ExecuteWithOptions(continueOptions, "git", "rebase", "--continue")
+	ExecuteOrDie(continueOptions, "git", "rebase", "--continue")
 }
 
 func getCommitWithConflicts() string {
-	statusLines := strings.Split(Execute("git", "status"), "\n")
+	statusLines := strings.Split(strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "status")), "\n")
 	lastCommandDoneLine := -1
 	inLast := false
 	for i, line := range statusLines {
