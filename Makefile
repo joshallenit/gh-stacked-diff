@@ -17,6 +17,9 @@ build:
 	go build -o bin/sequence-editor-drop-already-merged cmd/sequence-editor-drop-already-merged.go cmd/execute.go cmd/templates.go cmd/get-code-owners.go 
 	go build -o bin/rebase-main cmd/rebase-main.go cmd/execute.go cmd/templates.go cmd/get-code-owners.go 
 
+test:
+	go test ./...
+
 release: build
 ifndef RELEASE_VERSION
 	$(error RELEASE_VERSION is not set)

@@ -1,4 +1,4 @@
-module github.com/tinyspeck/stacked-diff-workflow
+module stacked-diff-workflow
 
 go 1.23.4
 
