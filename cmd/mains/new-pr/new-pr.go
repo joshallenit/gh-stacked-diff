@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-	sd.RequireMainBranch()
 	var draft bool
 	var featureFlag string
 	var baseBranch string
@@ -61,59 +60,65 @@ func main() {
 	}
 	log.SetFlags(logFlags)
 	branchInfo := sd.GetBranchInfo(flag.Arg(0))
+	CreateNewPr(draft, featureFlag, baseBranch, logFlags, branchInfo, log.Default())
+}
+
+func CreateNewPr(draft bool, featureFlag string, baseBranch string, logFlags int, branchInfo sd.BranchInfo, logger *log.Logger) {
+	sd.RequireMainBranch()
+
 	var commitToBranchFrom string
 	shouldPopStash := sd.Stash("update-pr " + flag.Arg(0))
 	if baseBranch == sd.GetMainBranch() {
 		commitToBranchFrom = sd.FirstOriginMainCommit(sd.GetMainBranch())
-		log.Println("Switching to branch", branchInfo.BranchName, "based off commit", commitToBranchFrom)
+		logger.Println("Switching to branch", branchInfo.BranchName, "based off commit", commitToBranchFrom)
 	} else {
 		commitToBranchFrom = baseBranch
-		log.Println("Switching to branch", branchInfo.BranchName, "based off branch", baseBranch)
+		logger.Println("Switching to branch", branchInfo.BranchName, "based off branch", baseBranch)
 	}
 	sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
 	sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "switch", branchInfo.BranchName)
-	log.Println("Cherry picking", branchInfo.CommitHash)
+	logger.Println("Cherry picking", branchInfo.CommitHash)
 	cherryPickOutput, cherryPickError := sd.Execute(sd.ExecuteOptions{}, "git", "cherry-pick", branchInfo.CommitHash)
 	if cherryPickError != nil {
-		log.Println(sd.Red+"Could not cherry-pick, aborting..."+sd.Reset, cherryPickOutput, cherryPickError)
+		logger.Println(sd.Red+"Could not cherry-pick, aborting..."+sd.Reset, cherryPickOutput, cherryPickError)
 		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "cherry-pick", "--abort")
 		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "switch", sd.GetMainBranch())
-		log.Println("Deleting created branch", branchInfo.BranchName)
+		logger.Println("Deleting created branch", branchInfo.BranchName)
 		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 		sd.PopStash(shouldPopStash)
 		os.Exit(1)
 	}
-	log.Println("Pushing to remote")
+	logger.Println("Pushing to remote")
 	pushOutput, pushErr := sd.Execute(sd.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f")
 	if pushErr != nil {
-		log.Println(sd.Red+"Could not push: "+sd.Reset, pushOutput)
+		logger.Println(sd.Red+"Could not push: "+sd.Reset, pushOutput)
 		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "switch", sd.GetMainBranch())
-		log.Println("Deleting created branch", branchInfo.BranchName)
+		logger.Println("Deleting created branch", branchInfo.BranchName)
 		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 		sd.PopStash(shouldPopStash)
 		os.Exit(1)
 	}
 	prText := sd.GetPullRequestText(branchInfo.CommitHash, featureFlag)
-	log.Println("Creating PR via gh")
+	logger.Println("Creating PR via gh")
 	createPrArgs := []string{"pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--base", baseBranch}
 	if draft {
 		createPrArgs = append(createPrArgs, "--draft")
 	}
 	createPrOutput, createPrErr := sd.Execute(sd.ExecuteOptions{}, "gh", createPrArgs...)
 	if createPrErr != nil {
-		log.Println(sd.Red+"Could not create PR:"+sd.Reset, createPrOutput, createPrErr)
+		logger.Println(sd.Red+"Could not create PR:"+sd.Reset, createPrOutput, createPrErr)
 		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "switch", sd.GetMainBranch())
-		log.Println("Deleting created branch", branchInfo.BranchName)
+		logger.Println("Deleting created branch", branchInfo.BranchName)
 		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 		sd.PopStash(shouldPopStash)
 		os.Exit(1)
 	} else {
-		log.Println("Created PR", createPrOutput)
+		logger.Println("Created PR", createPrOutput)
 	}
 	if prViewOutput, prViewErr := sd.Execute(sd.ExecuteOptions{}, "gh", "pr", "view", "--web"); prViewErr != nil {
-		log.Println(sd.Red+"Could not open browser to PR:"+sd.Reset, prViewOutput, prViewErr)
+		logger.Println(sd.Red+"Could not open browser to PR:"+sd.Reset, prViewOutput, prViewErr)
 	}
-	log.Println("Switching back to " + sd.GetMainBranch())
+	logger.Println("Switching back to " + sd.GetMainBranch())
 	sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "switch", sd.GetMainBranch())
 	sd.PopStash(shouldPopStash)
 	/*

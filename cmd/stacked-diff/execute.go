@@ -27,6 +27,7 @@ type ExecuteOptions struct {
 
 type Executor interface {
 	Execute(options ExecuteOptions, programName string, args ...string) (string, error)
+	Logger() *log.Logger
 }
 
 var globalExecutor Executor = DefaultExecutor{}
@@ -57,6 +58,10 @@ func (defaultExecutor DefaultExecutor) Execute(options ExecuteOptions, programNa
 	return string(out), err
 }
 
+func (defaultExecutor DefaultExecutor) Logger() *log.Logger {
+	return log.Default()
+}
+
 func Execute(options ExecuteOptions, programName string, args ...string) (string, error) {
 	return globalExecutor.Execute(options, programName, args...)
 }
@@ -65,7 +70,7 @@ func ExecuteOrDie(options ExecuteOptions, programName string, args ...string) st
 	out, err := Execute(options, programName, args...)
 	if err != nil {
 		debug.PrintStack()
-		log.Fatal(Red+"Failed executing `", programName, " ", strings.Join(args, " "), "`: "+Reset, out, err)
+		globalExecutor.Logger().Fatal(Red+"Failed executing `", programName, " ", strings.Join(args, " "), "`: "+Reset, out, err)
 	}
 	return out
 }
