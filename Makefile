@@ -1,7 +1,7 @@
 .PHONY: build
 
 build:
-	gofmt -w cmd
+	gofmt -w src
 	go build -o bin ./...  
 
 test: build

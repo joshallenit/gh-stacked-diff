@@ -80,9 +80,9 @@ For example:
 
 The Pull Request Title, Body (aka Description), and Branch Name are created from [golang templates](https://pkg.go.dev/text/template). The defaults are:
 
-- [branch-name.template](cmd/config/branch-name.template)
-- [pr-description.template](cmd/config/pr-description.template)
-- [pr-title.template](cmd/config/pr-title.template)
+- [branch-name.template](src/config/branch-name.template)
+- [pr-description.template](src/config/pr-description.template)
+- [pr-title.template](src/config/pr-title.template)
 
 The [possible values](config/templates) for the templates are:
 
@@ -95,7 +95,7 @@ The [possible values](config/templates) for the templates are:
 - **FeatureFlag** - Name of feature flag given from command line
 - **CodeOwners** - List of matching files and owners from the CODEOWNERS of the repository, if any
 
-To change a template, copy the default from [cmd/config/](cmd/config/) into `~/.stacked-diff-workflow/` and modify.
+To change a template, copy the default from [src/config/](src/config/) into `~/.stacked-diff-workflow/` and modify.
 
 <img width="938" alt="image" src="https://user-images.githubusercontent.com/79605685/210406914-9b43f0e0-ac11-498f-bdd7-5a48e07dcbc0.png">
 
