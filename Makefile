@@ -1,11 +1,11 @@
 .PHONY: build
 
-build:
+test:
+	go test ./...
+
+build: test
 	gofmt -w src
 	go build -o bin ./...  
-
-test: build
-	go test ./...
 
 release: build
 ifndef RELEASE_VERSION

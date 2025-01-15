@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"text/template"
@@ -43,7 +44,6 @@ type templateData struct {
 	CommitSummaryCleaned       string
 	CommitSummaryWithoutTicket string
 	FeatureFlag                string
-	CodeOwners                 string
 }
 
 func GetBranchInfo(commitOrPullRequest string) BranchInfo {
@@ -133,7 +133,6 @@ func getTemplateData(commitHash string, featureFlag string) templateData {
 		CommitSummaryWithoutTicket: summaryMatches[2],
 		CommitSummaryCleaned:       commitSummaryCleaned,
 		FeatureFlag:                featureFlag,
-		CodeOwners:                 ChangedFilesOwnersString(true),
 	}
 }
 
@@ -162,8 +161,13 @@ func getConfigFile(filenameWithoutPath string) *string {
 	}
 }
 
-// Returns first commit of the given branch that is on origin/main.
+// Returns first commit of the given branch that is on origin/main, or "" if the branch is not on remote.
 func FirstOriginMainCommit(branchName string) string {
+	remoteBranches := strings.Fields(strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "branch", "-r")))
+	// Verify that remote has branch, otherwise the git log will fail.
+	if !slices.Contains(remoteBranches, branchName) {
+		return ""
+	}
 	allNewCommits := strings.Fields(strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranch()+".."+branchName, "--pretty=format:%h", "--abbrev-commit")))
 	if len(allNewCommits) == 0 {
 		log.Fatal("No commits on ", branchName, "other than what is on "+GetMainBranch()+", nothing to create a commit from")

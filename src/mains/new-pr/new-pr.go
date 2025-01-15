@@ -75,18 +75,24 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, logFlags int
 		commitToBranchFrom = baseBranch
 		logger.Println("Switching to branch", branchInfo.BranchName, "based off branch", baseBranch)
 	}
-	sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
+	if commitToBranchFrom == "" {
+		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "branch", "--no-track", branchInfo.BranchName)
+	} else {
+		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
+	}
 	sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "switch", branchInfo.BranchName)
-	logger.Println("Cherry picking", branchInfo.CommitHash)
-	cherryPickOutput, cherryPickError := sd.Execute(sd.ExecuteOptions{}, "git", "cherry-pick", branchInfo.CommitHash)
-	if cherryPickError != nil {
-		logger.Println(sd.Red+"Could not cherry-pick, aborting..."+sd.Reset, cherryPickOutput, cherryPickError)
-		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "switch", sd.GetMainBranch())
-		logger.Println("Deleting created branch", branchInfo.BranchName)
-		sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
-		sd.PopStash(shouldPopStash)
-		os.Exit(1)
+	if commitToBranchFrom != "" {
+		logger.Println("Cherry picking", branchInfo.CommitHash)
+		cherryPickOutput, cherryPickError := sd.Execute(sd.ExecuteOptions{}, "git", "cherry-pick", branchInfo.CommitHash)
+		if cherryPickError != nil {
+			logger.Println(sd.Red+"Could not cherry-pick, aborting..."+sd.Reset, cherryPickOutput, cherryPickError)
+			sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "cherry-pick", "--abort")
+			sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "switch", sd.GetMainBranch())
+			logger.Println("Deleting created branch", branchInfo.BranchName)
+			sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
+			sd.PopStash(shouldPopStash)
+			os.Exit(1)
+		}
 	}
 	logger.Println("Pushing to remote")
 	pushOutput, pushErr := sd.Execute(sd.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f")
