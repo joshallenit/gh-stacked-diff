@@ -23,8 +23,6 @@ type ExecuteOptions struct {
 	EnvironmentVariables []string
 	// Whether to pipe output to stdout and stderr instead of returning it.
 	PipeToStdout bool
-	// Working directory of command.
-	Dir string
 }
 
 type Executor interface {
@@ -42,7 +40,6 @@ func SetGlobalExecutor(executor Executor) {
 
 func (defaultExecutor DefaultExecutor) Execute(options ExecuteOptions, programName string, args ...string) (string, error) {
 	cmd := exec.Command(programName, args...)
-	cmd.Dir = options.Dir
 	if options.EnvironmentVariables != nil {
 		cmd.Env = append(os.Environ(), options.EnvironmentVariables...)
 	}
