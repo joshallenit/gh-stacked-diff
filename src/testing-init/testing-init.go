@@ -10,12 +10,23 @@ import (
 var TestWorkingDir string
 
 func init() {
-	_, filename, _, _ := runtime.Caller(0)
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("No caller information")
+	}
 	TestWorkingDir = path.Join(path.Dir(filename), "/../../../.test-stacked-diff-workflow")
 }
 
 func CdTestDir() {
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "rm", "-rf", TestWorkingDir)
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "mkdir", "-p", TestWorkingDir)
-	os.Chdir(TestWorkingDir)
+	pc, _, _, ok := runtime.Caller(1)
+	if !ok {
+		panic("No caller information")
+	}
+	fn := runtime.FuncForPC(pc)
+
+	individualTestDir := TestWorkingDir + "/" + fn.Name()
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "rm", "-rf", individualTestDir)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "mkdir", "-p", individualTestDir)
+	os.Chdir(individualTestDir)
+	println("Changed to test directory: " + individualTestDir)
 }

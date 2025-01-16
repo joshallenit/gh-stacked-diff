@@ -18,9 +18,17 @@ func main() {
 }
 
 func PrintGitLog(fmtOut io.Writer) {
-	logsColorRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit", "--color=always")
+	// Check that remote has main branch
+	var logsColorRaw string
+	var logsNoColorRaw string
+	if sd.RemoteHasBranch(ex.GetMainBranch()) {
+		logsColorRaw = ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit", "--color=always")
+		logsNoColorRaw = ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit")
+	} else {
+		logsColorRaw = ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "--pretty=oneline", "--abbrev-commit", "--color=always")
+		logsNoColorRaw = ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "--pretty=oneline", "--abbrev-commit")
+	}
 	logsColor := strings.Split(strings.TrimSpace(logsColorRaw), "\n")
-	logsNoColorRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit")
 	logsNoColor := strings.Split(strings.TrimSpace(logsNoColorRaw), "\n")
 	if len(logsNoColor) == 0 {
 		return

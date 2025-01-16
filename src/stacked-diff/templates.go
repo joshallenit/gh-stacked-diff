@@ -164,9 +164,8 @@ func getConfigFile(filenameWithoutPath string) *string {
 
 // Returns first commit of the given branch that is on origin/main, or "" if the branch is not on remote.
 func FirstOriginMainCommit(branchName string) string {
-	remoteBranches := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r")))
 	// Verify that remote has branch, otherwise the git log will fail.
-	if !slices.Contains(remoteBranches, branchName) {
+	if !RemoteHasBranch(branchName) {
 		return ""
 	}
 	allNewCommits := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+".."+branchName, "--pretty=format:%h", "--abbrev-commit")))
@@ -174,6 +173,11 @@ func FirstOriginMainCommit(branchName string) string {
 		log.Fatal("No commits on ", branchName, "other than what is on "+ex.GetMainBranch()+", nothing to create a commit from")
 	}
 	return allNewCommits[len(allNewCommits)-1] + "~1"
+}
+
+func RemoteHasBranch(branchName string) bool {
+	remoteBranches := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r")))
+	return slices.Contains(remoteBranches, branchName)
 }
 
 func RequireMainBranch() {

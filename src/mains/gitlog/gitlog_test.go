@@ -9,6 +9,7 @@ import (
 )
 
 func TestNewPr(t *testing.T) {
+
 	testing_init.CdTestDir()
 	// Create a git repository with a local remote
 	remoteDir := "remote-repo"
