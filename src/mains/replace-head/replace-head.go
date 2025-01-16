@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	ex "stacked-diff-workflow/src/execute"
 	sd "stacked-diff-workflow/src/stacked-diff"
 	"strings"
 )
@@ -12,19 +13,19 @@ replace the current commit during a rebase with the diff of a branch
 func main() {
 	var commitWithConflicts = getCommitWithConflicts()
 	branchInfo := sd.GetBranchInfo(commitWithConflicts)
-	sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
 	log.Println("Replacing HEAD for commit", commitWithConflicts, "with changes from branch", branchInfo.BranchName)
-	diff := sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "diff", "--binary", "origin/"+sd.GetMainBranch(), branchInfo.BranchName)
-	sd.ExecuteOrDie(sd.ExecuteOptions{Stdin: &diff, PipeToStdout: true}, "git", "apply")
+	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", "origin/"+ex.GetMainBranch(), branchInfo.BranchName)
+	ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff, PipeToStdout: true}, "git", "apply")
 	log.Println("Adding changes and continuing rebase")
-	sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "add", ".")
-	continueOptions := sd.ExecuteOptions{EnvironmentVariables: make([]string, 1), PipeToStdout: true}
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
+	continueOptions := ex.ExecuteOptions{EnvironmentVariables: make([]string, 1), PipeToStdout: true}
 	continueOptions.EnvironmentVariables[0] = "GIT_EDITOR=true"
-	sd.ExecuteOrDie(continueOptions, "git", "rebase", "--continue")
+	ex.ExecuteOrDie(continueOptions, "git", "rebase", "--continue")
 }
 
 func getCommitWithConflicts() string {
-	statusLines := strings.Split(strings.TrimSpace(sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "status")), "\n")
+	statusLines := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "status")), "\n")
 	lastCommandDoneLine := -1
 	inLast := false
 	for i, line := range statusLines {

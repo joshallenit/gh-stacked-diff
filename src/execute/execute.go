@@ -1,4 +1,4 @@
-package stacked_diff
+package execute
 
 import (
 	"log"
@@ -77,14 +77,7 @@ func ExecuteOrDie(options ExecuteOptions, programName string, args ...string) st
 
 func GetMainBranch() string {
 	if mainBranchName == "" {
-		if _, mainErr := Execute(ExecuteOptions{}, "git", "rev-parse", "--verify", "main"); mainErr != nil {
-			if _, masterErr := Execute(ExecuteOptions{}, "git", "rev-parse", "--verify", "master"); masterErr != nil {
-				log.Fatal(Red + "Could not find main or master branch" + Reset)
-			}
-			mainBranchName = "master"
-		} else {
-			mainBranchName = "main"
-		}
+		mainBranchName = strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "config", "init.defaultBranch"))
 	}
 	return mainBranchName
 }

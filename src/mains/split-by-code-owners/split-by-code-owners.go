@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	ex "stacked-diff-workflow/src/execute"
 	sd "stacked-diff-workflow/src/stacked-diff"
 	"strings"
 	"time"
@@ -33,7 +34,7 @@ func main() {
 	flag.Parse()
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr,
-			sd.Reset+"Split a commit by code owners.\n"+
+			ex.Reset+"Split a commit by code owners.\n"+
 				"split-by-code-owners <commit hash>\n")
 		flag.PrintDefaults()
 	}
@@ -57,16 +58,16 @@ func main() {
 			originalBranch := sd.GetCurrentBranchName()
 			for _, branchName := range branches {
 				log.Println("Pushing branch", branchName)
-				sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "switch", branchName)
+				ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", branchName)
 				// Sleep to avoid github crapping out with kex_exchange_identification or LFS lock.
 				time.Sleep(10 * time.Second)
-				sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f")
+				ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f")
 				if createPrs {
 					log.Println("Creating PR", branchName)
-					commitHash := strings.TrimSpace(sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "rev-parse", "HEAD"))
+					commitHash := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "HEAD"))
 					prText := sd.GetPullRequestText(commitHash, "")
 					time.Sleep(10 * time.Second)
-					if url, err := sd.Execute(sd.ExecuteOptions{}, "gh", "pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--draft"); err != nil {
+					if url, err := ex.Execute(ex.ExecuteOptions{}, "gh", "pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--draft"); err != nil {
 						log.Println("Could not create PR", err)
 					} else {
 						log.Println("Created PR", url)
@@ -74,7 +75,7 @@ func main() {
 				}
 			}
 			log.Println("Switching back to original branch")
-			sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "switch", originalBranch)
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", originalBranch)
 		}
 	}
 }
@@ -92,22 +93,22 @@ func createBranches(branchInfo sd.BranchInfo, useGithub bool, shouldCreateBranch
 		shouldCreateThisBranch := shouldCreateBranches && (processBranch == "" || processBranch == shortTeamName)
 		if shouldCreateThisBranch {
 			log.Println("Creating branch", branchName, "with", len(filenames), "files")
-			if _, err := sd.Execute(sd.ExecuteOptions{}, "git", "checkout", "-b", branchName); err != nil {
+			if _, err := ex.Execute(ex.ExecuteOptions{}, "git", "checkout", "-b", branchName); err != nil {
 				if useGithub {
 					log.Println("Resetting existing branch")
-					sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "checkout", branchName)
-					sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "reset", "--hard", "origin/"+sd.GetMainBranch())
+					ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", branchName)
+					ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", "origin/"+ex.GetMainBranch())
 				} else {
 					log.Println("Adding to existing branch")
-					sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "checkout", branchName)
-					sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "reset", "--hard", "head")
+					ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", branchName)
+					ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", "head")
 				}
 
 			} else {
-				sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "reset", "--hard", "origin/"+sd.GetMainBranch())
+				ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", "origin/"+ex.GetMainBranch())
 			}
-			diff := sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "diff", "--binary", branchInfo.CommitHash+"~", branchInfo.CommitHash)
-			sd.ExecuteOrDie(sd.ExecuteOptions{Stdin: &diff}, "git", "apply", "--reject")
+			diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", branchInfo.CommitHash+"~", branchInfo.CommitHash)
+			ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff}, "git", "apply", "--reject")
 		}
 		gitAddArgs := []string{"add"}
 		for _, filename := range filenames {
@@ -115,15 +116,15 @@ func createBranches(branchInfo sd.BranchInfo, useGithub bool, shouldCreateBranch
 			gitAddArgs = append(gitAddArgs, filename)
 		}
 		if shouldCreateThisBranch {
-			sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", gitAddArgs...)
-			summary := strings.TrimSpace(sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", branchInfo.CommitHash))
-			sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "commit", "-m", summary+" for "+shortTeamName)
-			sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
-			sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "clean", "--force")
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitAddArgs...)
+			summary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", branchInfo.CommitHash))
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", summary+" for "+shortTeamName)
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "clean", "--force")
 		}
 	}
 	log.Println("Switching back to original branch")
-	sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "switch", originalBranch)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", originalBranch)
 	return branches
 }
 

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	ex "stacked-diff-workflow/src/execute"
 	"strings"
 
 	"github.com/hairyhenderson/go-codeowners"
@@ -32,7 +33,7 @@ func ChangedFilesOwners(useGithub bool, changedFiles []string) map[string][]stri
 Returns changed files against main.
 */
 func GetChangedFiles(commit string) []string {
-	filenamesRaw := ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "log", commit+"~.."+commit, "--pretty=format:\"\"", "--name-only")
+	filenamesRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", commit+"~.."+commit, "--pretty=format:\"\"", "--name-only")
 	return strings.Split(strings.TrimSpace(filenamesRaw), "\n")
 }
 
@@ -111,7 +112,7 @@ func getCustomCodeOwners(filename string) []string {
 				}
 
 				if re, regexError := regexp.Compile("(?m)^" + record[0]); regexError != nil {
-					log.Println(Red+"Warning, cannot use regex"+Reset, record[0], regexError)
+					log.Println(ex.Red+"Warning, cannot use regex"+ex.Reset, record[0], regexError)
 				} else {
 					existing = append(existing, *re)
 					customCodeowners[record[1]] = existing

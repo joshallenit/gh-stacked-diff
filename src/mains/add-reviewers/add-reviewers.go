@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	ex "stacked-diff-workflow/src/execute"
 	sd "stacked-diff-workflow/src/stacked-diff"
 	"strings"
 	"sync"
@@ -23,7 +24,7 @@ type PullRequestChecksStatus struct {
 func main() {
 	var reviewers string
 	flag.StringVar(&reviewers, "reviewers", "", "Comma-separated list of Github usernames to add as reviewers. "+
-		"Falls back to "+sd.White+"PR_REVIEWERS"+sd.Reset+" environment variable. "+
+		"Falls back to "+ex.White+"PR_REVIEWERS"+ex.Reset+" environment variable. "+
 		"You can specify more than one reviewer using a comma-delimited string.")
 	var whenChecksPass bool
 	var pollFrequency time.Duration
@@ -40,11 +41,11 @@ func main() {
 			"and if you add-reviewers too soon it will think that they have all passed.")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr,
-			sd.Reset+"Mark a Draft PR as \"Ready for Review\" and automatically add reviewers.\n"+
+			ex.Reset+"Mark a Draft PR as \"Ready for Review\" and automatically add reviewers.\n"+
 				"\n"+
 				"add-reviewers [flags] <commit hash or pull request number>\n"+
 				"\n"+
-				sd.White+"Flags:"+sd.Reset+"\n")
+				ex.White+"Flags:"+ex.Reset+"\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -73,7 +74,7 @@ func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, whenChecksPass 
 			summary := getChecksStatus(branchName)
 			if summary.Failing > 0 {
 				if !silent {
-					sd.ExecuteOrDie(sd.ExecuteOptions{}, "say", "Checks failed")
+					ex.ExecuteOrDie(ex.ExecuteOptions{}, "say", "Checks failed")
 				}
 				log.Print("Checks failed for ", commitOrPullRequest, ". "+
 					"Total: ", summary.Total,
@@ -98,10 +99,10 @@ func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, whenChecksPass 
 		}
 	}
 	log.Println("Marking PR as ready for review")
-	sd.ExecuteOrDie(sd.ExecuteOptions{}, "gh", "pr", "ready", branchName)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "ready", branchName)
 	log.Println("Waiting 10 seconds for any automatically assigned reviewers to be added...")
 	time.Sleep(10 * time.Second)
-	prUrl := strings.TrimSpace(sd.ExecuteOrDie(sd.ExecuteOptions{}, "gh", "pr", "edit", branchName, "--add-reviewer", reviewers))
+	prUrl := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "edit", branchName, "--add-reviewer", reviewers))
 	log.Println("Added reviewers", reviewers, "to", prUrl)
 	wg.Done()
 }
@@ -111,7 +112,7 @@ func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, whenChecksPass 
  */
 func getChecksStatus(branchName string) PullRequestChecksStatus {
 	var summary PullRequestChecksStatus
-	stateString := sd.ExecuteOrDie(sd.ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
+	stateString := ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
 	scanner := bufio.NewScanner(strings.NewReader(strings.TrimSpace(stateString)))
 	for scanner.Scan() {
 		status := scanner.Text()

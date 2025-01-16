@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"slices"
+	ex "stacked-diff-workflow/src/execute"
 	"strconv"
 	"strings"
 	"text/template"
@@ -48,19 +49,19 @@ type templateData struct {
 
 func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 	if commitOrPullRequest == "" {
-		commitOrPullRequest = GetMainBranch()
+		commitOrPullRequest = ex.GetMainBranch()
 	}
 	var info BranchInfo
 	if _, err := strconv.Atoi(commitOrPullRequest); len(commitOrPullRequest) < 9 && err == nil {
 		// Pull request number
-		branchName := ExecuteOrDie(ExecuteOptions{}, "gh", "pr", "view", commitOrPullRequest, "--json", "headRefName", "-q", ".headRefName")
+		branchName := ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitOrPullRequest, "--json", "headRefName", "-q", ".headRefName")
 		// Fetch the branch in case the lastest commit is only on GitHub.
-		ExecuteOrDie(ExecuteOptions{}, "git", "fetch", "origin", branchName)
-		prCommit := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "gh", "pr", "view", commitOrPullRequest, "--json", "commits", "-q", "[.commits[].oid] | first"))
-		summary := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", prCommit))
-		thisBranchCommit := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h"))
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "fetch", "origin", branchName)
+		prCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitOrPullRequest, "--json", "commits", "-q", "[.commits[].oid] | first"))
+		summary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", prCommit))
+		thisBranchCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h"))
 		if thisBranchCommit == "" {
-			log.Fatal("Could not find associated commit for PR (\"", summary, "\") in "+GetMainBranch())
+			log.Fatal("Could not find associated commit for PR (\"", summary, "\") in "+ex.GetMainBranch())
 		}
 		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
 		log.Print("Using pull request ", commitOrPullRequest, ", commit ", info.CommitHash, ", branch ", info.BranchName, "\n")
@@ -75,7 +76,7 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 
 func GetBranchForCommit(commit string) string {
 	name := runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(commit))
-	if GetMainBranch() == "master" {
+	if ex.GetMainBranch() == "master" {
 		name = strings.Replace(name, "/", "-", -1)
 		name = strings.Replace(name, ".", "-", -1)
 	}
@@ -120,9 +121,9 @@ func runTemplate(configFilename string, defaultTemplateText string, data any) st
 }
 
 func getTemplateData(commitHash string, featureFlag string) templateData {
-	commitSummary := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", commitHash))
-	commitBody := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%b", commitHash))
-	commitSummaryCleaned := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commitHash))
+	commitSummary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", commitHash))
+	commitBody := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%b", commitHash))
+	commitSummaryCleaned := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commitHash))
 	expression := regexp.MustCompile("^(\\S+-[[:digit:]]+ )?(.*)")
 	summaryMatches := expression.FindStringSubmatch(commitSummary)
 	return templateData{
@@ -139,12 +140,12 @@ func getTemplateData(commitHash string, featureFlag string) templateData {
 func getBranchTemplateData(commitHash string) branchTemplateData {
 	return branchTemplateData{
 		Username:             GetUsername(),
-		CommitSummaryCleaned: strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commitHash)),
+		CommitSummaryCleaned: strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commitHash)),
 	}
 }
 
 func GetUsername() string {
-	email := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "config", "user.email"))
+	email := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email"))
 	return email[0:strings.Index(email, "@")]
 }
 
@@ -163,30 +164,30 @@ func getConfigFile(filenameWithoutPath string) *string {
 
 // Returns first commit of the given branch that is on origin/main, or "" if the branch is not on remote.
 func FirstOriginMainCommit(branchName string) string {
-	remoteBranches := strings.Fields(strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "branch", "-r")))
+	remoteBranches := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r")))
 	// Verify that remote has branch, otherwise the git log will fail.
 	if !slices.Contains(remoteBranches, branchName) {
 		return ""
 	}
-	allNewCommits := strings.Fields(strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranch()+".."+branchName, "--pretty=format:%h", "--abbrev-commit")))
+	allNewCommits := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+".."+branchName, "--pretty=format:%h", "--abbrev-commit")))
 	if len(allNewCommits) == 0 {
-		log.Fatal("No commits on ", branchName, "other than what is on "+GetMainBranch()+", nothing to create a commit from")
+		log.Fatal("No commits on ", branchName, "other than what is on "+ex.GetMainBranch()+", nothing to create a commit from")
 	}
 	return allNewCommits[len(allNewCommits)-1] + "~1"
 }
 
 func RequireMainBranch() {
-	if GetCurrentBranchName() != GetMainBranch() {
-		log.Fatal("Must be run from " + GetMainBranch() + " branch")
+	if GetCurrentBranchName() != ex.GetMainBranch() {
+		log.Fatal("Must be run from " + ex.GetMainBranch() + " branch")
 	}
 }
 
 func GetCurrentBranchName() string {
-	return strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD"))
+	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD"))
 }
 
 func Stash(forName string) bool {
-	stashResult := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName))
+	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName))
 	if strings.HasPrefix(stashResult, "Saved working") {
 		log.Println(stashResult)
 		return true
@@ -196,7 +197,7 @@ func Stash(forName string) bool {
 
 func PopStash(popStash bool) {
 	if popStash {
-		ExecuteOrDie(ExecuteOptions{}, "git", "stash", "pop")
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "pop")
 		log.Println("Popped stash back")
 	}
 }

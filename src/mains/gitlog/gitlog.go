@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"os"
+	ex "stacked-diff-workflow/src/execute"
 	sd "stacked-diff-workflow/src/stacked-diff"
 	"strings"
 )
@@ -11,14 +14,18 @@ Outputs abbreviated git log that only shows what has changed, useful for copying
 Adds a checkmark beside commits that have an associated branch.
 */
 func main() {
-	logsColorRaw := sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+sd.GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit", "--color=always")
+	PrintGitLog(os.Stdout)
+}
+
+func PrintGitLog(fmtOut io.Writer) {
+	logsColorRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit", "--color=always")
 	logsColor := strings.Split(strings.TrimSpace(logsColorRaw), "\n")
-	logsNoColorRaw := sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+sd.GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit")
+	logsNoColorRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit")
 	logsNoColor := strings.Split(strings.TrimSpace(logsNoColorRaw), "\n")
 	if len(logsNoColor) == 0 {
 		return
 	}
-	if sd.GetCurrentBranchName() == sd.GetMainBranch() {
+	if sd.GetCurrentBranchName() == ex.GetMainBranch() {
 		for i, _ := range logsNoColor {
 			index := strings.Index(logsNoColor[i], " ")
 			if index == -1 {
@@ -27,15 +34,15 @@ func main() {
 			commit := logsNoColor[i][0:index]
 
 			branchName := sd.GetBranchForCommit(commit)
-			checkedBranch := strings.TrimSpace(sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "branch", "-l", branchName))
+			checkedBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-l", branchName))
 			if checkedBranch == "" {
-				fmt.Print("   ")
+				fmt.Fprint(fmtOut, "   ")
 			} else {
-				fmt.Print("✅ ")
+				fmt.Fprint(fmtOut, "✅ ")
 			}
-			fmt.Println(logsColor[i])
+			fmt.Fprintln(fmtOut, logsColor[i])
 		}
 	} else {
-		fmt.Println(logsColorRaw)
+		fmt.Fprintln(fmtOut, logsColorRaw)
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 	"runtime"
-	sd "stacked-diff-workflow/src/stacked-diff"
+	ex "stacked-diff-workflow/src/execute"
 )
 
 var TestWorkingDir string
@@ -15,7 +15,7 @@ func init() {
 }
 
 func CdTestDir() {
-	sd.ExecuteOrDie(sd.ExecuteOptions{}, "rm", "-rf", TestWorkingDir)
-	sd.ExecuteOrDie(sd.ExecuteOptions{}, "mkdir", "-p", TestWorkingDir)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "rm", "-rf", TestWorkingDir)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "mkdir", "-p", TestWorkingDir)
 	os.Chdir(TestWorkingDir)
 }

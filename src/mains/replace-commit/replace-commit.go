@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	ex "stacked-diff-workflow/src/execute"
 	sd "stacked-diff-workflow/src/stacked-diff"
 	"strings"
 )
@@ -18,7 +19,7 @@ func main() {
 	}
 	branchInfo := sd.GetBranchInfo(os.Args[1])
 	shouldPopStash := false
-	stashResult := strings.TrimSpace(sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "stash", "save", "-u", "before update-pr "+os.Args[1]))
+	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before update-pr "+os.Args[1]))
 	if strings.HasPrefix(stashResult, "Saved working") {
 		log.Println(stashResult)
 		shouldPopStash = true
@@ -30,18 +31,18 @@ func main() {
 
 // Replaces commit `branchInfo.CommitHash“ with the contents of branch `branchInfo.BranchName`
 func replaceCommit(branchInfo sd.BranchInfo) {
-	commitsAfter := strings.Fields(strings.TrimSpace(sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "--no-pager", "log", branchInfo.CommitHash+"..HEAD", "--pretty=format:%h")))
+	commitsAfter := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", branchInfo.CommitHash+"..HEAD", "--pretty=format:%h")))
 	reverseArrayInPlace(commitsAfter)
 	commitToDiffFrom := sd.FirstOriginMainCommit(branchInfo.BranchName)
-	diff := sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "diff", "--binary", commitToDiffFrom, branchInfo.BranchName)
+	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", commitToDiffFrom, branchInfo.BranchName)
 
 	log.Println("Resetting to ", branchInfo.CommitHash+"~1")
-	sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "reset", "--hard", branchInfo.CommitHash+"~1")
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", branchInfo.CommitHash+"~1")
 	log.Println("Adding diff from commits ", branchInfo.BranchName)
-	sd.ExecuteOrDie(sd.ExecuteOptions{Stdin: &diff}, "git", "apply")
-	sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "add", ".")
-	commitSummary := sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", branchInfo.CommitHash)
-	sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "commit", "-m", strings.TrimSpace(commitSummary))
+	ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff}, "git", "apply")
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
+	commitSummary := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", branchInfo.CommitHash)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", strings.TrimSpace(commitSummary))
 	if len(commitsAfter) != 0 {
 		log.Println("Cherry picking commits back on top ", commitsAfter)
 		cherryPickAndSkipAllEmpty(commitsAfter)
@@ -61,10 +62,10 @@ func cherryPickAndSkipAllEmpty(commits []string) {
 	for i, commit := range commits {
 		cherryPickArgs[i+2] = commit
 	}
-	out, err := sd.Execute(sd.ExecuteOptions{}, "git", cherryPickArgs...)
+	out, err := ex.Execute(ex.ExecuteOptions{}, "git", cherryPickArgs...)
 	for err != nil {
 		if strings.Index(out, "git commit --allow-empty") != -1 {
-			out, err = sd.Execute(sd.ExecuteOptions{}, "git", "cherry-pick", "--skip")
+			out, err = ex.Execute(ex.ExecuteOptions{}, "git", "cherry-pick", "--skip")
 		} else {
 			log.Fatal("Unexpected cherry-pick error", out, cherryPickArgs, err)
 		}

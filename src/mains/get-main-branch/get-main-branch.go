@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	sd "stacked-diff-workflow/src/stacked-diff"
+	ex "stacked-diff-workflow/src/execute"
 )
 
 func main() {
@@ -14,6 +14,6 @@ func main() {
 		os.Exit(1)
 	}
 	log.SetOutput(ioutil.Discard)
-	branchName := sd.GetMainBranch()
+	branchName := ex.GetMainBranch()
 	fmt.Print(branchName)
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	ex "stacked-diff-workflow/src/execute"
 	sd "stacked-diff-workflow/src/stacked-diff"
 	"strings"
 )
@@ -21,12 +22,12 @@ func main() {
 	sd.RequireMainBranch()
 	sd.Stash("rebase-main")
 
-	sd.ExecuteOrDie(sd.ExecuteOptions{
+	ex.ExecuteOrDie(ex.ExecuteOptions{
 		PipeToStdout: true,
 	}, "git", "fetch")
 	username := sd.GetUsername()
-	originCommits := strings.Split(strings.TrimSpace(sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "--no-pager", "log", "origin/main", "-n", "30", "--format=%s", "--author="+username)), "\n")
-	localCommits := strings.Split(strings.TrimSpace(sd.ExecuteOrDie(sd.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+sd.GetMainBranch()+"..HEAD", "--format=%h %s")), "\n")
+	originCommits := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/main", "-n", "30", "--format=%s", "--author="+username)), "\n")
+	localCommits := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+"..HEAD", "--format=%h %s")), "\n")
 	// Look for matching summaries between localCommits and originCommits
 	var dropCommits []string
 	for _, localLine := range localCommits {
@@ -40,16 +41,16 @@ func main() {
 
 	if len(dropCommits) > 0 {
 		environmentVariables := []string{"GIT_SEQUENCE_EDITOR=sequence-editor-drop-already-merged " + strings.Join(dropCommits, " ")}
-		options := sd.ExecuteOptions{
+		options := ex.ExecuteOptions{
 			EnvironmentVariables: environmentVariables,
 			PipeToStdout:         true,
 		}
-		sd.ExecuteOrDie(options, "git", "rebase", "-i", "origin/main")
+		ex.ExecuteOrDie(options, "git", "rebase", "-i", "origin/main")
 	} else {
-		options := sd.ExecuteOptions{
+		options := ex.ExecuteOptions{
 			PipeToStdout: true,
 		}
-		sd.ExecuteOrDie(options, "git", "rebase", "origin/main")
+		ex.ExecuteOrDie(options, "git", "rebase", "origin/main")
 	}
 }
 

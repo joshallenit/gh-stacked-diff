@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	sd "stacked-diff-workflow/src/stacked-diff"
@@ -14,7 +14,7 @@ func main() {
 		fmt.Println("get-branch-name-for <commit hash or pull request number>")
 		os.Exit(1)
 	}
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	branchName := sd.GetBranchInfo(os.Args[1]).BranchName
 	fmt.Print(branchName)
 }

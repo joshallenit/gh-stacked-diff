@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	ex "stacked-diff-workflow/src/execute"
 	sd "stacked-diff-workflow/src/stacked-diff"
 	"strings"
 	"time"
@@ -15,11 +16,11 @@ func main() {
 	flag.BoolVar(&silent, "silent", false, "Whether to use voice output")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr,
-			sd.Reset+"Waits for a pull request to be merged. Polls PR every 5 minutes. Useful for custom scripting.\n"+
+			ex.Reset+"Waits for a pull request to be merged. Polls PR every 5 minutes. Useful for custom scripting.\n"+
 				"\n"+
 				"wait-for-merge [flags] <commit hash or pull request number>\n"+
 				"\n"+
-				sd.White+"Flags:"+sd.Reset+"\n")
+				ex.White+"Flags:"+ex.Reset+"\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -34,10 +35,10 @@ func main() {
 	}
 	log.Println("Merged!")
 	if !silent {
-		sd.ExecuteOrDie(sd.ExecuteOptions{}, "say", "P R has been merged")
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "say", "P R has been merged")
 	}
 }
 
 func getMergedAt(branchName string) string {
-	return strings.TrimSpace(sd.ExecuteOrDie(sd.ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "mergedAt", "--jq", ".mergedAt"))
+	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "mergedAt", "--jq", ".mergedAt"))
 }
