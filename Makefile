@@ -3,7 +3,7 @@
 test:
 	go test ./...
 
-build:
+build: test
 	gofmt -w src
 	go build -o bin ./...  
 
