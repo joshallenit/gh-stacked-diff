@@ -162,17 +162,35 @@ func getConfigFile(filenameWithoutPath string) *string {
 	}
 }
 
+type GitLog struct {
+	Commit  string
+	Subject string
+}
+
+func GetNewCommits(branchName string) []GitLog {
+	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h %s", "--abbrev-commit"}
+	if RemoteHasBranch(branchName) {
+		gitArgs = append(gitArgs, "origin/"+branchName+"..HEAD")
+	}
+	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
+	println("logsRaw", logsRaw)
+	logLines := strings.Split(strings.TrimSpace(logsRaw), "\n")
+	var logs []GitLog
+	for _, logLine := range logLines {
+		spaceIndex := strings.Index(logLine, " ")
+		logs = append(logs, GitLog{Commit: logLine[0:spaceIndex], Subject: logLine[spaceIndex+1:]})
+	}
+	return logs
+}
+
 // Returns first commit of the given branch that is on origin/main, or "" if the branch is not on remote.
 func FirstOriginMainCommit(branchName string) string {
-	// Verify that remote has branch, otherwise the git log will fail.
+	// Verify that remote has branch, there is no origin commit.
 	if !RemoteHasBranch(branchName) {
 		return ""
 	}
-	allNewCommits := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+".."+branchName, "--pretty=format:%h", "--abbrev-commit")))
-	if len(allNewCommits) == 0 {
-		log.Fatal("No commits on ", branchName, "other than what is on "+ex.GetMainBranch()+", nothing to create a commit from")
-	}
-	return allNewCommits[len(allNewCommits)-1] + "~1"
+	allNewCommits := GetNewCommits(branchName)
+	return allNewCommits[len(allNewCommits)-1].Commit + "~1"
 }
 
 func RemoteHasBranch(branchName string) bool {
