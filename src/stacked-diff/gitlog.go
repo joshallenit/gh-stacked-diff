@@ -8,9 +8,8 @@ import (
 )
 
 func PrintGitLog(out io.Writer) {
+	gitArgs := []string{"--no-pager", "log", "--pretty=oneline", "--abbrev-commit"}
 	// Check that remote has main branch
-
-	gitArgs := []string{"--no-pager", "log", "--pretty=oneline", "--abbrev-commit", "--color=always"}
 	if RemoteHasBranch(ex.GetMainBranch()) {
 		gitArgs = append(gitArgs, "origin/"+ex.GetMainBranch()+"..HEAD")
 	}
