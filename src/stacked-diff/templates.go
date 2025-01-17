@@ -177,7 +177,7 @@ func FirstOriginMainCommit(branchName string) string {
 
 func RemoteHasBranch(branchName string) bool {
 	remoteBranches := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r")))
-	return slices.Contains(remoteBranches, branchName)
+	return slices.Contains(remoteBranches, "origin/"+branchName)
 }
 
 func RequireMainBranch() {

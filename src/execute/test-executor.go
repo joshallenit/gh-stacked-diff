@@ -20,9 +20,7 @@ type TestExecutor struct {
 var _ Executor = TestExecutor{}
 
 func (t TestExecutor) Execute(options ExecuteOptions, programName string, args ...string) (string, error) {
-	println("TestExecutor.Execute")
 	for _, response := range t.fakeResponses {
-		println("checking", response.programName, programName)
 		if response.programName == programName {
 			matched := true
 			if len(response.args) <= len(args) {
@@ -35,7 +33,6 @@ func (t TestExecutor) Execute(options ExecuteOptions, programName string, args .
 			} else {
 				matched = false
 			}
-			println("matched", response.programName, programName)
 			if matched {
 				return response.out, response.err
 			}

@@ -1,32 +1,74 @@
 package main
 
 import (
+	"bytes"
 	"log"
-	"os"
 	ex "stacked-diff-workflow/src/execute"
+	sd "stacked-diff-workflow/src/stacked-diff"
 	testing_init "stacked-diff-workflow/src/testing-init"
+	"strings"
 	"testing"
 )
 
-func TestNewPr(t *testing.T) {
+func TestGitlog_OnEmptyRemote_PrintsLog(t *testing.T) {
+	testing_init.CdTestRepo()
 
-	testing_init.CdTestDir()
-	// Create a git repository with a local remote
-	remoteDir := "remote-repo"
-	repositoryDir := "local-repo"
-
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "init", "--bare", remoteDir)
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "clone", remoteDir, repositoryDir)
-
-	os.Chdir(repositoryDir)
-
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "touch", "README.md")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", "Add README")
+	testing_init.AddCommit("first", "")
 
 	testExecutor := ex.TestExecutor{TestLogger: log.Default()}
 	testExecutor.SetResponse("Ok", nil, "gh")
 	ex.SetGlobalExecutor(testExecutor)
 
-	PrintGitLog(os.Stdout)
+	outWriter := new(bytes.Buffer)
+	PrintGitLog(outWriter)
+	out := outWriter.String()
+
+	if !strings.Contains(out, "first") {
+		t.Errorf("'first' should be in %s", out)
+	}
+}
+
+func Test_PrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
+	testing_init.CdTestRepo()
+
+	testing_init.AddCommit("first", "")
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", ex.GetMainBranch())
+
+	testing_init.AddCommit("second", "")
+
+	testExecutor := ex.TestExecutor{TestLogger: log.Default()}
+	testExecutor.SetResponse("Ok", nil, "gh")
+	ex.SetGlobalExecutor(testExecutor)
+
+	outWriter := new(bytes.Buffer)
+	PrintGitLog(outWriter)
+	out := outWriter.String()
+
+	if strings.Contains(out, "first") {
+		t.Errorf("'first' should not be in %s", out)
+	}
+	if !strings.Contains(out, "second") {
+		t.Errorf("'second' should be in %s", out)
+	}
+}
+
+func TestGitlog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *testing.T) {
+	testing_init.CdTestRepo()
+
+	testing_init.AddCommit("first", "")
+
+	testExecutor := ex.TestExecutor{TestLogger: log.Default()}
+	testExecutor.SetResponse("Ok", nil, "gh")
+	ex.SetGlobalExecutor(testExecutor)
+
+	sd.CreateNewPr(true, "", ex.GetMainBranch(), 0, sd.GetBranchInfo(""), log.Default())
+
+	outWriter := new(bytes.Buffer)
+	PrintGitLog(outWriter)
+	out := outWriter.String()
+
+	if !strings.Contains(out, "✅") {
+		t.Errorf("'✅' should be in %s", out)
+	}
 }

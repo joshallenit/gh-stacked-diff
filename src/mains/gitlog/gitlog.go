@@ -17,14 +17,16 @@ func main() {
 	PrintGitLog(os.Stdout)
 }
 
-func PrintGitLog(fmtOut io.Writer) {
+func PrintGitLog(out io.Writer) {
 	// Check that remote has main branch
 	var logsColorRaw string
 	var logsNoColorRaw string
 	if sd.RemoteHasBranch(ex.GetMainBranch()) {
+		println("here1")
 		logsColorRaw = ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit", "--color=always")
 		logsNoColorRaw = ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+ex.GetMainBranch()+"..HEAD", "--pretty=oneline", "--abbrev-commit")
 	} else {
+		println("here2")
 		logsColorRaw = ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "--pretty=oneline", "--abbrev-commit", "--color=always")
 		logsNoColorRaw = ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "--pretty=oneline", "--abbrev-commit")
 	}
@@ -44,13 +46,13 @@ func PrintGitLog(fmtOut io.Writer) {
 			branchName := sd.GetBranchForCommit(commit)
 			checkedBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-l", branchName))
 			if checkedBranch == "" {
-				fmt.Fprint(fmtOut, "   ")
+				fmt.Fprint(out, "   ")
 			} else {
-				fmt.Fprint(fmtOut, "✅ ")
+				fmt.Fprint(out, "✅ ")
 			}
-			fmt.Fprintln(fmtOut, logsColor[i])
+			fmt.Fprintln(out, logsColor[i])
 		}
 	} else {
-		fmt.Fprintln(fmtOut, logsColorRaw)
+		fmt.Fprintln(out, logsColorRaw)
 	}
 }
