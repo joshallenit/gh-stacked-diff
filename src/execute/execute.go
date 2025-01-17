@@ -1,6 +1,7 @@
 package execute
 
 import (
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -11,6 +12,8 @@ import (
 var Red = "\033[31m"
 var Reset = "\033[0m"
 var White = "\033[97m"
+var Yellow = "\033[33m" // #C0A000 (Buddha Gold)
+
 var mainBranchName string
 
 /*
@@ -21,8 +24,16 @@ type ExecuteOptions struct {
 	Stdin *string
 	// For example "MY_VAR=some_value"
 	EnvironmentVariables []string
-	// Whether to pipe output to stdout and stderr instead of returning it.
-	PipeToStdout bool
+	Output               *ExecutionOutput
+}
+
+type ExecutionOutput struct {
+	Stdout io.Writer
+	Stderr io.Writer
+}
+
+func NewStandardOutput() *ExecutionOutput {
+	return &ExecutionOutput{Stdout: os.Stdout, Stderr: os.Stderr}
 }
 
 type Executor interface {
@@ -48,9 +59,9 @@ func (defaultExecutor DefaultExecutor) Execute(options ExecuteOptions, programNa
 	}
 	var out []byte
 	var err error
-	if options.PipeToStdout {
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+	if options.Output != nil {
+		cmd.Stdout = options.Output.Stdout
+		cmd.Stderr = options.Output.Stderr
 		err = cmd.Run()
 	} else {
 		out, err = cmd.CombinedOutput()

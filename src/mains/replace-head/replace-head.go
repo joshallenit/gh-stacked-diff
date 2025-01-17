@@ -16,10 +16,10 @@ func main() {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
 	log.Println("Replacing HEAD for commit", commitWithConflicts, "with changes from branch", branchInfo.BranchName)
 	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", "origin/"+ex.GetMainBranch(), branchInfo.BranchName)
-	ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff, PipeToStdout: true}, "git", "apply")
+	ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff, Output: ex.NewStandardOutput()}, "git", "apply")
 	log.Println("Adding changes and continuing rebase")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
-	continueOptions := ex.ExecuteOptions{EnvironmentVariables: make([]string, 1), PipeToStdout: true}
+	continueOptions := ex.ExecuteOptions{EnvironmentVariables: make([]string, 1), Output: ex.NewStandardOutput()}
 	continueOptions.EnvironmentVariables[0] = "GIT_EDITOR=true"
 	ex.ExecuteOrDie(continueOptions, "git", "rebase", "--continue")
 }

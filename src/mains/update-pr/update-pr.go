@@ -98,7 +98,7 @@ func main() {
 	log.Println("Switching back to " + ex.GetMainBranch())
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
 	log.Println("Rebasing, marking as fixup", commitsToCherryPick, "for target", branchInfo.CommitHash)
-	options := ex.ExecuteOptions{EnvironmentVariables: make([]string, 1), PipeToStdout: true}
+	options := ex.ExecuteOptions{EnvironmentVariables: make([]string, 1), Output: ex.NewStandardOutput()}
 	options.EnvironmentVariables[0] = "GIT_SEQUENCE_EDITOR=sequence-editor-mark-as-fixup " + branchInfo.CommitHash + " " + strings.Join(commitsToCherryPick, " ")
 	ex.ExecuteOrDie(options, "git", "rebase", "-i", branchInfo.CommitHash+"^")
 	sd.PopStash(shouldPopStash)

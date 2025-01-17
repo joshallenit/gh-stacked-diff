@@ -23,7 +23,7 @@ func main() {
 	sd.Stash("rebase-main")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{
-		PipeToStdout: true,
+		Output: ex.NewStandardOutput(),
 	}, "git", "fetch")
 	username := sd.GetUsername()
 	originCommits := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/main", "-n", "30", "--format=%s", "--author="+username)), "\n")
@@ -43,12 +43,12 @@ func main() {
 		environmentVariables := []string{"GIT_SEQUENCE_EDITOR=sequence-editor-drop-already-merged " + strings.Join(dropCommits, " ")}
 		options := ex.ExecuteOptions{
 			EnvironmentVariables: environmentVariables,
-			PipeToStdout:         true,
+			Output:               ex.NewStandardOutput(),
 		}
 		ex.ExecuteOrDie(options, "git", "rebase", "-i", "origin/main")
 	} else {
 		options := ex.ExecuteOptions{
-			PipeToStdout: true,
+			Output: ex.NewStandardOutput(),
 		}
 		ex.ExecuteOrDie(options, "git", "rebase", "origin/main")
 	}

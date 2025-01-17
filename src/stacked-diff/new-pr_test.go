@@ -1,31 +1,31 @@
 package stacked_diff
 
 import (
+	"bytes"
 	"log"
-	"os"
 	ex "stacked-diff-workflow/src/execute"
 	testing_init "stacked-diff-workflow/src/testing-init"
+	"strings"
 	"testing"
 )
 
-func TestNewPr(t *testing.T) {
-	testing_init.CdTestDir()
-	// Create a git repository with a local remote
-	remoteDir := "remote-repo"
-	repositoryDir := "local-repo"
+func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
+	testing_init.CdTestRepo()
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "init", "--bare", remoteDir)
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "clone", remoteDir, repositoryDir)
-
-	os.Chdir(repositoryDir)
-
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "touch", "README.md")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", "Add README")
+	testing_init.AddCommit("first", "")
 
 	testExecutor := ex.TestExecutor{TestLogger: log.Default()}
 	testExecutor.SetResponse("Ok", nil, "gh")
 	ex.SetGlobalExecutor(testExecutor)
 
 	CreateNewPr(true, "", ex.GetMainBranch(), 0, GetBranchInfo(""), log.Default())
+
+	// Check that the PR was created
+	outWriter := new(bytes.Buffer)
+	PrintGitLog(outWriter)
+	out := outWriter.String()
+
+	if !strings.Contains(out, "✅") {
+		t.Errorf("'✅' should be in %s", out)
+	}
 }
