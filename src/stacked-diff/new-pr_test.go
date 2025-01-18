@@ -32,7 +32,7 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 	}
 }
 
-func Test_NewPr_OnNewRepoWithPreviousCommit_CreatesPr(t *testing.T) {
+func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
 
 	testing_init.CdTestRepo()
@@ -49,7 +49,33 @@ func Test_NewPr_OnNewRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 
 	CreateNewPr(true, "", ex.GetMainBranch(), 0, GetBranchInfo(""), log.Default())
 
-	commitsOnNewBranch := GetNewCommits(GetBranchForCommit(allCommits[0].Commit))
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetBranchForCommit(allCommits[0].Commit))
+	commitsOnNewBranch := GetNewCommits(ex.GetMainBranch())
+	assert.Equal(1, len(commitsOnNewBranch))
+	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
+}
+
+func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
+	assert := assert.New(t)
+
+	testing_init.CdTestRepo()
+
+	testing_init.AddCommit("first", "")
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", ex.GetMainBranch())
+
+	testing_init.AddCommit("second", "")
+
+	testing_init.AddCommit("third", "")
+	allCommits := GetNewCommits(ex.GetMainBranch())
+
+	testExecutor := ex.TestExecutor{TestLogger: log.Default()}
+	testExecutor.SetResponse("Ok", nil, "gh")
+	ex.SetGlobalExecutor(testExecutor)
+
+	CreateNewPr(true, "", ex.GetMainBranch(), 0, GetBranchInfo(""), log.Default())
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetBranchForCommit(allCommits[0].Commit))
+	commitsOnNewBranch := GetNewCommits(ex.GetMainBranch())
 	assert.Equal(1, len(commitsOnNewBranch))
 	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
 }

@@ -167,20 +167,33 @@ type GitLog struct {
 	Subject string
 }
 
+func newGitLogs(logsRaw string) []GitLog {
+	logLines := strings.Split(strings.TrimSpace(logsRaw), "\n")
+	var logs []GitLog
+	for _, logLine := range logLines {
+		spaceIndex := strings.Index(logLine, " ")
+		if spaceIndex == -1 {
+			// No git logs.
+			continue
+		}
+		logs = append(logs, GitLog{Commit: logLine[0:spaceIndex], Subject: logLine[spaceIndex+1:]})
+	}
+	return logs
+}
+
+func GetAllCommits(branchName string) []GitLog {
+	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h %s", "--abbrev-commit"}
+	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
+	return newGitLogs(logsRaw)
+}
+
 func GetNewCommits(branchName string) []GitLog {
 	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h %s", "--abbrev-commit"}
 	if RemoteHasBranch(branchName) {
 		gitArgs = append(gitArgs, "origin/"+branchName+"..HEAD")
 	}
 	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
-	println("logsRaw", logsRaw)
-	logLines := strings.Split(strings.TrimSpace(logsRaw), "\n")
-	var logs []GitLog
-	for _, logLine := range logLines {
-		spaceIndex := strings.Index(logLine, " ")
-		logs = append(logs, GitLog{Commit: logLine[0:spaceIndex], Subject: logLine[spaceIndex+1:]})
-	}
-	return logs
+	return newGitLogs(logsRaw)
 }
 
 // Returns first commit of the given branch that is on origin/main, or "" if the branch is not on remote.

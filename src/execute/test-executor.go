@@ -2,6 +2,7 @@ package execute
 
 import (
 	"log"
+	"strings"
 )
 
 type fakeResponse struct {
@@ -38,6 +39,7 @@ func (t TestExecutor) Execute(options ExecuteOptions, programName string, args .
 			}
 		}
 	}
+	log.Println("Executing", programName, strings.Join(args, " "))
 	return (&DefaultExecutor{}).Execute(options, programName, args...)
 }
 
