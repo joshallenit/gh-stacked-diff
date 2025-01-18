@@ -17,7 +17,11 @@ func init() {
 	if !ok {
 		panic("No caller information")
 	}
-	TestWorkingDir = path.Join(path.Dir(file), "/../../../.test-stacked-diff-workflow")
+	userCacheDir, err := os.UserCacheDir()
+	if err != nil {
+		panic("Cannot find UserCacheDir: " + err.Error())
+	}
+	TestWorkingDir = path.Join(userCacheDir, "stacked-diff-workflow-unit-tests")
 }
 
 func CdTestDir() {
@@ -35,7 +39,7 @@ func CdTestDir() {
 	if functionName == "" {
 		panic("Could not find caller outside of " + thisFile)
 	}
-	individualTestDir := TestWorkingDir + "/" + functionName
+	individualTestDir := path.Join(TestWorkingDir, functionName)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "rm", "-rf", individualTestDir)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "mkdir", "-p", individualTestDir)
 	os.Chdir(individualTestDir)
