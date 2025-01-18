@@ -181,16 +181,16 @@ func newGitLogs(logsRaw string) []GitLog {
 	return logs
 }
 
-func GetAllCommits(branchName string) []GitLog {
+func GetAllCommits() []GitLog {
 	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h %s", "--abbrev-commit"}
 	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
 	return newGitLogs(logsRaw)
 }
 
-func GetNewCommits(branchName string) []GitLog {
+func GetNewCommits(compareToRemoteBranch string) []GitLog {
 	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h %s", "--abbrev-commit"}
-	if RemoteHasBranch(branchName) {
-		gitArgs = append(gitArgs, "origin/"+branchName+"..HEAD")
+	if RemoteHasBranch(compareToRemoteBranch) {
+		gitArgs = append(gitArgs, "origin/"+compareToRemoteBranch+"..HEAD")
 	}
 	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
 	return newGitLogs(logsRaw)
