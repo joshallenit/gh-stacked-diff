@@ -39,8 +39,16 @@ func (t TestExecutor) Execute(options ExecuteOptions, programName string, args .
 			}
 		}
 	}
-	log.Println("Executing", programName, strings.Join(args, " "))
-	return (&DefaultExecutor{}).Execute(options, programName, args...)
+	log.Print("Executing ", programName, " ", strings.Join(args, " "))
+	out, err := (&DefaultExecutor{}).Execute(options, programName, args...)
+	if out != "" {
+		log.Print("\n", out)
+	}
+	if err != nil {
+		log.Print("\nError", err)
+	}
+	log.Println("")
+	return out, err
 }
 
 func (t TestExecutor) Logger() *log.Logger {

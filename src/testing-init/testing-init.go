@@ -43,7 +43,9 @@ func CdTestDir() {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "rm", "-rf", individualTestDir)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "mkdir", "-p", individualTestDir)
 	os.Chdir(individualTestDir)
-	log.Println("Changed to test directory: " + individualTestDir)
+	// Use pwd instead of individualTestDir to avoid having a mix of \ and / path separators on Windows.
+	pwd := ex.ExecuteOrDie(ex.ExecuteOptions{}, "pwd")
+	log.Println("Changed to test directory: " + pwd)
 }
 
 func CdTestRepo() {
@@ -63,7 +65,7 @@ func AddCommit(commitMessage string, fileName string) {
 	if fileName == "" {
 		fileName = commitMessage
 	}
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "touch", commitMessage)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "touch", fileName)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", commitMessage)
 }
