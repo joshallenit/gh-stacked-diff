@@ -2,6 +2,7 @@ package stacked_diff
 
 import (
 	"log"
+	"log/slog"
 	"os"
 	ex "stacked-diff-workflow/src/execute"
 	testing_init "stacked-diff-workflow/src/testing-init"
@@ -32,7 +33,7 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "ls")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log")
 
-	testExecutor := ex.TestExecutor{TestLogger: log.Default()}
+	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
 	testExecutor.SetResponse("Ok", nil, "gh")
 	ex.SetGlobalExecutor(testExecutor)
 

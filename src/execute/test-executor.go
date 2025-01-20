@@ -1,8 +1,7 @@
 package execute
 
 import (
-	"log"
-	"strings"
+	"log/slog"
 )
 
 type fakeResponse struct {
@@ -13,7 +12,7 @@ type fakeResponse struct {
 }
 
 type TestExecutor struct {
-	TestLogger    *log.Logger
+	TestLogger    *slog.Logger
 	fakeResponses []fakeResponse
 }
 
@@ -39,19 +38,10 @@ func (t TestExecutor) Execute(options ExecuteOptions, programName string, args .
 			}
 		}
 	}
-	log.Print("Executing ", programName, " ", strings.Join(args, " "))
-	out, err := (&DefaultExecutor{}).Execute(options, programName, args...)
-	if out != "" {
-		log.Print("\n", out)
-	}
-	if err != nil {
-		log.Print("\nError", err)
-	}
-	log.Println("")
-	return out, err
+	return (&DefaultExecutor{}).Execute(options, programName, args...)
 }
 
-func (t TestExecutor) Logger() *log.Logger {
+func (t TestExecutor) Logger() *slog.Logger {
 	return t.TestLogger
 }
 

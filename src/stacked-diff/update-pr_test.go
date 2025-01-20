@@ -2,6 +2,7 @@ package stacked_diff
 
 import (
 	"log"
+	"log/slog"
 	ex "stacked-diff-workflow/src/execute"
 	testing_init "stacked-diff-workflow/src/testing-init"
 	"testing"
@@ -15,7 +16,7 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 
 	testing_init.AddCommit("first", "")
 
-	testExecutor := ex.TestExecutor{TestLogger: log.Default()}
+	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
 	testExecutor.SetResponse("Ok", nil, "gh")
 	ex.SetGlobalExecutor(testExecutor)
 
@@ -43,7 +44,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	testing_init.AddCommit("second", "")
 
-	testExecutor := ex.TestExecutor{TestLogger: log.Default()}
+	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
 	testExecutor.SetResponse("Ok", nil, "gh")
 	ex.SetGlobalExecutor(testExecutor)
 

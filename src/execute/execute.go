@@ -1,8 +1,10 @@
 package execute
 
 import (
+	"errors"
+	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"runtime/debug"
@@ -38,7 +40,7 @@ func NewStandardOutput() *ExecutionOutput {
 
 type Executor interface {
 	Execute(options ExecuteOptions, programName string, args ...string) (string, error)
-	Logger() *log.Logger
+	Logger() *slog.Logger
 }
 
 var globalExecutor Executor = DefaultExecutor{}
@@ -66,11 +68,14 @@ func (defaultExecutor DefaultExecutor) Execute(options ExecuteOptions, programNa
 	} else {
 		out, err = cmd.CombinedOutput()
 	}
-	return string(out), err
+
+	stringOut := string(out)
+	defaultExecutor.Logger().Debug("Executed " + getLogMessage(programName, args, stringOut, err))
+	return stringOut, err
 }
 
-func (defaultExecutor DefaultExecutor) Logger() *log.Logger {
-	return log.Default()
+func (defaultExecutor DefaultExecutor) Logger() *slog.Logger {
+	return slog.Default()
 }
 
 func Execute(options ExecuteOptions, programName string, args ...string) (string, error) {
@@ -81,14 +86,38 @@ func ExecuteOrDie(options ExecuteOptions, programName string, args ...string) st
 	out, err := Execute(options, programName, args...)
 	if err != nil {
 		debug.PrintStack()
-		globalExecutor.Logger().Fatal(Red+"Failed executing `", programName, " ", strings.Join(args, " "), "`: "+Reset, out, err)
+		globalExecutor.Logger().Error(Red + "Failed executing " + Reset + getLogMessage(programName, args, out, err))
+		os.Exit(1)
 	}
 	return out
 }
 
+func getLogMessage(programName string, args []string, out string, err error) string {
+	logMessage := programName + " " + strings.Join(args, " ")
+	stringOut := string(out)
+	if strings.TrimSpace(stringOut) != "" {
+		logMessage = logMessage + "\n" + stringOut
+	}
+	if err != nil {
+		logMessage = logMessage + "\nError %s"
+		var exerr *exec.ExitError
+		if errors.As(err, &exerr) {
+			logMessage = logMessage + " (Exit code " + fmt.Sprint(exerr.ExitCode()) + ")"
+		}
+	}
+	return logMessage
+}
+
 func GetMainBranch() string {
 	if mainBranchName == "" {
-		mainBranchName = strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "config", "init.defaultBranch"))
+		remoteMainBranch, err := Execute(ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "origin/HEAD")
+		if err == nil {
+			remoteMainBranch = strings.TrimSpace(remoteMainBranch)
+			mainBranchName = remoteMainBranch[strings.Index(remoteMainBranch, "/")+1:]
+		} else {
+			// Remote is empty, use config.
+			mainBranchName = strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "config", "init.defaultBranch"))
+		}
 	}
 	return mainBranchName
 }

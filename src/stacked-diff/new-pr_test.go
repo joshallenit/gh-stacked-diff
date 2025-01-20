@@ -3,6 +3,7 @@ package stacked_diff
 import (
 	"bytes"
 	"log"
+	"log/slog"
 	ex "stacked-diff-workflow/src/execute"
 	testing_init "stacked-diff-workflow/src/testing-init"
 	"strings"
@@ -16,7 +17,7 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 
 	testing_init.AddCommit("first", "")
 
-	testExecutor := ex.TestExecutor{TestLogger: log.Default()}
+	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
 	testExecutor.SetResponse("Ok", nil, "gh")
 	ex.SetGlobalExecutor(testExecutor)
 
@@ -43,7 +44,7 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	testing_init.AddCommit("second", "")
 	allCommits := GetNewCommits(ex.GetMainBranch())
 
-	testExecutor := ex.TestExecutor{TestLogger: log.Default()}
+	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
 	testExecutor.SetResponse("Ok", nil, "gh")
 	ex.SetGlobalExecutor(testExecutor)
 
@@ -68,7 +69,7 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 	testing_init.AddCommit("third", "")
 	allCommits := GetNewCommits(ex.GetMainBranch())
 
-	testExecutor := ex.TestExecutor{TestLogger: log.Default()}
+	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
 	testExecutor.SetResponse("Ok", nil, "gh")
 	ex.SetGlobalExecutor(testExecutor)
 
