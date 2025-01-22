@@ -82,13 +82,12 @@ func UpdatePr(commitOrPullRequest string, otherCommits []string, logger *log.Log
 	logger.Println("Rebasing, marking as fixup", commitsToCherryPick, "for target", branchInfo.CommitHash)
 	options := ex.ExecuteOptions{EnvironmentVariables: make([]string, 1), Output: ex.NewStandardOutput()}
 	options.EnvironmentVariables[0] = "GIT_SEQUENCE_EDITOR=sequence_editor_mark_as_fixup " + branchInfo.CommitHash + " " + strings.Join(commitsToCherryPick, " ")
-	rootCommit := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--max-parents=0", "HEAD")
+	rootCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--max-parents=0", "--format=%h", "HEAD"))
 	if rootCommit == branchInfo.CommitHash {
 		logger.Println("Rebasing root commit")
-		ex.Execute(options, "git", "rebase", "-i", "--root")
+		ex.ExecuteOrDie(options, "git", "rebase", "-i", "--root")
 	} else {
-		ex.Execute(options, "git", "rebase", "-i", branchInfo.CommitHash+"^")
+		ex.ExecuteOrDie(options, "git", "rebase", "-i", branchInfo.CommitHash+"^")
 	}
 	PopStash(shouldPopStash)
-
 }
