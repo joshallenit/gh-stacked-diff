@@ -25,5 +25,6 @@ func main() {
 		panic("Invalid log level " + logLevelString + ": " + unmarshallErr.Error())
 	}
 	slog.SetLogLoggerLevel(logLevel)
+
 	sd.PrintGitLog(os.Stdout)
 }
