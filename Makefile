@@ -5,7 +5,7 @@ test:
 
 build:
 	cd src/go; gofmt -w .
-	cd src/go; go build -o ../../bin ./...  
+	mkdir -p bin; cd src/go; go build -o ../../bin ./...  
 
 release: build
 ifndef RELEASE_VERSION
