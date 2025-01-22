@@ -6,6 +6,7 @@ import (
 	"path"
 	"runtime"
 
+	"log/slog"
 	ex "stackeddiff/execute"
 )
 
@@ -69,4 +70,10 @@ func AddCommit(commitMessage string, fileName string) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "touch", fileName)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", commitMessage)
+}
+
+func IgnoreGithubCli() {
+	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
+	testExecutor.SetResponse("Ok", nil, "gh")
+	ex.SetGlobalExecutor(testExecutor)
 }

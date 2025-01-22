@@ -18,29 +18,28 @@ type Command struct {
 }
 
 /*
-Outputs abbreviated git log that only shows what has changed, useful for copying commit hashes.
-Adds a checkmark beside commits that have an associated branch.
+sd - stacked diff - command line interface.
 */
 func main() {
-	ParseArguments(os.Stdout, os.Args[1:])
+	ParseArguments(os.Stdout, flag.CommandLine, os.Args[1:])
 }
 
-func ParseArguments(stdOut io.Writer, commandLineArgs []string) {
+func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs []string) {
 
 	// Parse flags common for every command.
 	var logFlags int
 	var logLevelString string
 
-	flag.IntVar(&logFlags, "log-flags", 0, "Log flags, see https://pkg.go.dev/log#pkg-constants")
-	flag.StringVar(&logLevelString, "log-level", "info", "Log level: debug, info, warn, or error")
+	commandLine.IntVar(&logFlags, "log-flags", 0, "Log flags, see https://pkg.go.dev/log#pkg-constants")
+	commandLine.StringVar(&logLevelString, "log-level", "info", "Log level: debug, info, warn, or error")
 
-	flag.CommandLine.Parse(commandLineArgs)
+	commandLine.Parse(commandLineArgs)
 
 	commands := []Command{createLogCommand(stdOut), createNewCommand(), createUpdateCommand()}
 
 	var commandName string
-	if flag.NArg() > 0 {
-		commandName = flag.Arg(0)
+	if commandLine.NArg() > 0 {
+		commandName = commandLine.Arg(0)
 	}
 	selectedIndex := slices.IndexFunc(commands, func(command Command) bool {
 		return command.flagSet.Name() == commandName
@@ -50,7 +49,7 @@ func ParseArguments(stdOut io.Writer, commandLineArgs []string) {
 		os.Exit(1)
 	}
 
-	commands[selectedIndex].flagSet.Parse(flag.Args()[1:])
+	commands[selectedIndex].flagSet.Parse(commandLine.Args()[1:])
 
 	log.SetFlags(logFlags)
 	var logLevel slog.Level
