@@ -2,30 +2,40 @@ package execute
 
 import (
 	"log/slog"
+	"slices"
 )
 
-type fakeResponse struct {
-	out         string
-	err         error
-	programName string
-	args        []string
+type ExecuteResponse struct {
+	Out         string
+	Err         error
+	ProgramName string
+	Args        []string
 }
 
 type TestExecutor struct {
 	TestLogger    *slog.Logger
-	fakeResponses []fakeResponse
+	fakeResponses []ExecuteResponse
+	Responses     []ExecuteResponse
 }
 
-// Ensure that [TestExecutor] implements [Executor].
-var _ Executor = TestExecutor{}
+const MatchAnyRemainingArgs = "MatchCommandWithAnyRemainingArgs"
 
-func (t TestExecutor) Execute(options ExecuteOptions, programName string, args ...string) (string, error) {
+// Ensure that [TestExecutor] implements [Executor].
+var _ Executor = &TestExecutor{}
+
+func (t *TestExecutor) Execute(options ExecuteOptions, programName string, args ...string) (string, error) {
 	for _, response := range t.fakeResponses {
-		if response.programName == programName {
+		if response.ProgramName == programName {
+			matchArgs := args
+			matchResponseArgs := response.Args
+			if len(response.Args) > 0 && response.Args[len(response.Args)-1] == MatchAnyRemainingArgs && len(args) >= len(response.Args)-1 {
+				matchArgs = args[0 : len(response.Args)-1]
+				matchResponseArgs = response.Args[0 : len(response.Args)-1]
+			}
 			matched := true
-			if len(response.args) <= len(args) {
-				for i, arg := range response.args {
-					if arg != args[i] {
+			if len(matchArgs) == len(matchResponseArgs) {
+				for i := range matchArgs {
+					if matchArgs[i] != matchResponseArgs[i] {
 						matched = false
 						break
 					}
@@ -34,11 +44,19 @@ func (t TestExecutor) Execute(options ExecuteOptions, programName string, args .
 				matched = false
 			}
 			if matched {
-				return response.out, response.err
+				t.Responses = append(t.Responses, ExecuteResponse{
+					Out:         response.Out,
+					Err:         response.Err,
+					ProgramName: programName,
+					Args:        args},
+				)
+				return response.Out, response.Err
 			}
 		}
 	}
-	return (&DefaultExecutor{}).Execute(options, programName, args...)
+	out, err := (&DefaultExecutor{}).Execute(options, programName, args...)
+	t.Responses = append(t.Responses, ExecuteResponse{Out: out, Err: err, ProgramName: programName, Args: args})
+	return out, err
 }
 
 func (t TestExecutor) Logger() *slog.Logger {
@@ -46,5 +64,26 @@ func (t TestExecutor) Logger() *slog.Logger {
 }
 
 func (t *TestExecutor) SetResponse(out string, err error, programName string, args ...string) {
-	t.fakeResponses = append(t.fakeResponses, fakeResponse{out: out, err: err, programName: programName, args: args})
+	t.fakeResponses = append(t.fakeResponses, ExecuteResponse{Out: out, Err: err, ProgramName: programName, Args: args})
+	slices.SortFunc(t.fakeResponses, func(a ExecuteResponse, b ExecuteResponse) int {
+		// Check the response that has the longer argument list first
+
+		// cmp(a, b) should return a negative number when a < b, a positive number when a > b
+		// so longer parameter list should be negative.
+		argDiff := len(b.Args) - len(a.Args)
+		if argDiff != 0 {
+			return argDiff
+		}
+		// Check the response that does not have a wildcard first
+		if len(a.Args) > 0 && a.Args[len(a.Args)-1] == MatchAnyRemainingArgs &&
+			len(b.Args) > 0 && b.Args[len(b.Args)-1] != MatchAnyRemainingArgs {
+			return 1
+		}
+		if len(b.Args) > 0 && b.Args[len(b.Args)-1] == MatchAnyRemainingArgs &&
+			len(a.Args) > 0 && a.Args[len(a.Args)-1] != MatchAnyRemainingArgs {
+			return -1
+		}
+		// Otherwise it doesn't matter which is checked first
+		return 0
+	})
 }

@@ -3,7 +3,6 @@ package stackeddiff
 import (
 	"bytes"
 	"log"
-	"log/slog"
 	"stackeddiff/testinginit"
 	"strings"
 	"testing"
@@ -18,9 +17,7 @@ func TestGitlog_OnEmptyRemote_PrintsLog(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
-	testExecutor.SetResponse("Ok", nil, "gh")
-	ex.SetGlobalExecutor(testExecutor)
+	testinginit.SetTestExecutor()
 
 	outWriter := new(bytes.Buffer)
 	PrintGitLog(outWriter)
@@ -40,9 +37,7 @@ func Test_PrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 
 	testinginit.AddCommit("second", "")
 
-	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
-	testExecutor.SetResponse("Ok", nil, "gh")
-	ex.SetGlobalExecutor(testExecutor)
+	testinginit.SetTestExecutor()
 
 	outWriter := new(bytes.Buffer)
 	PrintGitLog(outWriter)
@@ -61,11 +56,9 @@ func TestGitlog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *test
 
 	testinginit.AddCommit("first", "")
 
-	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
-	testExecutor.SetResponse("Ok", nil, "gh")
-	ex.SetGlobalExecutor(testExecutor)
+	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), 0, GetBranchInfo(""), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo(""), log.Default())
 
 	outWriter := new(bytes.Buffer)
 	PrintGitLog(outWriter)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"log"
+	"log/slog"
 	"os"
 	"regexp"
 	"slices"
@@ -54,7 +55,8 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 	}
 	var info BranchInfo
 	if _, err := strconv.Atoi(commitOrPullRequest); len(commitOrPullRequest) < 9 && err == nil {
-		// Pull request number
+		slog.Debug("Using commitOrPullRequest as a pull request number " + commitOrPullRequest)
+
 		branchName := ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitOrPullRequest, "--json", "headRefName", "-q", ".headRefName")
 		// Fetch the branch in case the lastest commit is only on GitHub.
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "fetch", "origin", branchName)
@@ -67,7 +69,8 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
 		log.Print("Using pull request ", commitOrPullRequest, ", commit ", info.CommitHash, ", branch ", info.BranchName, "\n")
 	} else {
-		// commit hash
+		slog.Debug("Using commitOrPullRequest as a commit hash " + commitOrPullRequest)
+
 		info = BranchInfo{CommitHash: commitOrPullRequest, BranchName: GetBranchForCommit(commitOrPullRequest)}
 		log.Print("Using commit ", info.CommitHash, ", branch ", info.BranchName, "\n")
 	}

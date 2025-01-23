@@ -1,12 +1,9 @@
-package main
+package stackeddiff
 
 import (
 	"bufio"
-	"flag"
-	"fmt"
 	"log"
 	"os"
-	sd "stackeddiff"
 	"strings"
 	"sync"
 	"time"
@@ -15,45 +12,14 @@ import (
 )
 
 // Next `gh pr view 83824 --json latestReviews` and ensure developer is already not approved so that the review is not dismissed
-type PullRequestChecksStatus struct {
+type pullRequestChecksStatus struct {
 	Pending int
 	Failing int
 	Passing int
 	Total   int
 }
 
-func main() {
-	var reviewers string
-	flag.StringVar(&reviewers, "reviewers", "", "Comma-separated list of Github usernames to add as reviewers. "+
-		"Falls back to "+ex.White+"PR_REVIEWERS"+ex.Reset+" environment variable. "+
-		"You can specify more than one reviewer using a comma-delimited string.")
-	var whenChecksPass bool
-	var pollFrequency time.Duration
-	var defaultPollFrequency time.Duration = 30 * time.Second
-	var silent bool
-	var minChecks int
-	flag.BoolVar(&whenChecksPass, "when-checks-pass", true, "Poll until all checks pass before adding reviewers")
-	flag.DurationVar(&pollFrequency, "poll-frequency", defaultPollFrequency,
-		"Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration")
-	flag.BoolVar(&silent, "silent", false, "Whether to use voice output")
-	flag.IntVar(&minChecks, "min-checks", 4,
-		"Minimum number of checks to wait for before verifying that checks have passed. "+
-			"It takes some time for checks to be added to a PR by Github, "+
-			"and if you add-reviewers too soon it will think that they have all passed.")
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr,
-			ex.Reset+"Mark a Draft PR as \"Ready for Review\" and automatically add reviewers.\n"+
-				"\n"+
-				"add-reviewers [flags] <commit hash or pull request number>\n"+
-				"\n"+
-				ex.White+"Flags:"+ex.Reset+"\n")
-		flag.PrintDefaults()
-	}
-	flag.Parse()
-	if flag.NArg() == 0 {
-		flag.Usage()
-		os.Exit(1)
-	}
+func AddReviewersToPr(commitOrPullRequests []string, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
 	if reviewers == "" {
 		reviewers = os.Getenv("PR_REVIEWERS")
 		if reviewers == "" {
@@ -61,15 +27,15 @@ func main() {
 		}
 	}
 	var wg sync.WaitGroup
-	for i := 0; i < flag.NArg(); i++ {
+	for _, commitOrPullRequest := range commitOrPullRequests {
 		wg.Add(1)
-		go checkBranch(&wg, flag.Arg(i), whenChecksPass, silent, minChecks, reviewers, pollFrequency)
+		go checkBranch(&wg, commitOrPullRequest, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
 	}
 	wg.Wait()
 }
 
 func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
-	branchName := sd.GetBranchInfo(commitOrPullRequest).BranchName
+	branchName := GetBranchInfo(commitOrPullRequest).BranchName
 	if whenChecksPass {
 		for {
 			summary := getChecksStatus(branchName)
@@ -111,8 +77,8 @@ func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, whenChecksPass 
 /*
  * Logic copied from https://github.com/cli/cli/blob/57fbe4f317ca7d0849eeeedb16c1abc21a81913b/api/queries_pr.go#L258-L274
  */
-func getChecksStatus(branchName string) PullRequestChecksStatus {
-	var summary PullRequestChecksStatus
+func getChecksStatus(branchName string) pullRequestChecksStatus {
+	var summary pullRequestChecksStatus
 	stateString := ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
 	scanner := bufio.NewScanner(strings.NewReader(strings.TrimSpace(stateString)))
 	for scanner.Scan() {

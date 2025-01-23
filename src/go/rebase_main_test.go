@@ -2,7 +2,6 @@ package stackeddiff
 
 import (
 	"log"
-	"log/slog"
 	"os"
 	"stackeddiff/testinginit"
 	"testing"
@@ -34,9 +33,7 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "ls")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log")
 
-	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
-	testExecutor.SetResponse("Ok", nil, "gh")
-	ex.SetGlobalExecutor(testExecutor)
+	testinginit.SetTestExecutor()
 
 	RebaseMain(log.Default())
 
@@ -66,6 +63,7 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 				I could actually try these commit messages to see how well they work or don't work
 				Other ideas:
 					- automatically add reviewers when creating a PR
+					- Next `gh pr view 83824 --json latestReviews` and ensure developer is already not approved so that the review is not dismissed
 					- show the commits in gitlog on the branches tabbed over so that it's easier to read
 					- show the output of git commands in a tabbed window that uses ANSI escape codes to move around the screen
 					- use Jira numbers to match commits, probably not the best as there are multiple PRs for the same Jira

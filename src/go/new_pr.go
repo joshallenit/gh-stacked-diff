@@ -8,7 +8,7 @@ import (
 	ex "stackeddiff/execute"
 )
 
-func CreateNewPr(draft bool, featureFlag string, baseBranch string, logFlags int, branchInfo BranchInfo, logger *log.Logger) {
+func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo BranchInfo, logger *log.Logger) {
 	RequireMainBranch()
 
 	var commitToBranchFrom string

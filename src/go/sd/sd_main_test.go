@@ -9,6 +9,7 @@ import (
 
 	"bytes"
 	sd "stackeddiff"
+	ex "stackeddiff/execute"
 	"stackeddiff/testinginit"
 )
 
@@ -33,7 +34,7 @@ func Test_SdNew_CreatesPr(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	testinginit.IgnoreGithubCli()
+	testinginit.SetTestExecutor()
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"new"})
 
@@ -51,7 +52,7 @@ func Test_SdUpdate_UpdatesPr(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	testinginit.IgnoreGithubCli()
+	testinginit.SetTestExecutor()
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"new"})
 
@@ -59,7 +60,7 @@ func Test_SdUpdate_UpdatesPr(t *testing.T) {
 
 	allCommits := sd.GetAllCommits()
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"--log-level=debug", "update", allCommits[1].Commit})
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"update", allCommits[1].Commit})
 
 	outWriter := new(bytes.Buffer)
 	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ExitOnError), []string{"log"})
@@ -67,4 +68,31 @@ func Test_SdUpdate_UpdatesPr(t *testing.T) {
 
 	assert.Contains(out, "first")
 	assert.NotContains(out, "second")
+}
+
+func Test_SdAddReviewers_AddReviewers(t *testing.T) {
+	assert := assert.New(t)
+
+	testinginit.CdTestRepo()
+
+	testinginit.AddCommit("first", "")
+
+	testExecutor := testinginit.SetTestExecutor()
+
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"new"})
+
+	allCommits := sd.GetAllCommits()
+	testExecutor.SetResponse(
+		// There has to be at least 4 checks, each with 3 values: status, conclusion, and state.
+		"SUCCESS\nSUCCESS\nSUCCESS\n"+
+			"SUCCESS\nSUCCESS\nSUCCESS\n"+
+			"SUCCESS\nSUCCESS\nSUCCESS\n"+
+			"SUCCESS\nSUCCESS\nSUCCESS\n",
+		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
+
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"--log-level=debug", "add-reviewers", "--reviewers=mybestie", allCommits[0].Commit})
+
+	ghExpectedArgs := []string{"pr", "edit", sd.GetBranchForCommit(allCommits[0].Commit), "--add-reviewer", "mybestie"}
+	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}
+	assert.Contains(testExecutor.Responses, expectedResponse)
 }

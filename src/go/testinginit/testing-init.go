@@ -72,8 +72,10 @@ func AddCommit(commitMessage string, fileName string) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", commitMessage)
 }
 
-func IgnoreGithubCli() {
+func SetTestExecutor() *ex.TestExecutor {
 	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
-	testExecutor.SetResponse("Ok", nil, "gh")
-	ex.SetGlobalExecutor(testExecutor)
+	testExecutor.SetResponse("Ok", nil, "gh", ex.MatchAnyRemainingArgs)
+	testExecutor.SetResponse("Ok", nil, "say", ex.MatchAnyRemainingArgs)
+	ex.SetGlobalExecutor(&testExecutor)
+	return &testExecutor
 }

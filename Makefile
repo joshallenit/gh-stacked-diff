@@ -1,10 +1,12 @@
 .PHONY: build
 
+format:
+	cd src/go; gofmt -w .
+
 test:
 	cd src/go; go test ./...
 
-build:
-	cd src/go; gofmt -w .
+build: format
 	mkdir -p bin; cd src/go; go build -o ../../bin ./...  
 
 release: build
