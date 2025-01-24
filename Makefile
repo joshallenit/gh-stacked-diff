@@ -1,13 +1,15 @@
 .PHONY: build
 
+# TODO: change PATH to include bin for test
+
 format:
 	cd src/go; gofmt -w .
 
-test:
-	cd src/go; go test ./...
-
 build: format
 	mkdir -p bin; cd src/go; go build -o ../../bin ./...  
+
+test: build
+	cd src/go; go test ./...
 
 release: build
 ifndef RELEASE_VERSION

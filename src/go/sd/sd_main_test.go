@@ -90,9 +90,25 @@ func Test_SdAddReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"--log-level=debug", "add-reviewers", "--reviewers=mybestie", allCommits[0].Commit})
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"add-reviewers", "--reviewers=mybestie", allCommits[0].Commit})
 
 	ghExpectedArgs := []string{"pr", "edit", sd.GetBranchForCommit(allCommits[0].Commit), "--add-reviewer", "mybestie"}
 	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}
 	assert.Contains(testExecutor.Responses, expectedResponse)
+}
+
+func Test_SdBranchName_OutputsBranchName(t *testing.T) {
+	assert := assert.New(t)
+
+	testinginit.CdTestRepo()
+
+	testinginit.AddCommit("first", "")
+
+	allCommits := sd.GetAllCommits()
+
+	outWriter := new(bytes.Buffer)
+	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ExitOnError), []string{"branch-name", allCommits[0].Commit})
+	out := outWriter.String()
+
+	assert.Equal(sd.GetBranchInfo(allCommits[0].Commit).BranchName, out)
 }

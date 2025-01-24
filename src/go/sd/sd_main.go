@@ -10,6 +10,7 @@ import (
 	"slices"
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
+	"strings"
 	"time"
 )
 
@@ -54,7 +55,10 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		return command.flagSet.Name() == commandName
 	})
 	if selectedIndex == -1 {
-		fmt.Fprint(os.Stderr, "Usage: sd", getCommandNames(commands))
+		if commandName != "" {
+			fmt.Fprintln(os.Stderr, "Unknown command", commandName)
+		}
+		fmt.Fprintln(os.Stderr, "Usage: sd [", strings.Join(getCommandNames(commands), " | "), "]")
 		os.Exit(1)
 	}
 
