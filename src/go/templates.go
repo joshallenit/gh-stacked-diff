@@ -54,7 +54,7 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 		commitOrPullRequest = ex.GetMainBranch()
 	}
 	var info BranchInfo
-	if _, err := strconv.Atoi(commitOrPullRequest); len(commitOrPullRequest) < 9 && err == nil {
+	if _, err := strconv.Atoi(commitOrPullRequest); len(commitOrPullRequest) < 7 && err == nil {
 		slog.Debug("Using commitOrPullRequest as a pull request number " + commitOrPullRequest)
 
 		branchName := ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitOrPullRequest, "--json", "headRefName", "-q", ".headRefName")
@@ -67,12 +67,12 @@ func GetBranchInfo(commitOrPullRequest string) BranchInfo {
 			log.Fatal("Could not find associated commit for PR (\"", summary, "\") in "+ex.GetMainBranch())
 		}
 		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
-		log.Print("Using pull request ", commitOrPullRequest, ", commit ", info.CommitHash, ", branch ", info.BranchName, "\n")
+		slog.Info("Using pull request " + commitOrPullRequest + ", commit " + info.CommitHash + ", branch " + info.BranchName)
 	} else {
 		slog.Debug("Using commitOrPullRequest as a commit hash " + commitOrPullRequest)
 
 		info = BranchInfo{CommitHash: commitOrPullRequest, BranchName: GetBranchForCommit(commitOrPullRequest)}
-		log.Print("Using commit ", info.CommitHash, ", branch ", info.BranchName, "\n")
+		slog.Info("Using commit " + info.CommitHash + ", branch " + info.BranchName)
 	}
 	return info
 

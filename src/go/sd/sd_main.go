@@ -16,6 +16,8 @@ import (
 type Command struct {
 	flagSet    *flag.FlagSet
 	onSelected func()
+	// Default if not set is 0 which is Info.
+	defaultLogLevel slog.Level
 }
 
 /*
@@ -32,7 +34,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 	var logLevelString string
 
 	commandLine.IntVar(&logFlags, "log-flags", 0, "Log flags, see https://pkg.go.dev/log#pkg-constants")
-	commandLine.StringVar(&logLevelString, "log-level", "info", "Log level: debug, info, warn, or error")
+	commandLine.StringVar(&logLevelString, "log-level", "", "Log level: debug, info, warn, or error. Default is info except for branch-name which is error.")
 
 	commandLine.Parse(commandLineArgs)
 
@@ -41,6 +43,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		createNewCommand(),
 		createUpdateCommand(),
 		createAddReviewersCommand(),
+		createBranchNameCommand(stdOut),
 	}
 
 	var commandName string
@@ -58,13 +61,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 	commands[selectedIndex].flagSet.Parse(commandLine.Args()[1:])
 
 	log.SetFlags(logFlags)
-	var logLevel slog.Level
-	var unmarshallErr = logLevel.UnmarshalText([]byte(logLevelString))
-	if unmarshallErr != nil {
-		panic("Invalid log level " + logLevelString + ": " + unmarshallErr.Error())
-	}
-	println("Setting log level to " + logLevelString)
-	slog.SetLogLoggerLevel(logLevel)
+	setLogLevel(logLevelString, commands[selectedIndex])
 
 	commands[selectedIndex].onSelected()
 }
@@ -195,6 +192,24 @@ func createAddReviewersCommand() Command {
 	}}
 }
 
+func createBranchNameCommand(stdOut io.Writer) Command {
+	flagSet := flag.NewFlagSet("branch-name", flag.ExitOnError)
+	flagSet.Usage = func() {
+		fmt.Fprintln(os.Stderr, "Outputs the branch name for a given commit hash or pull request number. Useful for custom scripting.")
+		fmt.Fprintln(os.Stderr, "sd branch-name <commit hash or pull request number>")
+		flagSet.PrintDefaults()
+	}
+
+	return Command{flagSet: flagSet, defaultLogLevel: slog.LevelError, onSelected: func() {
+		if flagSet.NArg() != 1 {
+			flagSet.Usage()
+			os.Exit(1)
+		}
+		branchName := sd.GetBranchInfo(flagSet.Arg(0)).BranchName
+		fmt.Fprint(stdOut, branchName)
+	}}
+}
+
 func getCommandNames(commands []Command) []string {
 	var names []string
 	names = slices.Grow(names, len(commands))
@@ -203,4 +218,17 @@ func getCommandNames(commands []Command) []string {
 	}
 	slices.Sort(names)
 	return names
+}
+
+func setLogLevel(logLevelString string, selectedCommand Command) {
+	var logLevel slog.Level
+	if logLevelString == "" {
+		logLevel = selectedCommand.defaultLogLevel
+	} else {
+		var unmarshallErr = logLevel.UnmarshalText([]byte(logLevelString))
+		if unmarshallErr != nil {
+			panic("Invalid log level " + logLevelString + ": " + unmarshallErr.Error())
+		}
+	}
+	slog.SetLogLoggerLevel(logLevel)
 }
