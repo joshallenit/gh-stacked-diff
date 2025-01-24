@@ -112,3 +112,29 @@ func Test_SdBranchName_OutputsBranchName(t *testing.T) {
 
 	assert.Equal(sd.GetBranchInfo(allCommits[0].Commit).BranchName, out)
 }
+
+func Test_SdNewWithReviewers_AddReviewers(t *testing.T) {
+	assert := assert.New(t)
+
+	testinginit.CdTestRepo()
+
+	testinginit.AddCommit("first", "")
+
+	testExecutor := testinginit.SetTestExecutor()
+
+	testExecutor.SetResponse(
+		// There has to be at least 4 checks, each with 3 values: status, conclusion, and state.
+		"SUCCESS\nSUCCESS\nSUCCESS\n"+
+			"SUCCESS\nSUCCESS\nSUCCESS\n"+
+			"SUCCESS\nSUCCESS\nSUCCESS\n"+
+			"SUCCESS\nSUCCESS\nSUCCESS\n",
+		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
+
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"new", "--reviewers=mybestie"})
+
+	allCommits := sd.GetAllCommits()
+
+	ghExpectedArgs := []string{"pr", "edit", sd.GetBranchForCommit(allCommits[0].Commit), "--add-reviewer", "mybestie"}
+	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}
+	assert.Contains(testExecutor.Responses, expectedResponse)
+}

@@ -87,6 +87,17 @@ func createNewCommand() Command {
 	flagSet.BoolVar(&draft, "draft", true, "Whether to create the PR as draft")
 	flagSet.StringVar(&featureFlag, "feature-flag", "", "Value for FEATURE_FLAG in PR description")
 	flagSet.StringVar(&baseBranch, "base", ex.GetMainBranch(), "Base branch for Pull Request")
+
+	var reviewers string
+	flagSet.StringVar(&reviewers, "reviewers", "", "Comma-separated list of Github usernames to add as reviewers once checks have passed.")
+	var silent bool
+	var minChecks int
+	flagSet.BoolVar(&silent, "silent", false, "Whether to use voice output (false) or be silent (true) to notify that reviewers have been added.")
+	flagSet.IntVar(&minChecks, "min-checks", 4,
+		"Minimum number of checks to wait for before verifying that checks have passed. "+
+			"It takes some time for checks to be added to a PR by Github, "+
+			"and if you add-reviewers too soon it will think that they have all passed.")
+
 	flagSet.Usage = func() {
 		fmt.Fprint(os.Stderr,
 			ex.Reset+"Create a new PR with a cherry-pick of the given commit hash\n"+
@@ -130,6 +141,9 @@ func createNewCommand() Command {
 		}
 		branchInfo := sd.GetBranchInfo(flagSet.Arg(0))
 		sd.CreateNewPr(draft, featureFlag, baseBranch, branchInfo, log.Default())
+		if reviewers != "" {
+			sd.AddReviewersToPr([]string{branchInfo.CommitHash}, true, silent, minChecks, reviewers, 30*time.Second)
+		}
 	}}
 }
 
