@@ -111,7 +111,8 @@ func TestGitlog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
 	out := outWriter.String()
 
 	allCommits = GetAllCommits()
-	assert.Equal("✅ \n"+ex.Yellow+allCommits[0].Commit+ex.Reset+" first"+
-		"\n   - second\n",
+	assert.Equal("✅ "+ex.Yellow+allCommits[0].Commit+ex.Reset+" first\n"+
+		"   - second\n"+
+		"   - first\n",
 		out)
 }

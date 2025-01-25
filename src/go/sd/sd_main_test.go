@@ -62,12 +62,10 @@ func TestSdUpdate_UpdatesPr(t *testing.T) {
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"update", allCommits[1].Commit})
 
-	outWriter := new(bytes.Buffer)
-	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ExitOnError), []string{"log"})
-	out := outWriter.String()
+	allCommits = sd.GetAllCommits()
 
-	assert.Contains(out, "first")
-	assert.NotContains(out, "second")
+	assert.Equal(1, len(allCommits))
+	assert.Equal("first", allCommits[0].Subject)
 }
 
 func TestSdAddReviewers_AddReviewers(t *testing.T) {

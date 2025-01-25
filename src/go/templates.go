@@ -194,6 +194,8 @@ func GetNewCommits(compareFromRemoteBranch string, to string) []GitLog {
 	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h %s", "--abbrev-commit"}
 	if RemoteHasBranch(compareFromRemoteBranch) {
 		gitArgs = append(gitArgs, "origin/"+compareFromRemoteBranch+".."+to)
+	} else {
+		gitArgs = append(gitArgs, to)
 	}
 	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
 	return newGitLogs(logsRaw)
@@ -235,7 +237,6 @@ func Stash(forName string) bool {
 
 func PopStash(popStash bool) {
 	if popStash {
-		``
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "pop")
 		log.Println("Popped stash back")
 	}
