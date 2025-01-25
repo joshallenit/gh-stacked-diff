@@ -45,6 +45,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		createUpdateCommand(),
 		createAddReviewersCommand(),
 		createBranchNameCommand(stdOut),
+		createRebaseMainCommand(),
 	}
 
 	var commandName string
@@ -225,6 +226,14 @@ func createBranchNameCommand(stdOut io.Writer) Command {
 		}
 		branchName := sd.GetBranchInfo(flagSet.Arg(0)).BranchName
 		fmt.Fprint(stdOut, branchName)
+	}}
+}
+
+func createRebaseMainCommand() Command {
+	flagSet := flag.NewFlagSet("rebase-main", flag.ExitOnError)
+
+	return Command{flagSet: flagSet, onSelected: func() {
+		sd.RebaseMain(log.Default())
 	}}
 }
 
