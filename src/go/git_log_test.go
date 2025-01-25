@@ -89,3 +89,29 @@ func TestGitlog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 	assert.NotContains(out, "first")
 	assert.Contains(out, "second")
 }
+
+func TestGitlog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
+	assert := assert.New(t)
+	testinginit.CdTestRepo()
+
+	testinginit.AddCommit("first", "")
+
+	testinginit.SetTestExecutor()
+
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo(""), log.Default())
+
+	testinginit.AddCommit("second", "")
+
+	allCommits := GetAllCommits()
+
+	UpdatePr(allCommits[1].Commit, []string{}, log.Default())
+
+	outWriter := new(bytes.Buffer)
+	PrintGitLog(outWriter)
+	out := outWriter.String()
+
+	allCommits = GetAllCommits()
+	assert.Equal("✅ \n"+ex.Yellow+allCommits[0].Commit+ex.Reset+" first"+
+		"\n   - second\n",
+		out)
+}

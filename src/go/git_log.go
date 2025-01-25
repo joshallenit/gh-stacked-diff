@@ -37,6 +37,16 @@ func PrintGitLog(out io.Writer) {
 		} else {
 			fmt.Fprint(out, "✅ ")
 		}
-		fmt.Fprintln(out, ex.Yellow+log+ex.Reset)
+
+		fmt.Fprintln(out, ex.Yellow+commit+ex.Reset+" "+log[index+1:])
+		// find first commit that is not in main branch
+		if checkedBranch != "" {
+			branchCommits := GetNewCommits(ex.GetMainBranch(), branchName)
+			if len(branchCommits) > 1 {
+				for _, branchCommit := range branchCommits {
+					fmt.Fprintln(out, "   - "+branchCommit.Subject)
+				}
+			}
+		}
 	}
 }

@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 	"text/template"
@@ -191,10 +190,10 @@ func GetAllCommits() []GitLog {
 	return newGitLogs(logsRaw)
 }
 
-func GetNewCommits(compareToRemoteBranch string) []GitLog {
+func GetNewCommits(compareFromRemoteBranch string, to string) []GitLog {
 	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h %s", "--abbrev-commit"}
-	if RemoteHasBranch(compareToRemoteBranch) {
-		gitArgs = append(gitArgs, "origin/"+compareToRemoteBranch+"..HEAD")
+	if RemoteHasBranch(compareFromRemoteBranch) {
+		gitArgs = append(gitArgs, "origin/"+compareFromRemoteBranch+".."+to)
 	}
 	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
 	return newGitLogs(logsRaw)
@@ -206,13 +205,13 @@ func FirstOriginMainCommit(branchName string) string {
 	if !RemoteHasBranch(branchName) {
 		return ""
 	}
-	allNewCommits := GetNewCommits(branchName)
+	allNewCommits := GetNewCommits(branchName, "HEAD")
 	return allNewCommits[len(allNewCommits)-1].Commit + "~1"
 }
 
 func RemoteHasBranch(branchName string) bool {
-	remoteBranches := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r")))
-	return slices.Contains(remoteBranches, "origin/"+branchName)
+	remoteBranches := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r", "--list", "origin/"+branchName))
+	return remoteBranches != ""
 }
 
 func RequireMainBranch() {
@@ -236,6 +235,7 @@ func Stash(forName string) bool {
 
 func PopStash(popStash bool) {
 	if popStash {
+		``
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "pop")
 		log.Println("Popped stash back")
 	}

@@ -13,7 +13,7 @@ import (
 	"stackeddiff/testinginit"
 )
 
-func Test_SdLog_LogsOutput(t *testing.T) {
+func TestSdLog_LogsOutput(t *testing.T) {
 	assert := assert.New(t)
 
 	testinginit.CdTestRepo()
@@ -27,7 +27,7 @@ func Test_SdLog_LogsOutput(t *testing.T) {
 	assert.Contains(out, "first")
 }
 
-func Test_SdNew_CreatesPr(t *testing.T) {
+func TestSdNew_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
 
 	testinginit.CdTestRepo()
@@ -45,7 +45,7 @@ func Test_SdNew_CreatesPr(t *testing.T) {
 	assert.Contains(out, "✅")
 }
 
-func Test_SdUpdate_UpdatesPr(t *testing.T) {
+func TestSdUpdate_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
 
 	testinginit.CdTestRepo()
@@ -70,7 +70,7 @@ func Test_SdUpdate_UpdatesPr(t *testing.T) {
 	assert.NotContains(out, "second")
 }
 
-func Test_SdAddReviewers_AddReviewers(t *testing.T) {
+func TestSdAddReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
 	testinginit.CdTestRepo()
@@ -97,7 +97,7 @@ func Test_SdAddReviewers_AddReviewers(t *testing.T) {
 	assert.Contains(testExecutor.Responses, expectedResponse)
 }
 
-func Test_SdBranchName_OutputsBranchName(t *testing.T) {
+func TestSdBranchName_OutputsBranchName(t *testing.T) {
 	assert := assert.New(t)
 
 	testinginit.CdTestRepo()
@@ -113,7 +113,7 @@ func Test_SdBranchName_OutputsBranchName(t *testing.T) {
 	assert.Equal(sd.GetBranchInfo(allCommits[0].Commit).BranchName, out)
 }
 
-func Test_SdNewWithReviewers_AddReviewers(t *testing.T) {
+func TestSdNewWithReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
 	testinginit.CdTestRepo()

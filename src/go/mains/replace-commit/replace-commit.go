@@ -35,6 +35,7 @@ func replaceCommit(branchInfo sd.BranchInfo) {
 	commitsAfter := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", branchInfo.CommitHash+"..HEAD", "--pretty=format:%h")))
 	reverseArrayInPlace(commitsAfter)
 	commitToDiffFrom := sd.FirstOriginMainCommit(branchInfo.BranchName)
+	// TODO commitToDiffFrom can be ""
 	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", commitToDiffFrom, branchInfo.BranchName)
 
 	log.Println("Resetting to ", branchInfo.CommitHash+"~1")

@@ -63,7 +63,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 	assert.Equal(allCommitsOnBranch[1].Subject, "second")
 	assert.Equal(allCommitsOnBranch[2].Subject, "first")
 
-	newCommitsOnBranch := GetNewCommits(ex.GetMainBranch())
+	newCommitsOnBranch := GetNewCommits(ex.GetMainBranch(), "HEAD")
 
 	assert.Equal(2, len(newCommitsOnBranch))
 	assert.Equal(newCommitsOnBranch[0].Subject, "fourth")
