@@ -37,6 +37,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		CreateNewCommand(),
 		CreateRebaseMainCommand(),
 		CreateUpdateCommand(),
+		CreateCheckoutCommand(),
 	}
 
 	var commandName string
