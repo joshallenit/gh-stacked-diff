@@ -30,12 +30,13 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 	commandLine.Parse(commandLineArgs)
 
 	commands := []Command{
-		CreateLogCommand(stdOut),
-		CreateNewCommand(),
-		CreateUpdateCommand(),
 		CreateAddReviewersCommand(),
 		CreateBranchNameCommand(stdOut),
+		CreateCodeOwnersCommand(stdOut),
+		CreateLogCommand(stdOut),
+		CreateNewCommand(),
 		CreateRebaseMainCommand(),
+		CreateUpdateCommand(),
 	}
 
 	var commandName string

@@ -1,11 +1,10 @@
 package stackeddiff
 
 import (
-	"encoding/csv"
-	"io"
-	"log"
+	"fmt"
+	"log/slog"
 	"os"
-	"regexp"
+	"slices"
 	"strings"
 
 	ex "stackeddiff/execute"
@@ -13,45 +12,35 @@ import (
 	"github.com/hairyhenderson/go-codeowners"
 )
 
-func ChangedFilesOwnersString(useGithub bool) string {
-	ownerString := ""
-	ownedFiles := ChangedFilesOwners(useGithub, GetChangedFiles("HEAD"))
-	for key, val := range ownedFiles {
-		ownerString += "Owner: " + key + "\n"
-		for _, filename := range val {
-			ownerString += filename + "\n"
-		}
-		ownerString += "\n"
+func ChangedFilesOwnersString() string {
+	var ownerString strings.Builder
+	ownedFiles := changedFilesOwners(getChangedFiles())
+	keys := make([]string, 0, len(ownedFiles))
+	for k := range ownedFiles {
+		keys = append(keys, k)
 	}
-	return ownerString
+	slices.Sort(keys)
+
+	for i, key := range keys {
+		if i > 0 {
+			ownerString.WriteString("\n")
+		}
+		ownerString.WriteString("Owner: " + key + "\n")
+		for _, filename := range ownedFiles[key] {
+			ownerString.WriteString(filename + "\n")
+		}
+	}
+	return ownerString.String()
 }
 
-func ChangedFilesOwners(useGithub bool, changedFiles []string) map[string][]string {
-	return getCodeOwners(useGithub, changedFiles)
-}
-
-/*
-Returns changed files against main.
-*/
-func GetChangedFiles(commit string) []string {
-	filenamesRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", commit+"~.."+commit, "--pretty=format:\"\"", "--name-only")
-	return strings.Split(strings.TrimSpace(filenamesRaw), "\n")
-}
-
-func getCodeOwners(useGithub bool, filenames []string) map[string][]string {
+func changedFilesOwners(changedFiles []string) map[string][]string {
 	ownedFiles := make(map[string][]string)
 	githubCodeowners = nil
-	customCodeowners = make(map[string][]regexp.Regexp)
-	for _, filename := range filenames {
+	for _, filename := range changedFiles {
 		if filename == "" || filename == "\"\"" {
 			continue
 		}
-		var owners []string
-		if useGithub {
-			owners = getGithubCodeOwners(filename)
-		} else {
-			owners = getCustomCodeOwners(filename)
-		}
+		owners := getGithubCodeOwners(filename)
 		var ownersForFile string
 		if len(owners) != 0 {
 			for i, o := range owners {
@@ -73,61 +62,28 @@ func getCodeOwners(useGithub bool, filenames []string) map[string][]string {
 	return ownedFiles
 }
 
+/*
+Returns changed files against main.
+*/
+func getChangedFiles() []string {
+	gitLogArgs := []string{"--no-pager", "log", "--pretty=format:\"\"", "--name-only"}
+	firstOriginCommit := FirstOriginCommit(GetCurrentBranchName())
+	if firstOriginCommit != "" {
+		gitLogArgs = append(gitLogArgs, firstOriginCommit+"..HEAD")
+	}
+	filenamesRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitLogArgs...)
+	return strings.Split(strings.TrimSpace(filenamesRaw), "\n")
+}
+
 var githubCodeowners *codeowners.Codeowners
 
 func getGithubCodeOwners(filename string) []string {
 	if githubCodeowners == nil {
 		var err error
-		var cwd string
-		if cwd, err = os.Getwd(); err != nil {
-			log.Fatal("Could not get cwd ", err)
-		} else {
-			if githubCodeowners, err = codeowners.FromFile(cwd); err != nil {
-				log.Println("Note: Could not calculate code owners:", err)
-				return nil
-			}
+		if githubCodeowners, err = codeowners.FromFileWithFS(os.DirFS("."), ""); err != nil {
+			slog.Info(fmt.Sprint("Could not calculate code owners: ", err))
+			return []string{}
 		}
 	}
 	return githubCodeowners.Owners(filename)
-}
-
-var customCodeowners map[string][]regexp.Regexp
-
-func getCustomCodeOwners(filename string) []string {
-	if len(customCodeowners) == 0 {
-		if csvFile, err := os.Open("config/code-ownership/code_ownership.csv"); err != nil {
-			log.Fatal("Could not open csv", err)
-		} else {
-			reader := csv.NewReader(csvFile)
-			for {
-				record, err := reader.Read()
-				if err == io.EOF {
-					break
-				}
-				if err != nil {
-					log.Fatal(err)
-				}
-				existing := customCodeowners[record[1]]
-				if existing == nil {
-					existing = make([]regexp.Regexp, 0)
-				}
-
-				if re, regexError := regexp.Compile("(?m)^" + record[0]); regexError != nil {
-					log.Println(ex.Red+"Warning, cannot use regex"+ex.Reset, record[0], regexError)
-				} else {
-					existing = append(existing, *re)
-					customCodeowners[record[1]] = existing
-				}
-
-			}
-		}
-	}
-	for key, val := range customCodeowners {
-		for _, re := range val {
-			if re.MatchString(filename) {
-				return []string{key}
-			}
-		}
-	}
-	return []string{}
 }

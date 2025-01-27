@@ -14,7 +14,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 	var commitToBranchFrom string
 	shouldPopStash := Stash("update-pr " + flag.Arg(0))
 	if baseBranch == ex.GetMainBranch() {
-		commitToBranchFrom = FirstOriginMainCommit(ex.GetMainBranch())
+		commitToBranchFrom = FirstOriginCommit(ex.GetMainBranch())
 		logger.Println("Switching to branch", branchInfo.BranchName, "based off commit", commitToBranchFrom)
 	} else {
 		commitToBranchFrom = baseBranch

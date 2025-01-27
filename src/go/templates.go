@@ -202,7 +202,7 @@ func GetNewCommits(compareFromRemoteBranch string, to string) []GitLog {
 }
 
 // Returns first commit of the given branch that is on origin/main, or "" if the branch is not on remote.
-func FirstOriginMainCommit(branchName string) string {
+func FirstOriginCommit(branchName string) string {
 	// Verify that remote has branch, there is no origin commit.
 	if !RemoteHasBranch(branchName) {
 		return ""

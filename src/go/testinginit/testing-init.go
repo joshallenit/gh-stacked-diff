@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strings"
 
 	"log/slog"
 	ex "stackeddiff/execute"
@@ -45,9 +46,6 @@ func CdTestDir() {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "rm", "-rf", individualTestDir)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "mkdir", "-p", individualTestDir)
 	os.Chdir(individualTestDir)
-	// Use pwd instead of individualTestDir to avoid having a mix of \ and / path separators on Windows.
-	pwd := ex.ExecuteOrDie(ex.ExecuteOptions{}, "pwd")
-	log.Println("Changed to test directory: " + pwd)
 }
 
 func CdTestRepo() {
@@ -60,7 +58,9 @@ func CdTestRepo() {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "clone", remoteDir, repositoryDir)
 
 	os.Chdir(repositoryDir)
-	log.Println("Changed to repository directory: " + repositoryDir)
+	// os.Getwd() returns an unusable path ("c:\..."") in windows when running from Git Bash. Instead use "pwd"
+	wd := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "pwd"))
+	log.Println("Changed to test repository directory:\n" + wd)
 }
 
 func AddCommit(commitMessage string, fileName string) {

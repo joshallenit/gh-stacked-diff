@@ -46,10 +46,13 @@ func UpdatePr(commitOrPullRequest string, otherCommits []string, logger *log.Log
 	if cherryPickError != nil {
 		logger.Println("First attempt at cherry-pick failed")
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-		rebaseBranch := FirstOriginMainCommit(ex.GetMainBranch())
-		logger.Println("Rebasing with the base commit on "+ex.GetMainBranch()+" branch, ", rebaseBranch,
+		rebaseCommit := FirstOriginCommit(ex.GetMainBranch())
+		if rebaseCommit == "" {
+			panic("There is no " + ex.GetMainBranch() + " branch on origin, nothing to rebase")
+		}
+		logger.Println("Rebasing with the base commit on "+ex.GetMainBranch()+" branch, ", rebaseCommit,
 			", in case the local "+ex.GetMainBranch()+" was rebased with origin/"+ex.GetMainBranch())
-		rebaseOutput, rebaseError := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", rebaseBranch)
+		rebaseOutput, rebaseError := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", rebaseCommit)
 		if rebaseError != nil {
 			logger.Println(ex.Red+"Could not rebase, aborting..."+ex.Reset, rebaseOutput)
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rebase", "--abort")
