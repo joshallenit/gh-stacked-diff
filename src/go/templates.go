@@ -205,15 +205,22 @@ func GetNewCommits(compareFromRemoteBranch string, to string) []GitLog {
 func FirstOriginCommit(branchName string) string {
 	// Verify that remote has branch, there is no origin commit.
 	if !RemoteHasBranch(branchName) {
+		if !LocalHasBranch(branchName) {
+			panic("Branch does not exist " + branchName)
+		}
 		return ""
 	}
-	allNewCommits := GetNewCommits(branchName, "HEAD")
-	return allNewCommits[len(allNewCommits)-1].Commit + "~1"
+	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge-base", "origin/"+branchName, branchName))
 }
 
 func RemoteHasBranch(branchName string) bool {
-	remoteBranches := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r", "--list", "origin/"+branchName))
-	return remoteBranches != ""
+	remoteBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r", "--list", "origin/"+branchName))
+	return remoteBranch != ""
+}
+
+func LocalHasBranch(branchName string) bool {
+	localBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "--list", branchName))
+	return localBranch != ""
 }
 
 func RequireMainBranch() {

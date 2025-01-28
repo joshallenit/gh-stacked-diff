@@ -1,46 +1,32 @@
-package main
+package stackeddiff
 
 import (
-	"fmt"
 	"log"
-	"os"
-	sd "stackeddiff"
 	"strings"
 
 	ex "stackeddiff/execute"
 )
 
-/*
-replace the a given commit with a squashed version of the commits on the associated branch.
-*/
-func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Missing commit hash or pull request number")
-		os.Exit(1)
-	}
-	branchInfo := sd.GetBranchInfo(os.Args[1])
-	shouldPopStash := false
-	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before update-pr "+os.Args[1]))
-	if strings.HasPrefix(stashResult, "Saved working") {
-		log.Println(stashResult)
-		shouldPopStash = true
-	}
-	replaceCommit(branchInfo)
-
-	sd.PopStash(shouldPopStash)
+func ReplaceCommit(commitOrBranch string) {
+	branchInfo := GetBranchInfo(commitOrBranch)
+	shouldPopStash := Stash("replace-commit " + commitOrBranch)
+	replaceCommitOfBranchInfo(branchInfo)
+	PopStash(shouldPopStash)
 }
 
 // Replaces commit `branchInfo.CommitHash“ with the contents of branch `branchInfo.BranchName`
-func replaceCommit(branchInfo sd.BranchInfo) {
+func replaceCommitOfBranchInfo(branchInfo BranchInfo) {
 	commitsAfter := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", branchInfo.CommitHash+"..HEAD", "--pretty=format:%h")))
 	reverseArrayInPlace(commitsAfter)
-	commitToDiffFrom := sd.FirstOriginCommit(branchInfo.BranchName)
-	// TODO commitToDiffFrom can be ""
-	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", commitToDiffFrom, branchInfo.BranchName)
+	commitToDiffFrom := FirstOriginCommit(branchInfo.BranchName)
+	if commitToDiffFrom == "" {
+		panic("replace-commit cannot be used to replace the root commit")
+	}
 
 	log.Println("Resetting to ", branchInfo.CommitHash+"~1")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", branchInfo.CommitHash+"~1")
 	log.Println("Adding diff from commits ", branchInfo.BranchName)
+	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", commitToDiffFrom, branchInfo.BranchName)
 	ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff}, "git", "apply")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
 	commitSummary := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", branchInfo.CommitHash)
