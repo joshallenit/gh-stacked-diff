@@ -4,11 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"os"
 	"slices"
 	"strings"
+
+	ex "stackeddiff/execute"
 )
 
 /*
@@ -21,10 +22,8 @@ func main() {
 func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs []string) {
 
 	// Parse flags common for every command.
-	var logFlags int
 	var logLevelString string
 
-	commandLine.IntVar(&logFlags, "log-flags", 0, "Log flags, see https://pkg.go.dev/log#pkg-constants")
 	commandLine.StringVar(&logLevelString, "log-level", "", "Log level: debug, info, warn, or error. Default is info except for branch-name which is error.")
 
 	commandLine.Parse(commandLineArgs)
@@ -39,6 +38,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		CreateReplaceCommitCommand(),
 		CreateUpdateCommand(),
 		CreateCheckoutCommand(),
+		CreateWaitForMergeCommand(),
 	}
 
 	var commandName string
@@ -58,8 +58,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 
 	commands[selectedIndex].FlagSet.Parse(commandLine.Args()[1:])
 
-	log.SetFlags(logFlags)
-	setLogLevel(logLevelString, commands[selectedIndex])
+	setSlogLogger(stdOut, logLevelString, commands[selectedIndex])
 
 	commands[selectedIndex].OnSelected()
 }
@@ -74,7 +73,7 @@ func getCommandNames(commands []Command) []string {
 	return names
 }
 
-func setLogLevel(logLevelString string, selectedCommand Command) {
+func setSlogLogger(stdOut io.Writer, logLevelString string, selectedCommand Command) {
 	var logLevel slog.Level
 	if logLevelString == "" {
 		logLevel = selectedCommand.DefaultLogLevel
@@ -84,5 +83,11 @@ func setLogLevel(logLevelString string, selectedCommand Command) {
 			panic("Invalid log level " + logLevelString + ": " + unmarshallErr.Error())
 		}
 	}
-	slog.SetLogLoggerLevel(logLevel)
+	opts := ex.PrettyHandlerOptions{
+		SlogOpts: slog.HandlerOptions{
+			Level: logLevel,
+		},
+	}
+	handler := ex.NewPrettyHandler(stdOut, opts)
+	slog.SetDefault(slog.New(handler))
 }

@@ -1,6 +1,7 @@
 package execute
 
 import (
+	"fmt"
 	"log/slog"
 	"slices"
 )
@@ -13,7 +14,6 @@ type ExecuteResponse struct {
 }
 
 type TestExecutor struct {
-	TestLogger    *slog.Logger
 	fakeResponses []ExecuteResponse
 	Responses     []ExecuteResponse
 }
@@ -44,12 +44,13 @@ func (t *TestExecutor) Execute(options ExecuteOptions, programName string, args 
 				matched = false
 			}
 			if matched {
-				t.Responses = append(t.Responses, ExecuteResponse{
+				fakeResponse := ExecuteResponse{
 					Out:         response.Out,
 					Err:         response.Err,
 					ProgramName: programName,
-					Args:        args},
-				)
+					Args:        args}
+				t.Responses = append(t.Responses, fakeResponse)
+				slog.Debug(fmt.Sprint("Matched", fakeResponse))
 				return response.Out, response.Err
 			}
 		}
@@ -57,10 +58,6 @@ func (t *TestExecutor) Execute(options ExecuteOptions, programName string, args 
 	out, err := (&DefaultExecutor{}).Execute(options, programName, args...)
 	t.Responses = append(t.Responses, ExecuteResponse{Out: out, Err: err, ProgramName: programName, Args: args})
 	return out, err
-}
-
-func (t TestExecutor) Logger() *slog.Logger {
-	return t.TestLogger
 }
 
 func (t *TestExecutor) SetResponse(out string, err error, programName string, args ...string) {

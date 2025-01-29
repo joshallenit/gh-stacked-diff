@@ -7,7 +7,6 @@ import (
 	"runtime"
 	"strings"
 
-	"log/slog"
 	ex "stackeddiff/execute"
 )
 
@@ -73,7 +72,7 @@ func AddCommit(commitMessage string, fileName string) {
 }
 
 func SetTestExecutor() *ex.TestExecutor {
-	testExecutor := ex.TestExecutor{TestLogger: slog.Default()}
+	testExecutor := ex.TestExecutor{}
 	testExecutor.SetResponse("Ok", nil, "gh", ex.MatchAnyRemainingArgs)
 	testExecutor.SetResponse("Ok", nil, "say", ex.MatchAnyRemainingArgs)
 	ex.SetGlobalExecutor(&testExecutor)

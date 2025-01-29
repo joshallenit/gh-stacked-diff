@@ -40,7 +40,6 @@ func NewStandardOutput() *ExecutionOutput {
 
 type Executor interface {
 	Execute(options ExecuteOptions, programName string, args ...string) (string, error)
-	Logger() *slog.Logger
 }
 
 var globalExecutor Executor = DefaultExecutor{}
@@ -70,12 +69,8 @@ func (defaultExecutor DefaultExecutor) Execute(options ExecuteOptions, programNa
 	}
 
 	stringOut := string(out)
-	defaultExecutor.Logger().Debug("Executed " + getLogMessage(programName, args, stringOut, err))
+	slog.Debug("Executed " + getLogMessage(programName, args, stringOut, err))
 	return stringOut, err
-}
-
-func (defaultExecutor DefaultExecutor) Logger() *slog.Logger {
-	return slog.Default()
 }
 
 func Execute(options ExecuteOptions, programName string, args ...string) (string, error) {
@@ -86,7 +81,7 @@ func ExecuteOrDie(options ExecuteOptions, programName string, args ...string) st
 	out, err := Execute(options, programName, args...)
 	if err != nil {
 		debug.PrintStack()
-		globalExecutor.Logger().Error(Red + "Failed executing " + Reset + getLogMessage(programName, args, out, err))
+		slog.Error(Red + "Failed executing " + Reset + getLogMessage(programName, args, out, err))
 		os.Exit(1)
 	}
 	return out
@@ -120,4 +115,8 @@ func GetMainBranch() string {
 		}
 	}
 	return mainBranchName
+}
+
+func Sleep(seconds int) {
+
 }
