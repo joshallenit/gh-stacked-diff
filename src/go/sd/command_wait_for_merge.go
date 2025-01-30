@@ -10,6 +10,9 @@ import (
 
 func CreateWaitForMergeCommand() Command {
 	flagSet := flag.NewFlagSet("wait-for-merge", flag.ExitOnError)
+
+	indicatorTypeString := AddIndicatorFlag(flagSet)
+
 	var silent bool
 	flagSet.BoolVar(&silent, "silent", false, "Whether to use voice output")
 
@@ -24,6 +27,7 @@ func CreateWaitForMergeCommand() Command {
 			flagSet.Usage()
 			os.Exit(1)
 		}
-		sd.WaitForMerge(flagSet.Arg(0), silent)
+		indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
+		sd.WaitForMerge(flagSet.Arg(0), indicatorType, silent)
 	}}
 }

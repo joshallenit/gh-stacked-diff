@@ -19,20 +19,20 @@ type pullRequestChecksStatus struct {
 	Total   int
 }
 
-func AddReviewersToPr(commitOrPullRequests []string, indicatorType IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+func AddReviewersToPr(commitIndicators []string, indicatorType IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
 	if reviewers == "" {
 		panic("Reviewers cannot be empty")
 	}
 	var wg sync.WaitGroup
-	for _, commitOrPullRequest := range commitOrPullRequests {
+	for _, commitIndicator := range commitIndicators {
 		wg.Add(1)
-		go checkBranch(&wg, commitOrPullRequest, indicatorType, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
+		go checkBranch(&wg, commitIndicator, indicatorType, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
 	}
 	wg.Wait()
 }
 
-func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, indicatorType IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
-	branchName := GetBranchInfo(commitOrPullRequest, indicatorType).BranchName
+func checkBranch(wg *sync.WaitGroup, commitIndicator string, indicatorType IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+	branchName := GetBranchInfo(commitIndicator, indicatorType).BranchName
 	if whenChecksPass {
 		for {
 			summary := getChecksStatus(branchName)
@@ -40,7 +40,7 @@ func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, indicatorType I
 				if !silent {
 					ex.ExecuteOrDie(ex.ExecuteOptions{}, "say", "Checks failed")
 				}
-				log.Print("Checks failed for ", commitOrPullRequest, ". "+
+				log.Print("Checks failed for ", commitIndicator, ". "+
 					"Total: ", summary.Total,
 					" | Passed: ", summary.Passing,
 					" | Pending: ", summary.Pending,
@@ -55,9 +55,9 @@ func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, indicatorType I
 				log.Println("All", summary.Total, "checks passed")
 				break
 			} else if summary.Passing == 0 {
-				log.Print("Checks pending for ", commitOrPullRequest, ". Completed: 0%\n")
+				log.Print("Checks pending for ", commitIndicator, ". Completed: 0%\n")
 			} else {
-				log.Print("Checks pending for ", commitOrPullRequest, ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%\n")
+				log.Print("Checks pending for ", commitIndicator, ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%\n")
 			}
 			time.Sleep(pollFrequency)
 		}

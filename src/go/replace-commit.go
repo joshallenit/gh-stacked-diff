@@ -7,9 +7,9 @@ import (
 	ex "stackeddiff/execute"
 )
 
-func ReplaceCommit(commitOrBranch string) {
-	branchInfo := GetBranchInfo(commitOrBranch, IndicatorTypeGuess)
-	shouldPopStash := Stash("replace-commit " + commitOrBranch)
+func ReplaceCommit(commitIndicator string, indicatorType IndicatorType) {
+	branchInfo := GetBranchInfo(commitIndicator, indicatorType)
+	shouldPopStash := Stash("replace-commit " + commitIndicator)
 	replaceCommitOfBranchInfo(branchInfo)
 	PopStash(shouldPopStash)
 }

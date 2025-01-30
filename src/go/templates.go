@@ -97,7 +97,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
 		slog.Info("Using pull request " + commitIndicator + ", commit " + info.CommitHash + ", branch " + info.BranchName)
 	case IndicatorTypeCommit:
-		slog.Debug("Using commitOrPullRequest as a commit hash " + commitIndicator)
+		slog.Debug("Using commitIndicator as a commit hash " + commitIndicator)
 
 		info = BranchInfo{CommitHash: commitIndicator, BranchName: GetBranchForCommit(commitIndicator)}
 		slog.Info("Using commit " + info.CommitHash + ", branch " + info.BranchName)

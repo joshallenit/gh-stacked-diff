@@ -104,7 +104,7 @@ func TestGitlog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
 
 	allCommits := GetAllCommits()
 
-	UpdatePr(allCommits[1].Commit, []string{}, log.Default())
+	UpdatePr(allCommits[1].Commit, []string{}, IndicatorTypeCommit, log.Default())
 
 	outWriter := new(bytes.Buffer)
 	PrintGitLog(outWriter)

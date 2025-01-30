@@ -8,9 +8,9 @@ import (
 	ex "stackeddiff/execute"
 )
 
-func UpdatePr(commitOrPullRequest string, otherCommits []string, logger *log.Logger) {
+func UpdatePr(commitIndicator string, otherCommits []string, indicatorType IndicatorType, logger *log.Logger) {
 	RequireMainBranch()
-	branchInfo := GetBranchInfo(commitOrPullRequest, IndicatorTypeGuess)
+	branchInfo := GetBranchInfo(commitIndicator, indicatorType)
 	var commitsToCherryPick []string
 	if len(otherCommits) > 0 {
 		commitsToCherryPick = otherCommits
@@ -19,7 +19,7 @@ func UpdatePr(commitOrPullRequest string, otherCommits []string, logger *log.Log
 		commitsToCherryPick[0] = strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--short", "HEAD"))
 	}
 	shouldPopStash := false
-	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before update-pr "+commitOrPullRequest))
+	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before update-pr "+commitIndicator))
 	if strings.HasPrefix(stashResult, "Saved working") {
 		logger.Println(stashResult)
 		shouldPopStash = true
