@@ -45,7 +45,8 @@ func PrintGitLog(out io.Writer) {
 			branchCommits := GetNewCommits(ex.GetMainBranch(), branchName)
 			if len(branchCommits) > 1 {
 				for _, branchCommit := range branchCommits {
-					fmt.Fprintln(out, "   - "+branchCommit.Subject)
+					padding := strings.Repeat(" ", len(numberPrefix))
+					fmt.Fprintln(out, padding+"   - "+branchCommit.Subject)
 				}
 			}
 		}
