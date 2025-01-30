@@ -56,3 +56,22 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}
 	assert.Contains(testExecutor.Responses, expectedResponse)
 }
+
+func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
+	assert := assert.New(t)
+
+	testinginit.CdTestRepo()
+
+	testinginit.AddCommit("first", "")
+	testinginit.AddCommit("second", "")
+	testinginit.AddCommit("third", "")
+	testinginit.AddCommit("fourth", "")
+
+	allCommits := sd.GetAllCommits()
+
+	testinginit.SetTestExecutor()
+
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"new", "2"})
+
+	assert.Equal(true, sd.RemoteHasBranch(sd.GetBranchForCommit(allCommits[1].Commit)))
+}

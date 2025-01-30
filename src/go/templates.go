@@ -108,6 +108,8 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		if err != nil {
 			panic("When indicator type is " + string(IndicatorTypeList) + " commit indicator must be a number, given " + commitIndicator)
 		}
+		// list indicators are 1 based, convert to 0 based.
+		listIndex--
 		if listIndex >= len(newCommits) || listIndex < 0 {
 			panic("list index " + fmt.Sprint(listIndex) +
 				" (parsed from " + commitIndicator + ") " +
@@ -116,6 +118,8 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		}
 		slog.Info("Using list index " + commitIndicator + ", commit " + newCommits[listIndex].Commit + " " + newCommits[listIndex].Subject)
 		info = BranchInfo{CommitHash: newCommits[listIndex].Commit, BranchName: GetBranchForCommit(newCommits[listIndex].Commit)}
+	default:
+		panic("Impossible: guessIndicatorType only returns known values, " + fmt.Sprint(indicatorType))
 	}
 	return info
 }
