@@ -22,7 +22,7 @@ func CreateCheckoutCommand() Command {
 			flagSet.Usage()
 			os.Exit(1)
 		}
-		branchName := sd.GetBranchInfo(flagSet.Arg(0)).BranchName
+		branchName := sd.GetBranchInfo(flagSet.Arg(0), sd.IndicatorTypeGuess).BranchName
 		ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "checkout", branchName)
 	}}
 }

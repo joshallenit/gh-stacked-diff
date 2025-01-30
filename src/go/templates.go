@@ -2,6 +2,8 @@ package stackeddiff
 
 import (
 	"bytes"
+	"fmt"
+
 	_ "embed"
 	"log"
 	"log/slog"
@@ -48,33 +50,86 @@ type templateData struct {
 	FeatureFlag                string
 }
 
-func GetBranchInfo(commitOrPullRequest string) BranchInfo {
-	if commitOrPullRequest == "" {
-		commitOrPullRequest = ex.GetMainBranch()
-	}
-	var info BranchInfo
-	if _, err := strconv.Atoi(commitOrPullRequest); len(commitOrPullRequest) < 7 && err == nil {
-		slog.Debug("Using commitOrPullRequest as a pull request number " + commitOrPullRequest)
+type IndicatorType string
 
-		branchName := ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitOrPullRequest, "--json", "headRefName", "-q", ".headRefName")
+const (
+	IndicatorTypeCommit IndicatorType = "commit"
+	IndicatorTypePr     IndicatorType = "pr"
+	IndicatorTypeList   IndicatorType = "list"
+	IndicatorTypeGuess  IndicatorType = "guess"
+)
+
+func (indicator IndicatorType) IsValid() bool {
+	switch indicator {
+	case IndicatorTypeCommit, IndicatorTypePr, IndicatorTypeList, IndicatorTypeGuess:
+		return true
+	default:
+		return false
+	}
+}
+
+func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchInfo {
+	if !indicatorType.IsValid() {
+		panic("Invalid IndicatorType " + string(indicatorType))
+	}
+	if commitIndicator == "" {
+		commitIndicator = ex.GetMainBranch()
+		indicatorType = IndicatorTypeCommit
+	}
+	if indicatorType == IndicatorTypeGuess {
+		indicatorType = guessIndicatorType(commitIndicator)
+	}
+
+	var info BranchInfo
+	switch indicatorType {
+	case IndicatorTypePr:
+		slog.Debug("Using commitIndicator as a pull request number " + commitIndicator)
+
+		branchName := ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitIndicator, "--json", "headRefName", "-q", ".headRefName")
 		// Fetch the branch in case the lastest commit is only on GitHub.
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "fetch", "origin", branchName)
-		prCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitOrPullRequest, "--json", "commits", "-q", "[.commits[].oid] | first"))
+		prCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitIndicator, "--json", "commits", "-q", "[.commits[].oid] | first"))
 		summary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", prCommit))
 		thisBranchCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h"))
 		if thisBranchCommit == "" {
 			log.Fatal("Could not find associated commit for PR (\"", summary, "\") in "+ex.GetMainBranch())
 		}
 		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
-		slog.Info("Using pull request " + commitOrPullRequest + ", commit " + info.CommitHash + ", branch " + info.BranchName)
-	} else {
-		slog.Debug("Using commitOrPullRequest as a commit hash " + commitOrPullRequest)
+		slog.Info("Using pull request " + commitIndicator + ", commit " + info.CommitHash + ", branch " + info.BranchName)
+	case IndicatorTypeCommit:
+		slog.Debug("Using commitOrPullRequest as a commit hash " + commitIndicator)
 
-		info = BranchInfo{CommitHash: commitOrPullRequest, BranchName: GetBranchForCommit(commitOrPullRequest)}
+		info = BranchInfo{CommitHash: commitIndicator, BranchName: GetBranchForCommit(commitIndicator)}
 		slog.Info("Using commit " + info.CommitHash + ", branch " + info.BranchName)
+	case IndicatorTypeList:
+		slog.Debug("Using commitIndicator as a list index " + commitIndicator)
+		newCommits := GetNewCommits(ex.GetMainBranch(), GetCurrentBranchName())
+		listIndex, err := strconv.Atoi(commitIndicator)
+		if err != nil {
+			panic("When indicator type is " + string(IndicatorTypeList) + " commit indicator must be a number, given " + commitIndicator)
+		}
+		if listIndex >= len(newCommits) || listIndex < 0 {
+			panic("list index " + fmt.Sprint(listIndex) +
+				" (parsed from " + commitIndicator + ") " +
+				"out of bounds for list of new commits with size " +
+				fmt.Sprint(len(newCommits)))
+		}
+		slog.Info("Using list index " + commitIndicator + ", commit " + newCommits[listIndex].Commit + " " + newCommits[listIndex].Subject)
+		info = BranchInfo{CommitHash: newCommits[listIndex].Commit, BranchName: GetBranchForCommit(newCommits[listIndex].Commit)}
 	}
 	return info
+}
 
+func guessIndicatorType(commitIndicator string) IndicatorType {
+	if _, err := strconv.Atoi(commitIndicator); err == nil {
+		if len(commitIndicator) < 3 {
+			return IndicatorTypeList
+		}
+		if len(commitIndicator) < 7 {
+			return IndicatorTypePr
+		}
+	}
+	return IndicatorTypeCommit
 }
 
 func GetBranchForCommit(commit string) string {

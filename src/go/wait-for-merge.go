@@ -8,7 +8,7 @@ import (
 )
 
 func WaitForMerge(commitOrPullRequest string, silent bool) {
-	branchName := GetBranchInfo(commitOrPullRequest).BranchName
+	branchName := GetBranchInfo(commitOrPullRequest, IndicatorTypeGuess).BranchName
 	for getMergedAt(branchName) == "" {
 		slog.Info("Not merged yet...")
 		time.Sleep(30 * time.Second)

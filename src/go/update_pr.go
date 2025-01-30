@@ -10,7 +10,7 @@ import (
 
 func UpdatePr(commitOrPullRequest string, otherCommits []string, logger *log.Logger) {
 	RequireMainBranch()
-	branchInfo := GetBranchInfo(commitOrPullRequest)
+	branchInfo := GetBranchInfo(commitOrPullRequest, IndicatorTypeGuess)
 	var commitsToCherryPick []string
 	if len(otherCommits) > 0 {
 		commitsToCherryPick = otherCommits

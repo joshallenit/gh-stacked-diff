@@ -58,7 +58,7 @@ func TestGitlog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *test
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo(""), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
 
 	outWriter := new(bytes.Buffer)
 	PrintGitLog(outWriter)
@@ -98,7 +98,7 @@ func TestGitlog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo(""), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
 
 	testinginit.AddCommit("second", "")
 

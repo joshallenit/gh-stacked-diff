@@ -19,7 +19,7 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo(""), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
 
 	// Check that the PR was created
 	outWriter := new(bytes.Buffer)
@@ -44,7 +44,7 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo(""), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetBranchForCommit(allCommits[0].Commit))
 	commitsOnNewBranch := GetNewCommits(ex.GetMainBranch(), "HEAD")
@@ -67,7 +67,7 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo(""), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetBranchForCommit(allCommits[0].Commit))
 	commitsOnNewBranch := GetNewCommits(ex.GetMainBranch(), "HEAD")

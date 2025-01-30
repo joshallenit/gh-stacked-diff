@@ -24,5 +24,5 @@ func TestSdBranchName_OutputsBranchName(t *testing.T) {
 	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ExitOnError), []string{"branch-name", allCommits[0].Commit})
 	out := outWriter.String()
 
-	assert.Equal(sd.GetBranchInfo(allCommits[0].Commit).BranchName, out)
+	assert.Equal(sd.GetBranchInfo(allCommits[0].Commit, sd.IndicatorTypeCommit).BranchName, out)
 }

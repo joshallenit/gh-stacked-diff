@@ -30,6 +30,8 @@ func CreateNewCommand() Command {
 			"It takes some time for checks to be added to a PR by Github, "+
 			"and if you add-reviewers too soon it will think that they have all passed.")
 
+	indicatorTypeString := AddIndicatorFlag(flagSet)
+
 	flagSet.Usage = func() {
 		fmt.Fprint(os.Stderr,
 			ex.Reset+"Create a new PR with a cherry-pick of the given commit hash\n"+
@@ -68,10 +70,18 @@ func CreateNewCommand() Command {
 
 	return Command{FlagSet: flagSet, OnSelected: func() {
 		if flagSet.NArg() > 1 {
+			fmt.Fprintln(os.Stderr, "Too many arguments")
 			flagSet.Usage()
 			os.Exit(1)
 		}
-		branchInfo := sd.GetBranchInfo(flagSet.Arg(0))
+
+		indicatorType := sd.IndicatorType(*indicatorTypeString)
+		if !indicatorType.IsValid() {
+			fmt.Fprintln(os.Stderr, "Invalid indicator type: "+*indicatorTypeString)
+			flagSet.Usage()
+			os.Exit(1)
+		}
+		branchInfo := sd.GetBranchInfo(flagSet.Arg(0), indicatorType)
 		sd.CreateNewPr(draft, featureFlag, baseBranch, branchInfo, log.Default())
 		if reviewers != "" {
 			sd.AddReviewersToPr([]string{branchInfo.CommitHash}, true, silent, minChecks, reviewers, 30*time.Second)

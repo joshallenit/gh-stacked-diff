@@ -8,7 +8,7 @@ import (
 )
 
 func ReplaceCommit(commitOrBranch string) {
-	branchInfo := GetBranchInfo(commitOrBranch)
+	branchInfo := GetBranchInfo(commitOrBranch, IndicatorTypeGuess)
 	shouldPopStash := Stash("replace-commit " + commitOrBranch)
 	replaceCommitOfBranchInfo(branchInfo)
 	PopStash(shouldPopStash)

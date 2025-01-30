@@ -13,12 +13,11 @@ import (
 func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
 	testinginit.CdTestRepo()
-
 	testinginit.AddCommit("first", "")
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo(""), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
 
 	testinginit.AddCommit("second", "")
 
@@ -44,7 +43,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo(""), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
 
 	testinginit.AddCommit("third", "")
 

@@ -22,7 +22,7 @@ func CreateBranchNameCommand(stdOut io.Writer) Command {
 			flagSet.Usage()
 			os.Exit(1)
 		}
-		branchName := sd.GetBranchInfo(flagSet.Arg(0)).BranchName
+		branchName := sd.GetBranchInfo(flagSet.Arg(0), sd.IndicatorTypeGuess).BranchName
 		fmt.Fprint(stdOut, branchName)
 	}}
 }

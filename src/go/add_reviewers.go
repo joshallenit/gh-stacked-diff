@@ -35,7 +35,7 @@ func AddReviewersToPr(commitOrPullRequests []string, whenChecksPass bool, silent
 }
 
 func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
-	branchName := GetBranchInfo(commitOrPullRequest).BranchName
+	branchName := GetBranchInfo(commitOrPullRequest, IndicatorTypeGuess).BranchName
 	if whenChecksPass {
 		for {
 			summary := getChecksStatus(branchName)
