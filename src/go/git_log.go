@@ -23,7 +23,7 @@ func PrintGitLog(out io.Writer) {
 	if len(logs) == 0 {
 		return
 	}
-	for _, log := range logs {
+	for i, log := range logs {
 		index := strings.Index(log, " ")
 		if index == -1 {
 			continue
@@ -32,10 +32,11 @@ func PrintGitLog(out io.Writer) {
 
 		branchName := GetBranchForCommit(commit)
 		checkedBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-l", branchName))
+		numberPrefix := getNumberPrefix(i, logs)
 		if checkedBranch == "" {
-			fmt.Fprint(out, "   ")
+			fmt.Fprint(out, numberPrefix+"   ")
 		} else {
-			fmt.Fprint(out, "✅ ")
+			fmt.Fprint(out, numberPrefix+"✅ ")
 		}
 
 		fmt.Fprintln(out, ex.Yellow+commit+ex.Reset+" "+log[index+1:])
@@ -49,4 +50,11 @@ func PrintGitLog(out io.Writer) {
 			}
 		}
 	}
+}
+
+func getNumberPrefix(i int, logs []string) string {
+	maxIndex := fmt.Sprint(len(logs))
+	currentIndex := fmt.Sprint(i + 1)
+	padding := strings.Repeat(" ", len(maxIndex)-len(currentIndex))
+	return padding + currentIndex + ". "
 }
