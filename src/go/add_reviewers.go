@@ -19,23 +19,20 @@ type pullRequestChecksStatus struct {
 	Total   int
 }
 
-func AddReviewersToPr(commitOrPullRequests []string, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+func AddReviewersToPr(commitOrPullRequests []string, indicatorType IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
 	if reviewers == "" {
-		reviewers = os.Getenv("PR_REVIEWERS")
-		if reviewers == "" {
-			log.Fatal("Use reviewers flag or set PR_REVIEWERS environment variable")
-		}
+		panic("Reviewers cannot be empty")
 	}
 	var wg sync.WaitGroup
 	for _, commitOrPullRequest := range commitOrPullRequests {
 		wg.Add(1)
-		go checkBranch(&wg, commitOrPullRequest, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
+		go checkBranch(&wg, commitOrPullRequest, indicatorType, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
 	}
 	wg.Wait()
 }
 
-func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
-	branchName := GetBranchInfo(commitOrPullRequest, IndicatorTypeGuess).BranchName
+func checkBranch(wg *sync.WaitGroup, commitOrPullRequest string, indicatorType IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+	branchName := GetBranchInfo(commitOrPullRequest, indicatorType).BranchName
 	if whenChecksPass {
 		for {
 			summary := getChecksStatus(branchName)

@@ -38,3 +38,30 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}
 	assert.Contains(testExecutor.Responses, expectedResponse)
 }
+
+func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
+	assert := assert.New(t)
+
+	testinginit.CdTestRepo()
+
+	testinginit.AddCommit("first", "")
+
+	testExecutor := testinginit.SetTestExecutor()
+
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"new"})
+
+	allCommits := sd.GetAllCommits()
+	testExecutor.SetResponse(
+		// There has to be at least 4 checks, each with 3 values: status, conclusion, and state.
+		"SUCCESS\nSUCCESS\nSUCCESS\n"+
+			"SUCCESS\nSUCCESS\nSUCCESS\n"+
+			"SUCCESS\nSUCCESS\nSUCCESS\n"+
+			"SUCCESS\nSUCCESS\nSUCCESS\n",
+		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
+
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"add-reviewers", "--indicator=list", "--reviewers=mybestie", "1"})
+
+	ghExpectedArgs := []string{"pr", "edit", sd.GetBranchForCommit(allCommits[0].Commit), "--add-reviewer", "mybestie"}
+	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}
+	assert.Contains(testExecutor.Responses, expectedResponse)
+}

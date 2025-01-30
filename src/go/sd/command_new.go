@@ -75,16 +75,11 @@ func CreateNewCommand() Command {
 			os.Exit(1)
 		}
 
-		indicatorType := sd.IndicatorType(*indicatorTypeString)
-		if !indicatorType.IsValid() {
-			fmt.Fprintln(os.Stderr, "Invalid indicator type: "+*indicatorTypeString)
-			flagSet.Usage()
-			os.Exit(1)
-		}
+		indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
 		branchInfo := sd.GetBranchInfo(flagSet.Arg(0), indicatorType)
 		sd.CreateNewPr(draft, featureFlag, baseBranch, branchInfo, log.Default())
 		if reviewers != "" {
-			sd.AddReviewersToPr([]string{branchInfo.CommitHash}, true, silent, minChecks, reviewers, 30*time.Second)
+			sd.AddReviewersToPr([]string{branchInfo.CommitHash}, sd.IndicatorTypeCommit, true, silent, minChecks, reviewers, 30*time.Second)
 		}
 	}}
 }
