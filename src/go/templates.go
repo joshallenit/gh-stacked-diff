@@ -167,7 +167,7 @@ func truncateString(str string, maxBytes int) string {
 }
 
 func GetPullRequestText(commitHash string, featureFlag string) PullRequestText {
-	data := getTemplateData(commitHash, featureFlag)
+	data := getPullRequestTemplateData(commitHash, featureFlag)
 	title := runTemplate("pr-title.template", prTitleTemplateText, data)
 	description := runTemplate("pr-description.template", prDescriptionTemplateText, data)
 	return PullRequestText{Description: description, Title: title}
@@ -193,7 +193,7 @@ func runTemplate(configFilename string, defaultTemplateText string, data any) st
 	return output.String()
 }
 
-func getTemplateData(commitHash string, featureFlag string) templateData {
+func getPullRequestTemplateData(commitHash string, featureFlag string) templateData {
 	commitSummary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", commitHash))
 	commitBody := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%b", commitHash))
 	commitSummaryCleaned := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commitHash))

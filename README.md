@@ -273,3 +273,36 @@ Then run:
 ```bash
 make build
 ```
+
+
+	// so I could do something like this:
+	// https://github.com/Nutlope/aicommits
+	// to create an AI git commit message
+
+	/*
+					https://www.hatica.io/blog/ai-commit-tools/
+				https://github.com/kamushadenes/chloe/blob/main/.github/scripts/release-notes.py
+		the commit messages don't look that great, probably not the best idea
+		but splitting commits into smaller ones based on compilability could be good. Maybe figuring out which dependencies are declared in which file and then which dependencies are used in each file? That could work
+
+
+				I could actually try these commit messages to see how well they work or don't work
+				Other ideas:
+					- show git log very fast and then check for branches async using ANSI codes
+					- output the latest head commit so that a rollback can be done "git reset --hard xxx", but that doesn't keep track of what it does to branches which could screw up a PR, undo? that could be useful.
+					- Include PR link instead of just a :green-check: beside PR's, there might be a way to http link from terminal. Too long to do it for every branch, would require the ANSI backspace idea. Or it could run in the background and update it next? Not sure if Go can launch background tasks and terminate, but probably? Or do it with a visual gui? wow, that would be something. https://github.com/charmbracelet/bubbletea
+					- Next `gh pr view 83824 --json latestReviews` and ensure developer is already not approved so that the review is not dismissed
+					- show the output of git commands in a tabbed window that uses ANSI escape codes to move around the screen
+					- better error handling so that it reverted on error rather then leaving in an indeterminite state... but wouldn't this mean that I have to save error codes so they can be reported upstream?
+
+POLISH
+- update README with latest changes
+- code review, review/organize/document code
+- standardize all test so they are using assert* and named properly
+- test for error conditions (ugh not fun)
+- get rid of the check for master when / vs - in branch name
+					
+NOT WORTH DOING
+
+
+						*/
