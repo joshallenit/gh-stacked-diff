@@ -10,6 +10,7 @@ import (
 
 func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo BranchInfo, logger *log.Logger) {
 	RequireMainBranch()
+	RequireCommitOnMain(branchInfo.CommitHash)
 
 	var commitToBranchFrom string
 	shouldPopStash := Stash("update-pr " + flag.Arg(0))

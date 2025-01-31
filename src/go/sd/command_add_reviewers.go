@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
@@ -36,16 +37,17 @@ func CreateAddReviewersCommand() Command {
 		fmt.Fprint(os.Stderr,
 			ex.Reset+"Mark a Draft PR as \"Ready for Review\" and automatically add reviewers.\n"+
 				"\n"+
-				"add-reviewers [flags] <commitIndicator>\n"+
+				"add-reviewers [flags] [commitIndicator [commitIndicator]...]\n"+
 				"\n"+
 				ex.White+"Flags:"+ex.Reset+"\n")
 		flagSet.PrintDefaults()
 	}
 	return Command{FlagSet: flagSet, OnSelected: func() {
-		if flagSet.NArg() == 0 {
-			fmt.Fprintln(os.Stderr, "Missing commitIndicator")
-			flagSet.Usage()
-			os.Exit(1)
+		commitIndicators := flagSet.Args()
+		if len(commitIndicators) == 0 {
+			slog.Debug("Using main branch because commitIndicators is empty")
+			commitIndicators = []string{ex.GetMainBranch()}
+			*indicatorTypeString = string(sd.IndicatorTypeCommit)
 		}
 		if reviewers == "" {
 			reviewers = os.Getenv("PR_REVIEWERS")
@@ -56,6 +58,6 @@ func CreateAddReviewersCommand() Command {
 			}
 		}
 		indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
-		sd.AddReviewersToPr(flagSet.Args(), indicatorType, *whenChecksPass, silent, minChecks, reviewers, *pollFrequency)
+		sd.AddReviewersToPr(commitIndicators, indicatorType, *whenChecksPass, silent, minChecks, reviewers, *pollFrequency)
 	}}
 }

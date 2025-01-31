@@ -297,7 +297,6 @@ make build
 
 POLISH
 - update README with latest changes
-- see where else I am using get branch name and use the new GitLog.Branch
 - code review, review/organize/document code
 - standardize all test so they are using assert* and named properly
 - test for error conditions (ugh not fun) + but could lead to better error handling (rollback)

@@ -11,6 +11,7 @@ import (
 func UpdatePr(commitIndicator string, otherCommits []string, indicatorType IndicatorType, logger *log.Logger) {
 	RequireMainBranch()
 	branchInfo := GetBranchInfo(commitIndicator, indicatorType)
+	RequireCommitOnMain(branchInfo.CommitHash)
 	var commitsToCherryPick []string
 	if len(otherCommits) > 0 {
 		commitsToCherryPick = otherCommits

@@ -3,6 +3,7 @@ package stackeddiff
 import (
 	"bytes"
 	"fmt"
+	"slices"
 
 	_ "embed"
 	"log"
@@ -300,6 +301,19 @@ func LocalHasBranch(branchName string) bool {
 func RequireMainBranch() {
 	if GetCurrentBranchName() != ex.GetMainBranch() {
 		log.Fatal("Must be run from " + ex.GetMainBranch() + " branch")
+		panic("Must be run from " + ex.GetMainBranch() + " branch")
+	}
+}
+
+func RequireCommitOnMain(commit string) {
+	if commit == ex.GetMainBranch() {
+		return
+	}
+	newCommits := GetNewCommits(ex.GetMainBranch(), "HEAD")
+	if !slices.ContainsFunc(newCommits, func(gitLog GitLog) bool {
+		return gitLog.Commit == commit
+	}) {
+		panic("Commit " + commit + " does not exist on " + ex.GetMainBranch() + ". Check `sd log` for available commits.")
 	}
 }
 

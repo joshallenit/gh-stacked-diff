@@ -13,6 +13,7 @@ import (
 )
 
 func TestGitlog_OnEmptyRemote_PrintsLog(t *testing.T) {
+
 	testinginit.CdTestRepo()
 
 	testinginit.AddCommit("first", "")
