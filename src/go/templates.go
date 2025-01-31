@@ -158,7 +158,7 @@ func GetBranchForSantizedSubject(sanitizedSubject string) string {
 }
 
 func truncateString(str string, maxBytes int) string {
-	for i, _ := range str {
+	for i := range str {
 		if i >= maxBytes {
 			return str[:i]
 		}
