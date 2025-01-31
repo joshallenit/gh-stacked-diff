@@ -300,7 +300,6 @@ func LocalHasBranch(branchName string) bool {
 
 func RequireMainBranch() {
 	if GetCurrentBranchName() != ex.GetMainBranch() {
-		log.Fatal("Must be run from " + ex.GetMainBranch() + " branch")
 		panic("Must be run from " + ex.GetMainBranch() + " branch")
 	}
 }
