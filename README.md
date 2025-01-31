@@ -294,6 +294,9 @@ make build
 					- Next `gh pr view 83824 --json latestReviews` and ensure developer is already not approved so that the review is not dismissed
 					- show the output of git commands in a tabbed window that uses ANSI escape codes to move around the screen
 					- better error handling so that it reverted on error rather then leaving in an indeterminite state... but wouldn't this mean that I have to save error codes so they can be reported upstream?
+					- aliases for reviewer names, so ideally what
+
+
 
 POLISH
 - update README with latest changes
@@ -302,7 +305,19 @@ POLISH
 - test for error conditions (ugh not fun) + but could lead to better error handling (rollback)
 - get rid of the check for master when / vs - in branch name
 					
+
+create a PR summary message based on commit messages and comments in code? would that work... probably not.
+
+sending a diff would be too exact
+
 NOT WORTH DOING
+
+It's easier to just set envionment variables
+
+sd config set reviewer-alias ankit search
+sd config show reviewer-alias
+
+
 
 
 						*/
