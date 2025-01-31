@@ -25,7 +25,7 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 
 	UpdatePr(commitsOnMain[1].Commit, []string{}, IndicatorTypeCommit, log.Default())
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetBranchForCommit(commitsOnMain[1].Commit))
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[1].Branch)
 
 	commitsOnBranch := GetAllCommits()
 
@@ -53,7 +53,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	UpdatePr(commitsOnMain[2].Commit, []string{}, IndicatorTypeCommit, log.Default())
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetBranchForCommit(commitsOnMain[2].Commit))
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[2].Branch)
 
 	allCommitsOnBranch := GetAllCommits()
 

@@ -46,7 +46,7 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 
 	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetBranchForCommit(allCommits[0].Commit))
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := GetNewCommits(ex.GetMainBranch(), "HEAD")
 	assert.Equal(1, len(commitsOnNewBranch))
 	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
@@ -69,7 +69,7 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 
 	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetBranchForCommit(allCommits[0].Commit))
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := GetNewCommits(ex.GetMainBranch(), "HEAD")
 	assert.Equal(1, len(commitsOnNewBranch))
 	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)

@@ -52,7 +52,7 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 
 	allCommits := sd.GetAllCommits()
 
-	ghExpectedArgs := []string{"pr", "edit", sd.GetBranchForCommit(allCommits[0].Commit), "--add-reviewer", "mybestie"}
+	ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
 	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}
 	assert.Contains(testExecutor.Responses, expectedResponse)
 }
@@ -73,5 +73,5 @@ func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"new", "2"})
 
-	assert.Equal(true, sd.RemoteHasBranch(sd.GetBranchForCommit(allCommits[1].Commit)))
+	assert.Equal(true, sd.RemoteHasBranch(allCommits[1].Branch))
 }

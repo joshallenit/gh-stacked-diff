@@ -105,7 +105,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 	case IndicatorTypeCommit:
 		slog.Debug("Using commitIndicator as a commit hash " + commitIndicator)
 
-		info = BranchInfo{CommitHash: commitIndicator, BranchName: GetBranchForCommit(commitIndicator)}
+		info = BranchInfo{CommitHash: commitIndicator, BranchName: getBranchForCommit(commitIndicator)}
 		slog.Info("Using commit " + info.CommitHash + ", branch " + info.BranchName)
 	case IndicatorTypeList:
 		slog.Debug("Using commitIndicator as a list index " + commitIndicator)
@@ -123,7 +123,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 				fmt.Sprint(len(newCommits)))
 		}
 		slog.Info("Using list index " + commitIndicator + ", commit " + newCommits[listIndex].Commit + " " + newCommits[listIndex].Subject)
-		info = BranchInfo{CommitHash: newCommits[listIndex].Commit, BranchName: GetBranchForCommit(newCommits[listIndex].Commit)}
+		info = BranchInfo{CommitHash: newCommits[listIndex].Commit, BranchName: newCommits[listIndex].Branch}
 	default:
 		panic("Impossible: guessIndicatorType only returns known values, " + fmt.Sprint(indicatorType))
 	}
@@ -142,7 +142,7 @@ func guessIndicatorType(commitIndicator string) IndicatorType {
 	return IndicatorTypeCommit
 }
 
-func GetBranchForCommit(commit string) string {
+func getBranchForCommit(commit string) string {
 	sanitizedSubject := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commit))
 	return GetBranchForSantizedSubject(sanitizedSubject)
 }
