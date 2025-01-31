@@ -8,10 +8,9 @@ import (
 	ex "stackeddiff/execute"
 )
 
-func UpdatePr(commitIndicator string, otherCommits []string, indicatorType IndicatorType, logger *log.Logger) {
+func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType IndicatorType, logger *log.Logger) {
 	RequireMainBranch()
-	branchInfo := GetBranchInfo(commitIndicator, indicatorType)
-	RequireCommitOnMain(branchInfo.CommitHash)
+	RequireCommitOnMain(destCommit.CommitHash)
 	var commitsToCherryPick []string
 	if len(otherCommits) > 0 {
 		commitsToCherryPick = otherCommits
@@ -20,19 +19,19 @@ func UpdatePr(commitIndicator string, otherCommits []string, indicatorType Indic
 		commitsToCherryPick[0] = strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--short", "HEAD"))
 	}
 	shouldPopStash := false
-	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before update-pr "+commitIndicator))
+	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before update-pr "+destCommit.CommitHash))
 	if strings.HasPrefix(stashResult, "Saved working") {
 		logger.Println(stashResult)
 		shouldPopStash = true
 	}
-	logger.Println("Switching to branch", branchInfo.BranchName)
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", branchInfo.BranchName)
+	logger.Println("Switching to branch", destCommit.BranchName)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", destCommit.BranchName)
 	logger.Println("Fast forwarding in case there were any commits made via github web interface")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "fetch", "origin", branchInfo.BranchName)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "fetch", "origin", destCommit.BranchName)
 	forcePush := false
-	if _, err := ex.Execute(ex.ExecuteOptions{}, "git", "merge", "--ff-only", "origin/"+branchInfo.BranchName); err != nil {
+	if _, err := ex.Execute(ex.ExecuteOptions{}, "git", "merge", "--ff-only", "origin/"+destCommit.BranchName); err != nil {
 		logger.Println("Could not fast forward to match origin. Rebasing instead.", err)
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rebase", "origin", branchInfo.BranchName)
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rebase", "origin", destCommit.BranchName)
 		// As we rebased, a force push may be required.
 		forcePush = true
 	}
@@ -74,24 +73,24 @@ func UpdatePr(commitIndicator string, otherCommits []string, indicatorType Indic
 	}
 	logger.Println("Pushing to remote")
 	if forcePush {
-		if _, err := ex.Execute(ex.ExecuteOptions{}, "git", "push", "origin", branchInfo.BranchName); err != nil {
+		if _, err := ex.Execute(ex.ExecuteOptions{}, "git", "push", "origin", destCommit.BranchName); err != nil {
 			logger.Println("Regular push failed, force pushing instead.")
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "-f", "origin", branchInfo.BranchName)
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "-f", "origin", destCommit.BranchName)
 		}
 	} else {
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", branchInfo.BranchName)
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", destCommit.BranchName)
 	}
 	logger.Println("Switching back to " + ex.GetMainBranch())
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
-	logger.Println("Rebasing, marking as fixup", commitsToCherryPick, "for target", branchInfo.CommitHash)
+	logger.Println("Rebasing, marking as fixup", commitsToCherryPick, "for target", destCommit.CommitHash)
 	options := ex.ExecuteOptions{EnvironmentVariables: make([]string, 1), Output: ex.NewStandardOutput()}
-	options.EnvironmentVariables[0] = "GIT_SEQUENCE_EDITOR=sequence_editor_mark_as_fixup " + branchInfo.CommitHash + " " + strings.Join(commitsToCherryPick, " ")
+	options.EnvironmentVariables[0] = "GIT_SEQUENCE_EDITOR=sequence_editor_mark_as_fixup " + destCommit.CommitHash + " " + strings.Join(commitsToCherryPick, " ")
 	rootCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--max-parents=0", "--format=%h", "HEAD"))
-	if rootCommit == branchInfo.CommitHash {
+	if rootCommit == destCommit.CommitHash {
 		logger.Println("Rebasing root commit")
 		ex.ExecuteOrDie(options, "git", "rebase", "-i", "--root")
 	} else {
-		ex.ExecuteOrDie(options, "git", "rebase", "-i", branchInfo.CommitHash+"^")
+		ex.ExecuteOrDie(options, "git", "rebase", "-i", destCommit.CommitHash+"^")
 	}
 	PopStash(shouldPopStash)
 }
