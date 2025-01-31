@@ -16,6 +16,9 @@ import (
 	ex "stackeddiff/execute"
 )
 
+// Delimter for git log format when a space cannot be used.
+const formatDelimiter = "|stackeddiff-delim|"
+
 //go:embed config/branch-name.template
 var branchNameTemplateText string
 
@@ -24,6 +27,9 @@ var prTitleTemplateText string
 
 //go:embed config/pr-description.template
 var prDescriptionTemplateText string
+
+// Cached value of user email.
+var userEmail string
 
 type BranchInfo struct {
 	CommitHash string
@@ -137,7 +143,12 @@ func guessIndicatorType(commitIndicator string) IndicatorType {
 }
 
 func GetBranchForCommit(commit string) string {
-	name := runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(commit))
+	sanitizedSubject := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commit))
+	return GetBranchForSantizedSubject(sanitizedSubject)
+}
+
+func GetBranchForSantizedSubject(sanitizedSubject string) string {
+	name := runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(sanitizedSubject))
 	if ex.GetMainBranch() == "master" {
 		name = strings.Replace(name, "/", "-", -1)
 		name = strings.Replace(name, ".", "-", -1)
@@ -199,16 +210,19 @@ func getTemplateData(commitHash string, featureFlag string) templateData {
 	}
 }
 
-func getBranchTemplateData(commitHash string) branchTemplateData {
+func getBranchTemplateData(sanitizedSummary string) branchTemplateData {
 	return branchTemplateData{
 		Username:             GetUsername(),
-		CommitSummaryCleaned: strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commitHash)),
+		CommitSummaryCleaned: sanitizedSummary,
 	}
 }
 
 func GetUsername() string {
-	email := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email"))
-	return email[0:strings.Index(email, "@")]
+	if userEmail == "" {
+		userEmailRaw := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email"))
+		userEmail = userEmailRaw[0:strings.Index(userEmailRaw, "@")]
+	}
+	return userEmail
 }
 
 func getConfigFile(filenameWithoutPath string) *string {
@@ -227,30 +241,31 @@ func getConfigFile(filenameWithoutPath string) *string {
 type GitLog struct {
 	Commit  string
 	Subject string
+	Branch  string
 }
 
 func newGitLogs(logsRaw string) []GitLog {
 	logLines := strings.Split(strings.TrimSpace(logsRaw), "\n")
 	var logs []GitLog
 	for _, logLine := range logLines {
-		spaceIndex := strings.Index(logLine, " ")
-		if spaceIndex == -1 {
+		components := strings.Split(logLine, formatDelimiter)
+		if len(components) != 3 {
 			// No git logs.
 			continue
 		}
-		logs = append(logs, GitLog{Commit: logLine[0:spaceIndex], Subject: logLine[spaceIndex+1:]})
+		logs = append(logs, GitLog{Commit: components[0], Subject: components[1], Branch: GetBranchForSantizedSubject(components[2])})
 	}
 	return logs
 }
 
 func GetAllCommits() []GitLog {
-	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h %s", "--abbrev-commit"}
+	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h" + formatDelimiter + "%s" + formatDelimiter + "%f", "--abbrev-commit"}
 	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
 	return newGitLogs(logsRaw)
 }
 
 func GetNewCommits(compareFromRemoteBranch string, to string) []GitLog {
-	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h %s", "--abbrev-commit"}
+	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h" + formatDelimiter + "%s" + formatDelimiter + "%f", "--abbrev-commit"}
 	if RemoteHasBranch(compareFromRemoteBranch) {
 		gitArgs = append(gitArgs, "origin/"+compareFromRemoteBranch+".."+to)
 	} else {

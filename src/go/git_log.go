@@ -3,46 +3,41 @@ package stackeddiff
 import (
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 
 	ex "stackeddiff/execute"
 )
 
 func PrintGitLog(out io.Writer) {
-	gitArgs := []string{"--no-pager", "log", "--pretty=oneline", "--abbrev-commit"}
-	if RemoteHasBranch(ex.GetMainBranch()) {
-		gitArgs = append(gitArgs, "origin/"+ex.GetMainBranch()+"..HEAD")
-	}
 	if GetCurrentBranchName() != ex.GetMainBranch() {
+		gitArgs := []string{"--no-pager", "log", "--pretty=oneline", "--abbrev-commit"}
+		if RemoteHasBranch(ex.GetMainBranch()) {
+			gitArgs = append(gitArgs, "origin/"+ex.GetMainBranch()+"..HEAD")
+		}
 		gitArgs = append(gitArgs, "--color=always")
 		ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: out, Stderr: out}}, "git", gitArgs...)
 		return
 	}
-	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
-	logs := strings.Split(strings.TrimSpace(logsRaw), "\n")
-	if len(logs) == 0 {
-		return
+	logs := GetNewCommits(ex.GetMainBranch(), "HEAD")
+	gitBranchArgs := make([]string, 0, len(logs)+2)
+	gitBranchArgs = append(gitBranchArgs, "branch", "-l")
+	for _, log := range logs {
+		gitBranchArgs = append(gitBranchArgs, log.Branch)
 	}
+	checkedBranchesRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitBranchArgs...)
+	checkedBranches := strings.Split(strings.TrimSpace(checkedBranchesRaw), "\n")
 	for i, log := range logs {
-		index := strings.Index(log, " ")
-		if index == -1 {
-			continue
-		}
-		commit := log[0:index]
-
-		branchName := GetBranchForCommit(commit)
-		checkedBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-l", branchName))
-		numberPrefix := getNumberPrefix(i, logs)
-		if checkedBranch == "" {
-			fmt.Fprint(out, numberPrefix+"   ")
-		} else {
+		numberPrefix := getNumberPrefix(i, len(logs))
+		if slices.Contains(checkedBranches, log.Branch) {
 			fmt.Fprint(out, numberPrefix+"✅ ")
+		} else {
+			fmt.Fprint(out, numberPrefix+"   ")
 		}
-
-		fmt.Fprintln(out, ex.Yellow+commit+ex.Reset+" "+log[index+1:])
+		fmt.Fprintln(out, ex.Yellow+log.Commit+ex.Reset+" "+log.Subject)
 		// find first commit that is not in main branch
-		if checkedBranch != "" {
-			branchCommits := GetNewCommits(ex.GetMainBranch(), branchName)
+		if slices.Contains(checkedBranches, log.Branch) {
+			branchCommits := GetNewCommits(ex.GetMainBranch(), log.Branch)
 			if len(branchCommits) > 1 {
 				for _, branchCommit := range branchCommits {
 					padding := strings.Repeat(" ", len(numberPrefix))
@@ -53,8 +48,8 @@ func PrintGitLog(out io.Writer) {
 	}
 }
 
-func getNumberPrefix(i int, logs []string) string {
-	maxIndex := fmt.Sprint(len(logs))
+func getNumberPrefix(i int, numLogs int) string {
+	maxIndex := fmt.Sprint(numLogs)
 	currentIndex := fmt.Sprint(i + 1)
 	padding := strings.Repeat(" ", len(maxIndex)-len(currentIndex))
 	return padding + currentIndex + ". "
