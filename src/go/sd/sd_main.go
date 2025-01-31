@@ -21,13 +21,6 @@ func main() {
 
 func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs []string) {
 
-	// Parse flags common for every command.
-	var logLevelString string
-
-	commandLine.StringVar(&logLevelString, "log-level", "", "Log level: debug, info, warn, or error. Default is info except for branch-name which is error.")
-
-	commandLine.Parse(commandLineArgs)
-
 	commands := []Command{
 		CreateAddReviewersCommand(),
 		CreateBranchNameCommand(stdOut),
@@ -41,6 +34,22 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		CreateWaitForMergeCommand(),
 	}
 
+	commandLine.Usage = func() {
+		fmt.Fprintln(os.Stderr, "Stacked Diff Workflow")
+		fmt.Fprintln(os.Stderr, "Usage: sd <command>")
+		fmt.Fprintln(os.Stderr, "Possible commands are:")
+		fmt.Fprintln(os.Stderr, " - "+strings.Join(getCommandNames(commands), "\n - "))
+		fmt.Fprintln(os.Stderr, "To learn more about a command use: sd <command> --help")
+		fmt.Fprintln(os.Stderr, "Flags:")
+		commandLine.PrintDefaults()
+	}
+	// Parse flags common for every command.
+	var logLevelString string
+
+	commandLine.StringVar(&logLevelString, "log-level", "", "Log level: debug, info, warn, or error. Default is info except for branch-name which is error.")
+
+	commandLine.Parse(commandLineArgs)
+
 	var commandName string
 	if commandLine.NArg() > 0 {
 		commandName = commandLine.Arg(0)
@@ -52,7 +61,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		if commandName != "" {
 			fmt.Fprintln(os.Stderr, "Unknown command", commandName)
 		}
-		fmt.Fprintln(os.Stderr, "Usage: sd [", strings.Join(getCommandNames(commands), " | "), "]")
+		flag.Usage()
 		os.Exit(1)
 	}
 

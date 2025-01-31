@@ -39,11 +39,3 @@ func AddReviewersFlag(flagSet *flag.FlagSet) (*string, *bool, *int) {
 			"and if you add-reviewers too soon it will think that they have all passed.")
 	return reviewers, silent, minChecks
 }
-
-/*
-move silent flag here
-*/
-
-/*
-then check out the help
-*/
