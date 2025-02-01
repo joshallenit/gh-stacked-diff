@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-	"runtime/debug"
 	"strings"
 )
 
@@ -80,9 +79,7 @@ func Execute(options ExecuteOptions, programName string, args ...string) (string
 func ExecuteOrDie(options ExecuteOptions, programName string, args ...string) string {
 	out, err := Execute(options, programName, args...)
 	if err != nil {
-		debug.PrintStack()
-		slog.Error(Red + "Failed executing " + Reset + getLogMessage(programName, args, out, err))
-		os.Exit(1)
+		panic(fmt.Sprint(Red + "Failed executing " + Reset + getLogMessage(programName, args, out, err)))
 	}
 	return out
 }
