@@ -20,7 +20,7 @@ func CreateNewCommand() Command {
 	flagSet.StringVar(&featureFlag, "feature-flag", "", "Value for FEATURE_FLAG in PR description")
 	flagSet.StringVar(&baseBranch, "base", ex.GetMainBranch(), "Base branch for Pull Request")
 
-	reviewers, silent, minChecks := AddReviewersFlag(flagSet)
+	reviewers, silent, minChecks := AddReviewersFlags(flagSet, "")
 
 	indicatorTypeString := AddIndicatorFlag(flagSet)
 
@@ -60,18 +60,21 @@ func CreateNewCommand() Command {
 		flagSet.PrintDefaults()
 	}
 
-	return Command{FlagSet: flagSet, OnSelected: func() {
-		if flagSet.NArg() > 1 {
-			fmt.Fprintln(os.Stderr, "Too many arguments")
-			flagSet.Usage()
-			os.Exit(1)
-		}
+	return Command{
+		FlagSet:      flagSet,
+		UsageSummary: "Create a new pull request from a commit on main",
+		OnSelected: func() {
+			if flagSet.NArg() > 1 {
+				fmt.Fprintln(flagSet.Output(), "error: too many arguments")
+				flagSet.Usage()
+				os.Exit(1)
+			}
 
-		indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
-		branchInfo := sd.GetBranchInfo(flagSet.Arg(0), indicatorType)
-		sd.CreateNewPr(draft, featureFlag, baseBranch, branchInfo, log.Default())
-		if *reviewers != "" {
-			sd.AddReviewersToPr([]string{branchInfo.CommitHash}, sd.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
-		}
-	}}
+			indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
+			branchInfo := sd.GetBranchInfo(flagSet.Arg(0), indicatorType)
+			sd.CreateNewPr(draft, featureFlag, baseBranch, branchInfo, log.Default())
+			if *reviewers != "" {
+				sd.AddReviewersToPr([]string{branchInfo.CommitHash}, sd.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
+			}
+		}}
 }

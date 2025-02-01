@@ -10,4 +10,5 @@ type Command struct {
 	OnSelected func()
 	// Default if not set is 0 which is Info.
 	DefaultLogLevel slog.Level
+	UsageSummary    string
 }

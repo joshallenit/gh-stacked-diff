@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	sd "stackeddiff"
 )
 
@@ -22,20 +23,30 @@ func AddIndicatorFlag(flagSet *flag.FlagSet) *string {
 func CheckIndicatorFlag(flagSet *flag.FlagSet, indicatorTypeString *string) sd.IndicatorType {
 	indicatorType := sd.IndicatorType(*indicatorTypeString)
 	if !indicatorType.IsValid() {
-		fmt.Fprintln(os.Stderr, "Invalid indicator type: "+*indicatorTypeString)
+		fmt.Fprintln(flagSet.Output(), "Invalid indicator type: "+*indicatorTypeString)
 		flagSet.Usage()
 		os.Exit(1)
 	}
 	return indicatorType
 }
 
-// add reviewers to update as well
-func AddReviewersFlag(flagSet *flag.FlagSet) (*string, *bool, *int) {
-	reviewers := flagSet.String("reviewers", "", "Comma-separated list of Github usernames to add as reviewers once checks have passed.")
-	silent := flagSet.Bool("silent", false, "Whether to use voice output (false) or be silent (true) to notify that reviewers have been added.")
+func AddReviewersFlags(flagSet *flag.FlagSet, reviewersUseCaseExtra string) (*string, *bool, *int) {
+	reviewers := flagSet.String("reviewers", "", "Comma-separated list of Github usernames to add as reviewers once checks have passed."+reviewersUseCaseExtra)
+	silent := AddSilentFlag(flagSet, "reviewers have been added")
 	minChecks := flagSet.Int("min-checks", 4,
 		"Minimum number of checks to wait for before verifying that checks have passed before adding reviewers. "+
 			"It takes some time for checks to be added to a PR by Github, "+
 			"and if you add-reviewers too soon it will think that they have all passed.")
 	return reviewers, silent, minChecks
+}
+
+func AddSilentFlag(flagSet *flag.FlagSet, usageUseCase string) *bool {
+	if runtime.GOOS == "darwin" {
+		// Only supported on Mac OS X because it uses "say" command.
+		return flagSet.Bool("silent", false, "Whether to use voice output (false) or be silent (true) to notify that "+usageUseCase+".")
+	} else {
+		silent := new(bool)
+		*silent = true
+		return silent
+	}
 }

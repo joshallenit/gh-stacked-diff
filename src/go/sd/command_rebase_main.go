@@ -9,7 +9,10 @@ import (
 func CreateRebaseMainCommand() Command {
 	flagSet := flag.NewFlagSet("rebase-main", flag.ExitOnError)
 
-	return Command{FlagSet: flagSet, OnSelected: func() {
-		sd.RebaseMain(log.Default())
-	}}
+	return Command{
+		FlagSet:      flagSet,
+		UsageSummary: "Bring your main branch up to date with remote",
+		OnSelected: func() {
+			sd.RebaseMain(log.Default())
+		}}
 }

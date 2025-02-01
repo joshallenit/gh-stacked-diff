@@ -20,7 +20,6 @@ func main() {
 }
 
 func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs []string) {
-
 	commands := []Command{
 		CreateAddReviewersCommand(),
 		CreateBranchNameCommand(stdOut),
@@ -35,33 +34,37 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 	}
 
 	commandLine.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Stacked Diff Workflow")
-		fmt.Fprintln(os.Stderr, "Usage: sd <command>")
-		fmt.Fprintln(os.Stderr, "Possible commands are:")
-		fmt.Fprintln(os.Stderr, " - "+strings.Join(getCommandNames(commands), "\n - "))
-		fmt.Fprintln(os.Stderr, "To learn more about a command use: sd <command> --help")
-		fmt.Fprintln(os.Stderr, "Flags:")
+		fmt.Fprintln(commandLine.Output(), "Stacked Diff Workflow")
+		fmt.Fprintln(commandLine.Output(), "")
+		fmt.Fprintln(commandLine.Output(), "usage: sd [flags] <command> [<args>]")
+		fmt.Fprintln(commandLine.Output(), "")
+		fmt.Fprintln(commandLine.Output(), "Possible commands are:")
+		fmt.Fprintln(commandLine.Output(), "")
+		fmt.Fprintln(commandLine.Output(), "   "+strings.Join(getCommandSummaries(commands), "\n   "))
+		fmt.Fprintln(commandLine.Output(), "")
+		fmt.Fprintln(commandLine.Output(), "To learn more about a command use: sd <command> --help")
+		fmt.Fprintln(commandLine.Output(), "")
+		fmt.Fprintln(commandLine.Output(), "Top level flags:")
+		fmt.Fprintln(commandLine.Output(), "")
 		commandLine.PrintDefaults()
 	}
 	// Parse flags common for every command.
 	var logLevelString string
 
-	commandLine.StringVar(&logLevelString, "log-level", "", "Log level: debug, info, warn, or error. Default is info except for branch-name which is error.")
+	commandLine.StringVar(&logLevelString, "log-level", "", "Log level: debug, info, warn, or error. Default is info except on command that are for output purposes like branch-name and log which are error.")
 
 	commandLine.Parse(commandLineArgs)
 
-	var commandName string
-	if commandLine.NArg() > 0 {
-		commandName = commandLine.Arg(0)
+	if commandLine.NArg() == 0 {
+		commandLine.Usage()
+		os.Exit(1)
 	}
 	selectedIndex := slices.IndexFunc(commands, func(command Command) bool {
-		return command.FlagSet.Name() == commandName
+		return command.FlagSet.Name() == commandLine.Arg(0)
 	})
 	if selectedIndex == -1 {
-		if commandName != "" {
-			fmt.Fprintln(os.Stderr, "Unknown command", commandName)
-		}
-		flag.Usage()
+		fmt.Fprintln(commandLine.Output(), "error: unknown command", commandLine.Arg(0))
+		commandLine.Usage()
 		os.Exit(1)
 	}
 
@@ -72,14 +75,20 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 	commands[selectedIndex].OnSelected()
 }
 
-func getCommandNames(commands []Command) []string {
-	var names []string
-	names = slices.Grow(names, len(commands))
+func getCommandSummaries(commands []Command) []string {
+	maxCommandLen := 0
 	for _, command := range commands {
-		names = append(names, command.FlagSet.Name())
+		if len(command.FlagSet.Name()) > maxCommandLen {
+			maxCommandLen = len(command.FlagSet.Name())
+		}
 	}
-	slices.Sort(names)
-	return names
+	summaries := make([]string, 0, len(commands))
+	for _, command := range commands {
+		summary := command.FlagSet.Name() + "   " + strings.Repeat(" ", maxCommandLen-len(command.FlagSet.Name())) + command.UsageSummary
+		summaries = append(summaries, summary)
+	}
+	slices.Sort(summaries)
+	return summaries
 }
 
 func setSlogLogger(stdOut io.Writer, logLevelString string, selectedCommand Command) {

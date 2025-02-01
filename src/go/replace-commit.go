@@ -8,7 +8,9 @@ import (
 )
 
 func ReplaceCommit(commitIndicator string, indicatorType IndicatorType) {
+	RequireMainBranch()
 	branchInfo := GetBranchInfo(commitIndicator, indicatorType)
+	RequireCommitOnMain(branchInfo.CommitHash)
 	shouldPopStash := Stash("replace-commit " + commitIndicator)
 	replaceCommitOfBranchInfo(branchInfo)
 	PopStash(shouldPopStash)
