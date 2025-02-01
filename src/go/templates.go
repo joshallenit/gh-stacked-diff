@@ -221,7 +221,9 @@ func getBranchTemplateData(sanitizedSummary string) branchTemplateData {
 func GetUsername() string {
 	if userEmail == "" {
 		userEmailRaw := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email"))
-		userEmail = userEmailRaw[0:strings.Index(userEmailRaw, "@")]
+		userEmailRaw = userEmailRaw[0:strings.Index(userEmailRaw, "@")]
+		// Github CLI cannot find the remote branch when the branch name has periods.
+		userEmail = strings.Replace(userEmailRaw, ".", "", -1)
 	}
 	return userEmail
 }
