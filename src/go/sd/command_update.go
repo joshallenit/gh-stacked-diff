@@ -2,34 +2,24 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
-	"os"
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
 	"time"
 )
 
 func CreateUpdateCommand() Command {
-	flagSet := flag.NewFlagSet("update", flag.ExitOnError)
+	flagSet := flag.NewFlagSet("update", flag.ContinueOnError)
 	indicatorTypeString := AddIndicatorFlag(flagSet)
 	reviewers, silent, minChecks := AddReviewersFlags(flagSet, "")
-	flagSet.Usage = func() {
-		fmt.Fprint(flagSet.Output(),
-			ex.Reset+"Add one or more commits to a PR.\n"+
-				"\n"+
-				"sd update [flags] <pr-commit> [fixup commit (defaults to top commit)] [other fixup commit...]\n"+
-				ex.White+"Flags:"+ex.Reset+"\n")
-		flagSet.PrintDefaults()
-	}
-
 	return Command{
-		FlagSet:      flagSet,
-		UsageSummary: "Add commits from main to an existing PR",
-		OnSelected: func() {
+		FlagSet:     flagSet,
+		Summary:     "Add commits from " + ex.GetMainBranch() + " to an existing PR",
+		Description: "Add commits from local " + ex.GetMainBranch() + " branch to an existing PR",
+		Usage:       "sd update [flags] <commitIndicator> [fixup commitIndicator (defaults to head commit)] [other fixup commitIndicator...]",
+		OnSelected: func(command Command) {
 			if flagSet.NArg() == 0 {
-				flagSet.Usage()
-				os.Exit(1)
+				commandError(flagSet, "missing commitIndicator", command.Usage)
 			}
 			indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
 			var otherCommits []string

@@ -46,7 +46,7 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	if cherryPickError != nil {
 		logger.Println("First attempt at cherry-pick failed")
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-		rebaseCommit := FirstOriginCommit(ex.GetMainBranch())
+		rebaseCommit := FirstOriginMainCommit(ex.GetMainBranch())
 		if rebaseCommit == "" {
 			panic("There is no " + ex.GetMainBranch() + " branch on origin, nothing to rebase")
 		}

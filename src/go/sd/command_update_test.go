@@ -21,13 +21,13 @@ func TestSdUpdate_UpdatesPr(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"new"})
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 
 	testinginit.AddCommit("second", "")
 
 	allCommits := sd.GetAllCommits()
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"update", allCommits[1].Commit})
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"update", allCommits[1].Commit})
 
 	allCommits = sd.GetAllCommits()
 
@@ -44,7 +44,7 @@ func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 
 	testExecutor := testinginit.SetTestExecutor()
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"new"})
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 
 	testinginit.AddCommit("second", "")
 
@@ -58,7 +58,7 @@ func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"update", "--reviewers=mybestie", "2"})
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"update", "--reviewers=mybestie", "2"})
 
 	ghExpectedArgs := []string{"pr", "edit", allCommits[1].Branch, "--add-reviewer", "mybestie"}
 	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}

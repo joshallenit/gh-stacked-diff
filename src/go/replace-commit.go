@@ -20,11 +20,10 @@ func ReplaceCommit(commitIndicator string, indicatorType IndicatorType) {
 func replaceCommitOfBranchInfo(branchInfo BranchInfo) {
 	commitsAfter := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", branchInfo.CommitHash+"..HEAD", "--pretty=format:%h")))
 	reverseArrayInPlace(commitsAfter)
-	commitToDiffFrom := FirstOriginCommit(branchInfo.BranchName)
+	commitToDiffFrom := FirstOriginMainCommit(branchInfo.BranchName)
 	if commitToDiffFrom == "" {
-		panic("replace-commit cannot be used to replace the root commit")
+		panic("replace-commit cannot be used if there is no origin/" + ex.GetMainBranch() + " because changes are calculated from there")
 	}
-
 	log.Println("Resetting to ", branchInfo.CommitHash+"~1")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", branchInfo.CommitHash+"~1")
 	log.Println("Adding diff from commits ", branchInfo.BranchName)

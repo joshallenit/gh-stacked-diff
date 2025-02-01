@@ -276,16 +276,16 @@ func GetNewCommits(compareFromRemoteBranch string, to string) []GitLog {
 	return newGitLogs(logsRaw)
 }
 
-// Returns first commit of the given branch that is on origin/main, or "" if the branch is not on remote.
-func FirstOriginCommit(branchName string) string {
+// Returns most recent commit of the given branch that is on origin/main, or "" if the main branch is not on remote.
+func FirstOriginMainCommit(branchName string) string {
+	if !LocalHasBranch(branchName) {
+		panic("Branch does not exist " + branchName)
+	}
 	// Verify that remote has branch, there is no origin commit.
-	if !RemoteHasBranch(branchName) {
-		if !LocalHasBranch(branchName) {
-			panic("Branch does not exist " + branchName)
-		}
+	if !RemoteHasBranch(ex.GetMainBranch()) {
 		return ""
 	}
-	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge-base", "origin/"+branchName, branchName))
+	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge-base", "origin/"+ex.GetMainBranch(), branchName))
 }
 
 func RemoteHasBranch(branchName string) bool {

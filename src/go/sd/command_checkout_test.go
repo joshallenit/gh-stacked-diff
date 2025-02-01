@@ -22,9 +22,9 @@ func TestSdCheckout_ChecksOutBranch(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"new"})
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ExitOnError), []string{"checkout", allCommits[0].Commit})
+	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"checkout", allCommits[0].Commit})
 
 	assert.Equal(allCommits[0].Branch, sd.GetCurrentBranchName())
 }

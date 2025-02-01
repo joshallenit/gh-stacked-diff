@@ -24,7 +24,7 @@ func TestSdWaitForMerge_WaitsForMerge(t *testing.T) {
 	outWriter := testinginit.NewWriteRecorder()
 	ParseArguments(
 		outWriter,
-		flag.NewFlagSet("sd", flag.ExitOnError),
+		flag.NewFlagSet("sd", flag.ContinueOnError),
 		[]string{"--log-level=debug", "wait-for-merge", allCommits[0].Commit},
 	)
 	out := outWriter.String()

@@ -2,28 +2,24 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"os"
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
 )
 
 func CreateCheckoutCommand() Command {
-	flagSet := flag.NewFlagSet("checkout", flag.ExitOnError)
+	flagSet := flag.NewFlagSet("checkout", flag.ContinueOnError)
 	indicatorTypeString := AddIndicatorFlag(flagSet)
-	flagSet.Usage = func() {
-		fmt.Fprintln(flagSet.Output(), "Checks out the branch associated with the PR or commit.")
-		fmt.Fprintln(flagSet.Output(), "sd checkout [flags] <commitIndicator>")
-		flagSet.PrintDefaults()
-	}
-
 	return Command{
-		FlagSet:      flagSet,
-		UsageSummary: "Checks out branch associated with commit indicator",
-		OnSelected: func() {
-			if flagSet.NArg() != 1 {
-				flagSet.Usage()
-				os.Exit(1)
+		FlagSet:     flagSet,
+		Summary:     "Checks out branch associated with commit indicator",
+		Description: "Checks out the branch associated with the PR or commit.",
+		Usage:       "sd " + flagSet.Name() + " [flags] <commitIndicator>",
+		OnSelected: func(command Command) {
+			if flagSet.NArg() == 0 {
+				commandError(flagSet, "missing commitIndicator", command.Usage)
+			}
+			if flagSet.NArg() > 1 {
+				commandError(flagSet, "too many arguments", command.Usage)
 			}
 			indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
 			branchName := sd.GetBranchInfo(flagSet.Arg(0), indicatorType).BranchName

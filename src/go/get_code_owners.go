@@ -67,7 +67,7 @@ Returns changed files against main.
 */
 func getChangedFiles() []string {
 	gitLogArgs := []string{"--no-pager", "log", "--pretty=format:\"\"", "--name-only"}
-	firstOriginCommit := FirstOriginCommit(GetCurrentBranchName())
+	firstOriginCommit := FirstOriginMainCommit(GetCurrentBranchName())
 	if firstOriginCommit != "" {
 		gitLogArgs = append(gitLogArgs, firstOriginCommit+"..HEAD")
 	}

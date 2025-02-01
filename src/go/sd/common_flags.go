@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	sd "stackeddiff"
+	ex "stackeddiff/execute"
 )
 
 func AddIndicatorFlag(flagSet *flag.FlagSet) *string {
@@ -48,5 +49,37 @@ func AddSilentFlag(flagSet *flag.FlagSet, usageUseCase string) *bool {
 		silent := new(bool)
 		*silent = true
 		return silent
+	}
+}
+
+func commandHelp(flagSet *flag.FlagSet, description string, usage string, isError bool) {
+	fmt.Fprintln(flagSet.Output(), ex.Reset+description)
+	printUsage(flagSet, usage)
+	if isError {
+		os.Exit(1)
+	} else {
+		os.Exit(0)
+	}
+}
+
+func commandError(flagSet *flag.FlagSet, errMessage string, usage string) {
+	fmt.Fprintln(flagSet.Output(), ex.Reset+"error: "+errMessage)
+	printUsage(flagSet, usage)
+	os.Exit(1)
+}
+
+func printUsage(flagSet *flag.FlagSet, usage string) {
+	fmt.Fprintln(flagSet.Output(), "")
+	fmt.Fprintln(flagSet.Output(), "usage: "+usage)
+	hasFlags := false
+	// There's no other way to get the number of possible flags, so use VisitAll.
+	flagSet.VisitAll(func(flag *flag.Flag) {
+		hasFlags = true
+	})
+	if hasFlags {
+		fmt.Fprintln(flagSet.Output(), "")
+		fmt.Fprintln(flagSet.Output(), "flags:")
+		fmt.Fprintln(flagSet.Output(), "")
+		flagSet.PrintDefaults()
 	}
 }
