@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 )
@@ -21,7 +20,7 @@ func main() {
 	data, err := os.ReadFile(rebaseFilename)
 
 	if err != nil {
-		log.Fatal("Could not open ", rebaseFilename, err)
+		panic(fmt.Sprint("Could not open ", rebaseFilename, err))
 	}
 
 	originalText := string(data)
@@ -43,7 +42,7 @@ func main() {
 
 	err = os.WriteFile(rebaseFilename, []byte(newText.String()), 0)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 

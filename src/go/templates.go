@@ -99,7 +99,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		summary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", prCommit))
 		thisBranchCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h"))
 		if thisBranchCommit == "" {
-			log.Fatal("Could not find associated commit for PR (\"", summary, "\") in "+ex.GetMainBranch())
+			panic(fmt.Sprint("Could not find associated commit for PR (\"", summary, "\") in "+ex.GetMainBranch()))
 		}
 		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
 		slog.Info("Using pull request " + commitIndicator + ", commit " + info.CommitHash + ", branch " + info.BranchName)
@@ -181,12 +181,12 @@ func runTemplate(configFilename string, defaultTemplateText string, data any) st
 	if configFile != nil {
 		parsed, err = template.ParseFiles(*configFile)
 		if err != nil {
-			log.Fatal("Could not parse ", *configFile, err)
+			panic(fmt.Sprint("Could not parse ", *configFile, err))
 		}
 	} else {
 		parsed, err = template.New("").Parse(defaultTemplateText)
 		if err != nil {
-			log.Fatal("Could not parse ", defaultTemplateText, err)
+			panic(fmt.Sprint("Could not parse ", defaultTemplateText, err))
 		}
 	}
 	var output bytes.Buffer
@@ -229,7 +229,7 @@ func GetUsername() string {
 func getConfigFile(filenameWithoutPath string) *string {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal("Could not get home dir", err)
+		panic(fmt.Sprint("Could not get home dir", err))
 	}
 	fullPath := home + "/.stacked-diff-workflow/" + filenameWithoutPath
 	if _, err := os.Stat(fullPath); err == nil {

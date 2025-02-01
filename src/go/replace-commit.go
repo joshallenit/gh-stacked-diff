@@ -1,6 +1,7 @@
 package stackeddiff
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -56,7 +57,7 @@ func cherryPickAndSkipAllEmpty(commits []string) {
 		if strings.Index(out, "git commit --allow-empty") != -1 {
 			out, err = ex.Execute(ex.ExecuteOptions{}, "git", "cherry-pick", "--skip")
 		} else {
-			log.Fatal("Unexpected cherry-pick error", out, cherryPickArgs, err)
+			panic(fmt.Sprint("Unexpected cherry-pick error", out, cherryPickArgs, err))
 		}
 	}
 }

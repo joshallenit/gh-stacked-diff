@@ -23,7 +23,7 @@ func main() {
 	data, err := os.ReadFile(rebaseFilename)
 
 	if err != nil {
-		log.Fatal("Could not open ", rebaseFilename, err)
+		panic(fmt.Sprint("Could not open ", rebaseFilename, err))
 	}
 
 	originalText := string(data)
@@ -40,7 +40,7 @@ func main() {
 		}
 	}
 	if i != len(fixupCommits) {
-		log.Fatal("Could only find ", i, " of ", len(fixupCommits), " fixup commits ", fixupCommits, " in ", lines)
+		panic(fmt.Sprint("Could only find ", i, " of ", len(fixupCommits), " fixup commits ", fixupCommits, " in ", lines))
 	}
 	for _, line := range lines {
 		if strings.HasPrefix(line, "pick ") && strings.Index(line, targetCommit) != -1 {
@@ -58,7 +58,7 @@ func main() {
 
 	err = os.WriteFile(rebaseFilename, []byte(newText.String()), 0)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
