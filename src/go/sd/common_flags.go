@@ -7,17 +7,18 @@ import (
 	"runtime"
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
+	"strings"
 )
 
 func AddIndicatorFlag(flagSet *flag.FlagSet) *string {
-	var usage string = "Indicator type being used for which git commit is being selected:\n" +
-		"- " + string(sd.IndicatorTypeCommit) + ": a commit hash, can be abbreviated,\n" +
-		"- " + string(sd.IndicatorTypePr) + ": a github Pull Request number,\n" +
-		"- " + string(sd.IndicatorTypeList) + ": the order of commit listed in the git log, as indicated by \"sd log\"\n" +
-		"- " + string(sd.IndicatorTypeGuess) + ": the command will guess the indicator type:\n" +
-		"   - Number between 0 and 99: list\n" +
-		"   - Number between 100 and 999999: pr number\n" +
-		"   - Otherwise: commit\n"
+	var usage string = "Indicator type to use to interpret commitIndicator:\n" +
+		"   commit   a commit hash, can be abbreviated,\n" +
+		"   pr       a github Pull Request number,\n" +
+		"   list     the order of commit listed in the git log, as indicated by \"sd log\"\n" +
+		"   guess    the command will guess the indicator type:\n" +
+		"      Number between 0 and 99:       list\n" +
+		"      Number between 100 and 999999: pr\n" +
+		"      Otherwise:                     commit\n"
 	return flagSet.String("indicator", string(sd.IndicatorTypeGuess), usage)
 }
 
@@ -32,11 +33,12 @@ func CheckIndicatorFlag(flagSet *flag.FlagSet, indicatorTypeString *string) sd.I
 }
 
 func AddReviewersFlags(flagSet *flag.FlagSet, reviewersUseCaseExtra string) (*string, *bool, *int) {
-	reviewers := flagSet.String("reviewers", "", "Comma-separated list of Github usernames to add as reviewers once checks have passed."+reviewersUseCaseExtra)
+	reviewers := flagSet.String("reviewers", "", "Comma-separated list of Github usernames to add as reviewers once checks have passed.\n"+
+		reviewersUseCaseExtra)
 	silent := AddSilentFlag(flagSet, "reviewers have been added")
 	minChecks := flagSet.Int("min-checks", 4,
-		"Minimum number of checks to wait for before verifying that checks have passed before adding reviewers. "+
-			"It takes some time for checks to be added to a PR by Github, "+
+		"Minimum number of checks to wait for before verifying that checks have passed before adding reviewers.\n"+
+			"It takes some time for checks to be added to a PR by Github,\n"+
 			"and if you add-reviewers too soon it will think that they have all passed.")
 	return reviewers, silent, minChecks
 }
@@ -63,7 +65,9 @@ func commandHelp(flagSet *flag.FlagSet, description string, usage string, isErro
 }
 
 func commandError(flagSet *flag.FlagSet, errMessage string, usage string) {
-	fmt.Fprintln(flagSet.Output(), ex.Reset+"error: "+errMessage)
+	if !strings.HasPrefix(errMessage, "flag provided but not defined:") {
+		fmt.Fprintln(flagSet.Output(), ex.Reset+"error: "+errMessage)
+	}
 	printUsage(flagSet, usage)
 	os.Exit(1)
 }

@@ -84,9 +84,9 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 	commands[selectedIndex].FlagSet.Usage = func() {}
 	if parseErr := commands[selectedIndex].FlagSet.Parse(commandLine.Args()[1:]); parseErr != nil {
 		if parseErr == flag.ErrHelp {
-			commandHelp(commandLine, commands[selectedIndex].Description, commands[selectedIndex].Usage, false)
+			commandHelp(commands[selectedIndex].FlagSet, commands[selectedIndex].Description, commands[selectedIndex].Usage, false)
 		} else {
-			commandError(commandLine, parseErr.Error(), commands[selectedIndex].Description)
+			commandError(commands[selectedIndex].FlagSet, parseErr.Error(), commands[selectedIndex].Usage)
 		}
 	}
 
