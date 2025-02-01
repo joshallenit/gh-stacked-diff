@@ -150,7 +150,7 @@ func getBranchForCommit(commit string) string {
 
 func GetBranchForSantizedSubject(sanitizedSubject string) string {
 	name := runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(sanitizedSubject))
-	if ex.GetMainBranch() == "master" {
+	if true || ex.GetMainBranch() == "master" {
 		name = strings.Replace(name, "/", "-", -1)
 		name = strings.Replace(name, ".", "-", -1)
 	}
