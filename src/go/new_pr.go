@@ -22,9 +22,9 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 		logger.Println("Switching to branch", branchInfo.BranchName, "based off branch", baseBranch)
 	}
 	if commitToBranchFrom == "" {
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-b", branchInfo.BranchName)
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", branchInfo.BranchName)
 	} else {
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-b", branchInfo.BranchName, commitToBranchFrom)
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", branchInfo.BranchName, commitToBranchFrom)
 	}
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", branchInfo.BranchName)
 	if commitToBranchFrom != "" {
