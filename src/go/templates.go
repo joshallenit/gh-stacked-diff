@@ -150,10 +150,7 @@ func getBranchForCommit(commit string) string {
 
 func GetBranchForSantizedSubject(sanitizedSubject string) string {
 	name := runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(sanitizedSubject))
-	if true || ex.GetMainBranch() == "master" {
-		name = strings.Replace(name, "/", "-", -1)
-		name = strings.Replace(name, ".", "-", -1)
-	}
+	// Branch names that are too long cause problems with Github.
 	name = truncateString(name, 120)
 	return name
 }
@@ -222,8 +219,8 @@ func GetUsername() string {
 	if userEmail == "" {
 		userEmailRaw := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email"))
 		userEmailRaw = userEmailRaw[0:strings.Index(userEmailRaw, "@")]
-		// Github CLI cannot find the remote branch when the branch name has periods.
-		userEmail = strings.Replace(userEmailRaw, ".", "", -1)
+		// Dots are not allowed in branch names of some Github configurations.
+		userEmail = strings.ReplaceAll(userEmailRaw, ".", "-")
 	}
 	return userEmail
 }

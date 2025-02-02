@@ -22,9 +22,9 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 		logger.Println("Switching to branch", branchInfo.BranchName, "based off branch", baseBranch)
 	}
 	if commitToBranchFrom == "" {
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", branchInfo.BranchName)
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "--no-track", branchInfo.BranchName)
 	} else {
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", branchInfo.BranchName, commitToBranchFrom)
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
 	}
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", branchInfo.BranchName)
 	if commitToBranchFrom != "" {
@@ -41,7 +41,8 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 		}
 	}
 	logger.Println("Pushing to remote")
-	pushOutput, pushErr := ex.Execute(ex.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f")
+	// -u is required because in newer versions of Github CLI the upstream must be set.
+	pushOutput, pushErr := ex.Execute(ex.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f", "-u")
 	if pushErr != nil {
 		logger.Println(ex.Red+"Could not push: "+ex.Reset, pushOutput)
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())

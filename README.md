@@ -304,6 +304,8 @@ POLISH
 - standardize all test so they are using assert* and named properly
 - test for error conditions (ugh not fun) + but could lead to better error handling (rollback)
 - get rid of the check for master when / vs - in branch name
+- functions only need to be UpperCase if exported from PACKAGE, not file
+- use full file path for sequence functions so they don't have to be on the path
 					
 
 create a PR summary message based on commit messages and comments in code? would that work... probably not.
