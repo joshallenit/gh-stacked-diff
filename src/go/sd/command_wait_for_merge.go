@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"os"
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
 )
@@ -20,8 +19,7 @@ func CreateWaitForMergeCommand() Command {
 		Usage:       "sd " + ex.GetMainBranch() + " [flags] <commit hash or pull request number>",
 		OnSelected: func(command Command) {
 			if flagSet.NArg() != 1 {
-				flagSet.Usage()
-				os.Exit(1)
+				commandError(flagSet, "missing commitIndicator", command.Usage)
 			}
 			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
 			sd.WaitForMerge(flagSet.Arg(0), indicatorType, *silent)

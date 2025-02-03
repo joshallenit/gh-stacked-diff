@@ -57,7 +57,7 @@ func commandHelp(flagSet *flag.FlagSet, description string, usage string, isErro
 	if isError {
 		out = os.Stderr
 	} else {
-		out = os.Stdin
+		out = os.Stdout
 	}
 	fmt.Fprintln(out, ex.Reset+description)
 	printUsage(flagSet, usage, out)
