@@ -22,7 +22,12 @@ func RebaseMain() {
 	var dropCommits []string
 
 	for _, localLog := range localLogs {
-		localCommit := localLog[0:strings.Index(localLog, " ")]
+		spaceIndex := strings.Index(localLog, " ")
+		if spaceIndex == 0 {
+			slog.Info("No local changes")
+			break
+		}
+		localCommit := localLog[0:spaceIndex]
 		localSummary := localLog[len(localCommit)+1:]
 		if contains(originSummaries, localSummary) {
 			slog.Info(fmt.Sprint("Force dropping as it was already merged:", localCommit, localSummary))
