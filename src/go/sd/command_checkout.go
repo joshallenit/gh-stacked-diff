@@ -21,7 +21,7 @@ func CreateCheckoutCommand() Command {
 			if flagSet.NArg() > 1 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
+			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
 			branchName := sd.GetBranchInfo(flagSet.Arg(0), indicatorType).BranchName
 			ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "checkout", branchName)
 		}}

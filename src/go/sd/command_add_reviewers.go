@@ -37,7 +37,7 @@ func CreateAddReviewersCommand() Command {
 					commandError(flagSet, "reviewers not specified. Use reviewers flag or set PR_REVIEWERS environment variable", command.Usage)
 				}
 			}
-			indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
+			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
 			sd.AddReviewersToPr(commitIndicators, indicatorType, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
 		}}
 }

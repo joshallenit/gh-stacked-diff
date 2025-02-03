@@ -22,12 +22,10 @@ func AddIndicatorFlag(flagSet *flag.FlagSet) *string {
 	return flagSet.String("indicator", string(sd.IndicatorTypeGuess), usage)
 }
 
-func CheckIndicatorFlag(flagSet *flag.FlagSet, indicatorTypeString *string) sd.IndicatorType {
+func CheckIndicatorFlag(command Command, indicatorTypeString *string) sd.IndicatorType {
 	indicatorType := sd.IndicatorType(*indicatorTypeString)
 	if !indicatorType.IsValid() {
-		fmt.Fprintln(flagSet.Output(), "Invalid indicator type: "+*indicatorTypeString)
-		flagSet.Usage()
-		os.Exit(1)
+		commandError(command.FlagSet, "Invalid indicator type: "+*indicatorTypeString, command.Usage)
 	}
 	return indicatorType
 }
@@ -55,8 +53,14 @@ func AddSilentFlag(flagSet *flag.FlagSet, usageUseCase string) *bool {
 }
 
 func commandHelp(flagSet *flag.FlagSet, description string, usage string, isError bool) {
-	fmt.Fprintln(flagSet.Output(), ex.Reset+description)
-	printUsage(flagSet, usage, isError)
+	var out io.Writer
+	if isError {
+		out = os.Stderr
+	} else {
+		out = os.Stdin
+	}
+	fmt.Fprintln(out, ex.Reset+description)
+	printUsage(flagSet, usage, out)
 	if isError {
 		os.Exit(1)
 	} else {
@@ -66,17 +70,11 @@ func commandHelp(flagSet *flag.FlagSet, description string, usage string, isErro
 
 func commandError(flagSet *flag.FlagSet, errMessage string, usage string) {
 	fmt.Fprintln(os.Stderr, ex.Reset+"error: "+errMessage)
-	printUsage(flagSet, usage, true)
+	printUsage(flagSet, usage, os.Stderr)
 	os.Exit(1)
 }
 
-func printUsage(flagSet *flag.FlagSet, usage string, isError bool) {
-	var out io.Writer
-	if isError {
-		out = os.Stderr
-	} else {
-		out = os.Stdin
-	}
+func printUsage(flagSet *flag.FlagSet, usage string, out io.Writer) {
 	fmt.Fprintln(out, "")
 	fmt.Fprintln(out, "usage: "+usage)
 	hasFlags := false

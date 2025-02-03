@@ -23,7 +23,7 @@ func CreateReplaceCommitCommand() Command {
 			if flagSet.NArg() > 1 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
+			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
 			sd.ReplaceCommit(flagSet.Arg(0), indicatorType)
 		}}
 }

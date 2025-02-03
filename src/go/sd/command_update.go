@@ -20,7 +20,7 @@ func CreateUpdateCommand() Command {
 			if flagSet.NArg() == 0 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)
 			}
-			indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
+			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
 			var otherCommits []string
 			if len(flagSet.Args()) > 1 {
 				otherCommits = flagSet.Args()[1:]

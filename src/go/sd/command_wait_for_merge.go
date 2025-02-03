@@ -23,7 +23,7 @@ func CreateWaitForMergeCommand() Command {
 				flagSet.Usage()
 				os.Exit(1)
 			}
-			indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
+			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
 			sd.WaitForMerge(flagSet.Arg(0), indicatorType, *silent)
 		}}
 }

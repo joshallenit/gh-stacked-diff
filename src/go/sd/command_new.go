@@ -59,7 +59,7 @@ func CreateNewCommand() Command {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
 
-			indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
+			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
 			branchInfo := sd.GetBranchInfo(flagSet.Arg(0), indicatorType)
 			sd.CreateNewPr(*draft, *featureFlag, *baseBranch, branchInfo)
 			if *reviewers != "" {
