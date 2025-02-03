@@ -1,15 +1,16 @@
 package stackeddiff
 
 import (
-	"log"
+	"fmt"
+	"log/slog"
 	"strings"
 
 	ex "stackeddiff/execute"
 )
 
-func RebaseMain(logger *log.Logger) {
+func RebaseMain() {
 	RequireMainBranch()
-	Stash("rebase-main")
+	shouldPopStash := Stash("rebase-main")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{
 		Output: ex.NewStandardOutput(),
@@ -22,11 +23,9 @@ func RebaseMain(logger *log.Logger) {
 
 	for _, localLog := range localLogs {
 		localCommit := localLog[0:strings.Index(localLog, " ")]
-		println("LOCAL commit", localCommit)
 		localSummary := localLog[len(localCommit)+1:]
-		println("LOCAL summary", localSummary)
 		if contains(originSummaries, localSummary) {
-			logger.Println("Force dropping as it was already merged:", localCommit, localSummary)
+			slog.Info(fmt.Sprint("Force dropping as it was already merged:", localCommit, localSummary))
 			dropCommits = append(dropCommits, localCommit)
 		}
 	}
@@ -44,6 +43,7 @@ func RebaseMain(logger *log.Logger) {
 		}
 		ex.ExecuteOrDie(options, "git", "rebase", "origin/"+ex.GetMainBranch())
 	}
+	PopStash(shouldPopStash)
 }
 
 func contains(originSummaries []string, localSummary string) bool {

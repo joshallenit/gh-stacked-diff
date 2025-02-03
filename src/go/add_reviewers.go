@@ -2,7 +2,8 @@ package stackeddiff
 
 import (
 	"bufio"
-	"log"
+	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 	"sync"
@@ -40,34 +41,34 @@ func checkBranch(wg *sync.WaitGroup, commitIndicator string, indicatorType Indic
 				if !silent {
 					ex.ExecuteOrDie(ex.ExecuteOptions{}, "say", "Checks failed")
 				}
-				log.Print("Checks failed for ", commitIndicator, ". "+
+				slog.Error(fmt.Sprint("Checks failed for ", commitIndicator, ". "+
 					"Total: ", summary.Total,
 					" | Passed: ", summary.Passing,
 					" | Pending: ", summary.Pending,
 					" | Failed: ", summary.Failing,
-					"\n")
+					"\n"))
 				os.Exit(1)
 			}
 
 			if summary.Total < minChecks {
-				log.Println("Waiting for at least", minChecks, "checks to be added to PR. Currently only ", summary.Total)
+				slog.Info(fmt.Sprint("Waiting for at least", minChecks, "checks to be added to PR. Currently only ", summary.Total))
 			} else if summary.Passing == summary.Total {
-				log.Println("All", summary.Total, "checks passed")
+				slog.Info(fmt.Sprint("All", summary.Total, "checks passed"))
 				break
 			} else if summary.Passing == 0 {
-				log.Print("Checks pending for ", commitIndicator, ". Completed: 0%\n")
+				slog.Info(fmt.Sprint("Checks pending for ", commitIndicator, ". Completed: 0%"))
 			} else {
-				log.Print("Checks pending for ", commitIndicator, ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%\n")
+				slog.Info(fmt.Sprint("Checks pending for ", commitIndicator, ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%"))
 			}
 			time.Sleep(pollFrequency)
 		}
 	}
-	log.Println("Marking PR as ready for review")
+	slog.Info("Marking PR as ready for review")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "ready", branchName)
-	log.Println("Waiting 10 seconds for any automatically assigned reviewers to be added...")
+	slog.Info("Waiting 10 seconds for any automatically assigned reviewers to be added...")
 	time.Sleep(10 * time.Second)
 	prUrl := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "edit", branchName, "--add-reviewer", reviewers))
-	log.Println("Added reviewers", reviewers, "to", prUrl)
+	slog.Info(fmt.Sprint("Added reviewers", reviewers, "to", prUrl))
 	wg.Done()
 }
 

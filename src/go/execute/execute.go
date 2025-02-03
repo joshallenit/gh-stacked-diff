@@ -113,7 +113,3 @@ func GetMainBranch() string {
 	}
 	return mainBranchName
 }
-
-func Sleep(seconds int) {
-
-}

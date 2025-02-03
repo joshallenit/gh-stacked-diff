@@ -1,7 +1,6 @@
 package stackeddiff
 
 import (
-	"log"
 	"os"
 	"stackeddiff/testinginit"
 	"testing"
@@ -29,7 +28,7 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	RebaseMain(log.Default())
+	RebaseMain()
 
 	dirEntries, err := os.ReadDir(".")
 	if err != nil {

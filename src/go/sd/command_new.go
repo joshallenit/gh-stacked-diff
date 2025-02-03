@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
 	"time"
@@ -57,7 +56,7 @@ func CreateNewCommand() Command {
 
 			indicatorType := CheckIndicatorFlag(flagSet, indicatorTypeString)
 			branchInfo := sd.GetBranchInfo(flagSet.Arg(0), indicatorType)
-			sd.CreateNewPr(*draft, *featureFlag, *baseBranch, branchInfo, log.Default())
+			sd.CreateNewPr(*draft, *featureFlag, *baseBranch, branchInfo)
 			if *reviewers != "" {
 				sd.AddReviewersToPr([]string{branchInfo.CommitHash}, sd.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}

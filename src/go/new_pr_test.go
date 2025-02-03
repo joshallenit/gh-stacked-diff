@@ -2,7 +2,6 @@ package stackeddiff
 
 import (
 	"bytes"
-	"log"
 	"stackeddiff/testinginit"
 	"strings"
 	"testing"
@@ -19,7 +18,7 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
 	// Check that the PR was created
 	outWriter := new(bytes.Buffer)
@@ -44,7 +43,7 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := GetNewCommits(ex.GetMainBranch(), "HEAD")
@@ -67,7 +66,7 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := GetNewCommits(ex.GetMainBranch(), "HEAD")

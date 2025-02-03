@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
 	"time"
@@ -27,7 +26,7 @@ func CreateUpdateCommand() Command {
 				otherCommits = flagSet.Args()[1:]
 			}
 			destCommit := sd.GetBranchInfo(flagSet.Arg(0), indicatorType)
-			sd.UpdatePr(destCommit, otherCommits, indicatorType, log.Default())
+			sd.UpdatePr(destCommit, otherCommits, indicatorType)
 			if *reviewers != "" {
 				sd.AddReviewersToPr([]string{destCommit.CommitHash}, sd.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}

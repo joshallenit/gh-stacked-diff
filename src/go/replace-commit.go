@@ -2,10 +2,9 @@ package stackeddiff
 
 import (
 	"fmt"
-	"log"
-	"strings"
-
+	"log/slog"
 	ex "stackeddiff/execute"
+	"strings"
 )
 
 func ReplaceCommit(commitIndicator string, indicatorType IndicatorType) {
@@ -25,16 +24,16 @@ func replaceCommitOfBranchInfo(branchInfo BranchInfo) {
 	if commitToDiffFrom == "" {
 		panic("replace-commit cannot be used if there is no origin/" + ex.GetMainBranch() + " because changes are calculated from there")
 	}
-	log.Println("Resetting to ", branchInfo.CommitHash+"~1")
+	slog.Info("Resetting to " + branchInfo.CommitHash + "~1")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", branchInfo.CommitHash+"~1")
-	log.Println("Adding diff from commits ", branchInfo.BranchName)
+	slog.Info("Adding diff from commits " + branchInfo.BranchName)
 	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", commitToDiffFrom, branchInfo.BranchName)
 	ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff}, "git", "apply")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
 	commitSummary := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", branchInfo.CommitHash)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", strings.TrimSpace(commitSummary))
 	if len(commitsAfter) != 0 {
-		log.Println("Cherry picking commits back on top ", commitsAfter)
+		slog.Info(fmt.Sprint("Cherry picking commits back on top ", commitsAfter))
 		cherryPickAndSkipAllEmpty(commitsAfter)
 	}
 }

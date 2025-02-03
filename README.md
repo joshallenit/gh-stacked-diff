@@ -261,18 +261,19 @@ git add . && git rebase --continue
 # All done... now both the feature branch and your local main are rebased with main, and the merge conflicts only had to be fixed once
 ```
 
-# How To Build Scripts
+# Contributing
 
-The scripts are written in golang and bash.
+For a guide on how to contribute, including how to build the source, see [CONTRIBUTING.md]
 
-1. Install [golang](https://go.dev/dl/).
-2. Install make. This is already installed on Mac, but to instructions for windows are [here](https://leangaurav.medium.com/how-to-setup-install-gnu-make-on-windows-324480f1da69).
+# Acknowledgments
 
-Then run:
+List the original article that started this off.
 
-```bash
-make build
-```
+Good example
+
+https://github.com/helm/helm
+
+https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/managing-your-profile-readme
 
 
 	// so I could do something like this:
@@ -299,6 +300,7 @@ make build
 
 
 POLISH
+- change all log to slog
 - update README with latest changes
 - code review, review/organize/document code
 - standardize all test so they are using assert* and named properly

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
 )
@@ -22,6 +21,6 @@ func CreateRebaseMainCommand() Command {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			sd.RebaseMain(log.Default())
+			sd.RebaseMain()
 		}}
 }

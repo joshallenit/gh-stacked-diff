@@ -1,7 +1,7 @@
 package testinginit
 
 import (
-	"log"
+	"log/slog"
 	"os"
 	"path"
 	"runtime"
@@ -59,7 +59,7 @@ func CdTestRepo() {
 	os.Chdir(repositoryDir)
 	// os.Getwd() returns an unusable path ("c:\..."") in windows when running from Git Bash. Instead use "pwd"
 	wd := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "pwd"))
-	log.Println("Changed to test repository directory:\n" + wd)
+	slog.Info("Changed to test repository directory:\n" + wd)
 }
 
 func AddCommit(commitMessage string, fileName string) {

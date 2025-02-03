@@ -2,7 +2,6 @@ package stackeddiff
 
 import (
 	"bytes"
-	"log"
 	"stackeddiff/testinginit"
 	"strings"
 	"testing"
@@ -59,7 +58,7 @@ func TestGitlog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *test
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
 	outWriter := new(bytes.Buffer)
 	PrintGitLog(outWriter)
@@ -99,13 +98,13 @@ func TestGitlog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
 	testinginit.AddCommit("second", "")
 
 	allCommits := GetAllCommits()
 
-	UpdatePr(GetBranchInfo(allCommits[1].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit, log.Default())
+	UpdatePr(GetBranchInfo(allCommits[1].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit)
 
 	outWriter := new(bytes.Buffer)
 	PrintGitLog(outWriter)

@@ -1,7 +1,6 @@
 package stackeddiff
 
 import (
-	"log"
 	"stackeddiff/testinginit"
 	"testing"
 
@@ -17,13 +16,13 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
 	testinginit.AddCommit("second", "")
 
 	commitsOnMain := GetAllCommits()
 
-	UpdatePr(GetBranchInfo(commitsOnMain[1].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit, log.Default())
+	UpdatePr(GetBranchInfo(commitsOnMain[1].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit)
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[1].Branch)
 
@@ -43,7 +42,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	testinginit.SetTestExecutor()
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess), log.Default())
+	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
 	testinginit.AddCommit("third", "")
 
@@ -51,7 +50,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	commitsOnMain := GetAllCommits()
 
-	UpdatePr(GetBranchInfo(commitsOnMain[2].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit, log.Default())
+	UpdatePr(GetBranchInfo(commitsOnMain[2].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit)
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[2].Branch)
 

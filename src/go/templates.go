@@ -2,14 +2,12 @@ package stackeddiff
 
 import (
 	"bytes"
-	"fmt"
-	"slices"
-
 	_ "embed"
-	"log"
+	"fmt"
 	"log/slog"
 	"os"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"text/template"
@@ -322,7 +320,7 @@ func GetCurrentBranchName() string {
 func Stash(forName string) bool {
 	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName))
 	if strings.HasPrefix(stashResult, "Saved working") {
-		log.Println(stashResult)
+		slog.Info(stashResult)
 		return true
 	}
 	return false
@@ -331,6 +329,6 @@ func Stash(forName string) bool {
 func PopStash(popStash bool) {
 	if popStash {
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "pop")
-		log.Println("Popped stash back")
+		slog.Info("Popped stash back")
 	}
 }
