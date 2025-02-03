@@ -12,6 +12,7 @@ func RebaseMain() {
 	RequireMainBranch()
 	shouldPopStash := Stash("rebase-main")
 
+	slog.Info("Fetching...")
 	ex.ExecuteOrDie(ex.ExecuteOptions{
 		Output: ex.NewStandardOutput(),
 	}, "git", "fetch")
@@ -35,6 +36,7 @@ func RebaseMain() {
 		}
 	}
 
+	slog.Info("Rebasing...")
 	if len(dropCommits) > 0 {
 		environmentVariables := []string{"GIT_SEQUENCE_EDITOR=sequence_editor_drop_already_merged " + strings.Join(dropCommits, " ")}
 		options := ex.ExecuteOptions{
