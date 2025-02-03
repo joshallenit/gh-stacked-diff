@@ -85,8 +85,13 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	slog.Info("Switching back to " + ex.GetMainBranch())
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
 	slog.Info(fmt.Sprint("Rebasing, marking as fixup", commitsToCherryPick, "for target", destCommit.CommitHash))
-	options := ex.ExecuteOptions{EnvironmentVariables: make([]string, 1), Output: ex.NewStandardOutput()}
-	options.EnvironmentVariables[0] = "GIT_SEQUENCE_EDITOR=sequence_editor_mark_as_fixup " + destCommit.CommitHash + " " + strings.Join(commitsToCherryPick, " ")
+	environmentVariables := []string{
+		"GIT_SEQUENCE_EDITOR=" +
+			sequenceEditorPath("sequence_editor_mark_as_fixup") + " " +
+			destCommit.CommitHash + " " +
+			strings.Join(commitsToCherryPick, " "),
+	}
+	options := ex.ExecuteOptions{EnvironmentVariables: environmentVariables, Output: ex.NewStandardOutput()}
 	rootCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--max-parents=0", "--format=%h", "HEAD"))
 	if rootCommit == destCommit.CommitHash {
 		slog.Info("Rebasing root commit")

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path"
 	"regexp"
 	"slices"
 	"strconv"
@@ -331,4 +332,13 @@ func PopStash(popStash bool) {
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "pop")
 		slog.Info("Popped stash back")
 	}
+}
+
+func sequenceEditorPath(sequenceEditorFilename string) string {
+	executablePath, err := os.Executable()
+	if err == nil {
+		panic(fmt.Sprint("Cannot find path of current executable", err))
+	}
+	executableDir := path.Dir(executablePath)
+	return path.Join(executableDir, sequenceEditorFilename)
 }

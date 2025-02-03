@@ -38,7 +38,11 @@ func RebaseMain() {
 
 	slog.Info("Rebasing...")
 	if len(dropCommits) > 0 {
-		environmentVariables := []string{"GIT_SEQUENCE_EDITOR=sequence_editor_drop_already_merged " + strings.Join(dropCommits, " ")}
+		environmentVariables := []string{
+			"GIT_SEQUENCE_EDITOR=" +
+				sequenceEditorPath("sequence_editor_drop_already_merged") + " " +
+				strings.Join(dropCommits, " "),
+		}
 		options := ex.ExecuteOptions{
 			EnvironmentVariables: environmentVariables,
 			Output:               ex.NewStandardOutput(),
