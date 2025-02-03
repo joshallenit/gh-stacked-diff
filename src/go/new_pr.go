@@ -67,7 +67,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 		PopStash(shouldPopStash)
 		os.Exit(1)
 	} else {
-		slog.Info(fmt.Sprint("Created PR", createPrOutput))
+		slog.Info(fmt.Sprint("Created PR ", createPrOutput))
 	}
 	if prViewOutput, prViewErr := ex.Execute(ex.ExecuteOptions{}, "gh", "pr", "view", "--web"); prViewErr != nil {
 		slog.Info(fmt.Sprint(ex.Red+"Could not open browser to PR:"+ex.Reset, prViewOutput, prViewErr))

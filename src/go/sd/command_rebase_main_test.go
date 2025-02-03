@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"os"
 	"testing"
 
@@ -14,7 +15,7 @@ import (
 
 func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 
@@ -27,8 +28,6 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
 
 	testinginit.AddCommit("second", "rebase-will-drop-this-file")
-
-	testinginit.SetTestExecutor()
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"rebase-main"})
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"os"
 	"testing"
 
@@ -14,15 +15,13 @@ import (
 
 func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "1")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", ex.GetMainBranch())
 	testinginit.AddCommit("second", "will-be-replaced")
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 	testinginit.AddCommit("fifth", "5")
-
-	testinginit.SetTestExecutor()
 
 	allCommits := sd.GetAllCommits()
 
@@ -42,7 +41,7 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 	ParseArguments(
 		os.Stdout,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"--log-level=debug", "replace-commit", allCommits[1].Commit},
+		[]string{"replace-commit", allCommits[1].Commit},
 	)
 
 	allCommits = sd.GetAllCommits()
@@ -70,14 +69,12 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 		return
 	}
 	assert := assert.New(t)
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "1")
 	testinginit.AddCommit("second", "will-be-replaced")
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 	testinginit.AddCommit("fifth", "5")
-
-	testinginit.SetTestExecutor()
 
 	allCommits := sd.GetAllCommits()
 
@@ -97,7 +94,7 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 	ParseArguments(
 		os.Stdout,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"--log-level=info", "replace-commit", allCommits[1].Commit},
+		[]string{"replace-commit", allCommits[1].Commit},
 	)
 
 	allCommits = sd.GetAllCommits()

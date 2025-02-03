@@ -1,7 +1,7 @@
 package stackeddiff
 
 import (
-	"bytes"
+	"log/slog"
 	"stackeddiff/testinginit"
 	"strings"
 	"testing"
@@ -12,16 +12,14 @@ import (
 )
 
 func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-
-	testinginit.SetTestExecutor()
 
 	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
 	// Check that the PR was created
-	outWriter := new(bytes.Buffer)
+	outWriter := testinginit.NewWriteRecorder()
 	PrintGitLog(outWriter)
 	out := outWriter.String()
 
@@ -33,15 +31,13 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", ex.GetMainBranch())
 
 	testinginit.AddCommit("second", "")
 	allCommits := GetNewCommits(ex.GetMainBranch(), "HEAD")
-
-	testinginit.SetTestExecutor()
 
 	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
@@ -54,7 +50,7 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", ex.GetMainBranch())
@@ -63,8 +59,6 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 
 	testinginit.AddCommit("third", "")
 	allCommits := GetNewCommits(ex.GetMainBranch(), "HEAD")
-
-	testinginit.SetTestExecutor()
 
 	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 

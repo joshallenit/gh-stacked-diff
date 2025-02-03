@@ -2,22 +2,22 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"bytes"
 	"stackeddiff/testinginit"
 )
 
 func TestSdLog_LogsOutput(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 
-	outWriter := new(bytes.Buffer)
+	outWriter := testinginit.NewWriteRecorder()
 	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
 	out := outWriter.String()
 
@@ -27,7 +27,7 @@ func TestSdLog_LogsOutput(t *testing.T) {
 func TestGitlog_WhenManyCommits_PadsFirstCommits(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 	testinginit.AddCommit("second", "")

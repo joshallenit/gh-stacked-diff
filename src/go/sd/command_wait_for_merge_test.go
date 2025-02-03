@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,18 +15,17 @@ import (
 func TestSdWaitForMerge_WaitsForMerge(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testExecutor := testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 	allCommits := sd.GetAllCommits()
-	testingExecutor := testinginit.SetTestExecutor()
-	testingExecutor.SetResponse("2025-01-01", nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
+	testExecutor.SetResponse("2025-01-01", nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
 	outWriter := testinginit.NewWriteRecorder()
 	ParseArguments(
 		outWriter,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"--log-level=debug", "wait-for-merge", allCommits[0].Commit},
+		[]string{"wait-for-merge", allCommits[0].Commit},
 	)
 	out := outWriter.String()
 

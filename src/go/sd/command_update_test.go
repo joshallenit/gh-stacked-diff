@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"os"
 	sd "stackeddiff"
 	"testing"
@@ -15,11 +16,9 @@ import (
 func TestSdUpdate_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-
-	testinginit.SetTestExecutor()
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 
@@ -38,11 +37,9 @@ func TestSdUpdate_UpdatesPr(t *testing.T) {
 func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testExecutor := testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-
-	testExecutor := testinginit.SetTestExecutor()
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 

@@ -1,6 +1,7 @@
 package stackeddiff
 
 import (
+	"log/slog"
 	"stackeddiff/testinginit"
 	"testing"
 
@@ -11,10 +12,8 @@ import (
 
 func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 	testinginit.AddCommit("first", "")
-
-	testinginit.SetTestExecutor()
 
 	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
@@ -33,14 +32,12 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 
 func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", ex.GetMainBranch())
 
 	testinginit.AddCommit("second", "")
-
-	testinginit.SetTestExecutor()
 
 	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 

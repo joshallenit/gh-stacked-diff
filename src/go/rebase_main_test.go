@@ -1,6 +1,7 @@
 package stackeddiff
 
 import (
+	"log/slog"
 	"os"
 	"stackeddiff/testinginit"
 	"testing"
@@ -12,7 +13,7 @@ import (
 
 func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 
@@ -25,8 +26,6 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
 
 	testinginit.AddCommit("second", "rebase-will-drop-this-file")
-
-	testinginit.SetTestExecutor()
 
 	RebaseMain()
 

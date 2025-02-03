@@ -207,8 +207,10 @@ func getPullRequestTemplateData(commitHash string, featureFlag string) templateD
 }
 
 func getBranchTemplateData(sanitizedSummary string) branchTemplateData {
+	// Dots are not allowed in branch names of some Github configurations.
+	username := strings.ReplaceAll(GetUsername(), ".", "-")
 	return branchTemplateData{
-		Username:             GetUsername(),
+		Username:             username,
 		CommitSummaryCleaned: sanitizedSummary,
 	}
 }
@@ -216,9 +218,7 @@ func getBranchTemplateData(sanitizedSummary string) branchTemplateData {
 func GetUsername() string {
 	if userEmail == "" {
 		userEmailRaw := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email"))
-		userEmailRaw = userEmailRaw[0:strings.Index(userEmailRaw, "@")]
-		// Dots are not allowed in branch names of some Github configurations.
-		userEmail = strings.ReplaceAll(userEmailRaw, ".", "-")
+		userEmail = userEmailRaw[0:strings.Index(userEmailRaw, "@")]
 	}
 	return userEmail
 }

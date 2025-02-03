@@ -2,12 +2,12 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"bytes"
 	ex "stackeddiff/execute"
 	"stackeddiff/testinginit"
 )
@@ -15,7 +15,7 @@ import (
 func TestSdCodeOwners_OutputsOwnersOfChangedFiles(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "first-not-changed")
 
@@ -33,7 +33,7 @@ func TestSdCodeOwners_OutputsOwnersOfChangedFiles(t *testing.T) {
 	if writeErr := os.WriteFile(".github/CODEOWNERS", []byte(codeOwners), 0); writeErr != nil {
 		panic(writeErr)
 	}
-	outWriter := new(bytes.Buffer)
+	outWriter := testinginit.NewWriteRecorder()
 	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"code-owners"})
 	out := outWriter.String()
 

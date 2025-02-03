@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,13 +15,11 @@ import (
 func TestSdCheckout_ChecksOutBranch(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 
 	allCommits := sd.GetAllCommits()
-
-	testinginit.SetTestExecutor()
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 

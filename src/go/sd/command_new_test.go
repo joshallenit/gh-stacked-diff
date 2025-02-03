@@ -2,13 +2,13 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"os"
 	sd "stackeddiff"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"bytes"
 	ex "stackeddiff/execute"
 	"stackeddiff/testinginit"
 )
@@ -16,15 +16,13 @@ import (
 func TestSdNew_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 
-	testinginit.SetTestExecutor()
-
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 
-	outWriter := new(bytes.Buffer)
+	outWriter := testinginit.NewWriteRecorder()
 	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
 	out := outWriter.String()
 
@@ -34,11 +32,9 @@ func TestSdNew_CreatesPr(t *testing.T) {
 func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testExecutor := testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-
-	testExecutor := testinginit.SetTestExecutor()
 
 	testExecutor.SetResponse(
 		// There has to be at least 4 checks, each with 3 values: status, conclusion, and state.
@@ -60,7 +56,7 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 	testinginit.AddCommit("second", "")
@@ -68,8 +64,6 @@ func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 	testinginit.AddCommit("fourth", "")
 
 	allCommits := sd.GetAllCommits()
-
-	testinginit.SetTestExecutor()
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "2"})
 

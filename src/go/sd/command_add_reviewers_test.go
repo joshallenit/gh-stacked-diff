@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"os"
 	"testing"
 
@@ -15,11 +16,9 @@ import (
 func TestSdAddReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testExecutor := testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-
-	testExecutor := testinginit.SetTestExecutor()
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 
@@ -42,11 +41,9 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testExecutor := testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-
-	testExecutor := testinginit.SetTestExecutor()
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 
@@ -69,11 +66,9 @@ func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testExecutor := testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-
-	testExecutor := testinginit.SetTestExecutor()
 
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 

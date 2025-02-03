@@ -2,11 +2,11 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"bytes"
 	sd "stackeddiff"
 	"stackeddiff/testinginit"
 )
@@ -14,13 +14,13 @@ import (
 func TestSdBranchName_OutputsBranchName(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 
 	allCommits := sd.GetAllCommits()
 
-	outWriter := new(bytes.Buffer)
+	outWriter := testinginit.NewWriteRecorder()
 	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"branch-name", allCommits[0].Commit})
 	out := outWriter.String()
 

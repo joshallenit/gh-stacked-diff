@@ -1,7 +1,7 @@
 package stackeddiff
 
 import (
-	"bytes"
+	"log/slog"
 	"stackeddiff/testinginit"
 	"strings"
 	"testing"
@@ -13,13 +13,11 @@ import (
 
 func TestGitlog_OnEmptyRemote_PrintsLog(t *testing.T) {
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 
-	testinginit.SetTestExecutor()
-
-	outWriter := new(bytes.Buffer)
+	outWriter := testinginit.NewWriteRecorder()
 	PrintGitLog(outWriter)
 	out := outWriter.String()
 
@@ -29,7 +27,7 @@ func TestGitlog_OnEmptyRemote_PrintsLog(t *testing.T) {
 }
 
 func Test_PrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 
@@ -37,9 +35,7 @@ func Test_PrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 
 	testinginit.AddCommit("second", "")
 
-	testinginit.SetTestExecutor()
-
-	outWriter := new(bytes.Buffer)
+	outWriter := testinginit.NewWriteRecorder()
 	PrintGitLog(outWriter)
 	out := outWriter.String()
 
@@ -52,15 +48,13 @@ func Test_PrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 }
 
 func TestGitlog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *testing.T) {
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 
-	testinginit.SetTestExecutor()
-
 	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
-	outWriter := new(bytes.Buffer)
+	outWriter := testinginit.NewWriteRecorder()
 	PrintGitLog(outWriter)
 	out := outWriter.String()
 
@@ -72,7 +66,7 @@ func TestGitlog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *test
 func TestGitlog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 
@@ -82,7 +76,7 @@ func TestGitlog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 
 	testinginit.AddCommit("second", "")
 
-	outWriter := new(bytes.Buffer)
+	outWriter := testinginit.NewWriteRecorder()
 	PrintGitLog(outWriter)
 	out := outWriter.String()
 
@@ -92,11 +86,9 @@ func TestGitlog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 
 func TestGitlog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.CdTestRepo()
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-
-	testinginit.SetTestExecutor()
 
 	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
@@ -106,7 +98,7 @@ func TestGitlog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
 
 	UpdatePr(GetBranchInfo(allCommits[1].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit)
 
-	outWriter := new(bytes.Buffer)
+	outWriter := testinginit.NewWriteRecorder()
 	PrintGitLog(outWriter)
 	out := outWriter.String()
 
