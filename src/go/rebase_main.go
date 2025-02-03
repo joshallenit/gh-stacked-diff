@@ -24,7 +24,7 @@ func RebaseMain() {
 
 	for _, localLog := range localLogs {
 		spaceIndex := strings.Index(localLog, " ")
-		if spaceIndex == 0 {
+		if spaceIndex == -1 {
 			slog.Info("No local changes")
 			break
 		}
