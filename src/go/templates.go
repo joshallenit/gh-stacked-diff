@@ -336,7 +336,7 @@ func PopStash(popStash bool) {
 
 func sequenceEditorPath(sequenceEditorFilename string) string {
 	executablePath, err := os.Executable()
-	if err == nil {
+	if err != nil {
 		panic(fmt.Sprint("Cannot find path of current executable", err))
 	}
 	executableDir := path.Dir(executablePath)
