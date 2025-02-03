@@ -86,11 +86,11 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
 	slog.Info(fmt.Sprint("Rebasing, marking as fixup", commitsToCherryPick, "for target", destCommit.CommitHash))
 	environmentVariables := []string{
-		"GIT_SEQUENCE_EDITOR=" +
-			sequenceEditorPath("sequence_editor_mark_as_fixup") + " " +
+		"GIT_SEQUENCE_EDITOR=sequence_editor_mark_as_fixup " +
 			destCommit.CommitHash + " " +
 			strings.Join(commitsToCherryPick, " "),
 	}
+	slog.Info(fmt.Sprint("Using sequence editor ", environmentVariables))
 	options := ex.ExecuteOptions{EnvironmentVariables: environmentVariables, Output: ex.NewStandardOutput()}
 	rootCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--max-parents=0", "--format=%h", "HEAD"))
 	if rootCommit == destCommit.CommitHash {
