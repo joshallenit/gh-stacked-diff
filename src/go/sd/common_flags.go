@@ -3,11 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
-	"strings"
 )
 
 func AddIndicatorFlag(flagSet *flag.FlagSet) *string {
@@ -56,7 +56,7 @@ func AddSilentFlag(flagSet *flag.FlagSet, usageUseCase string) *bool {
 
 func commandHelp(flagSet *flag.FlagSet, description string, usage string, isError bool) {
 	fmt.Fprintln(flagSet.Output(), ex.Reset+description)
-	printUsage(flagSet, usage)
+	printUsage(flagSet, usage, isError)
 	if isError {
 		os.Exit(1)
 	} else {
@@ -65,25 +65,31 @@ func commandHelp(flagSet *flag.FlagSet, description string, usage string, isErro
 }
 
 func commandError(flagSet *flag.FlagSet, errMessage string, usage string) {
-	if !strings.HasPrefix(errMessage, "flag provided but not defined:") {
-		fmt.Fprintln(flagSet.Output(), ex.Reset+"error: "+errMessage)
-	}
-	printUsage(flagSet, usage)
+	fmt.Fprintln(os.Stderr, ex.Reset+"error: "+errMessage)
+	printUsage(flagSet, usage, true)
 	os.Exit(1)
 }
 
-func printUsage(flagSet *flag.FlagSet, usage string) {
-	fmt.Fprintln(flagSet.Output(), "")
-	fmt.Fprintln(flagSet.Output(), "usage: "+usage)
+func printUsage(flagSet *flag.FlagSet, usage string, isError bool) {
+	var out io.Writer
+	if isError {
+		out = os.Stderr
+	} else {
+		out = os.Stdin
+	}
+	fmt.Fprintln(out, "")
+	fmt.Fprintln(out, "usage: "+usage)
 	hasFlags := false
 	// There's no other way to get the number of possible flags, so use VisitAll.
 	flagSet.VisitAll(func(flag *flag.Flag) {
 		hasFlags = true
 	})
 	if hasFlags {
-		fmt.Fprintln(flagSet.Output(), "")
-		fmt.Fprintln(flagSet.Output(), "flags:")
-		fmt.Fprintln(flagSet.Output(), "")
+		fmt.Fprintln(out, "")
+		fmt.Fprintln(out, "flags:")
+		fmt.Fprintln(out, "")
+		flagSet.SetOutput(out)
 		flagSet.PrintDefaults()
+		flagSet.SetOutput(io.Discard)
 	}
 }

@@ -53,7 +53,7 @@ func CreateNewCommand() Command {
 			"                                    Note: any dots (.) in username are converted to dashes (-)\n" +
 			"                                          before being used in branch-name.template.\n" +
 			"\n" +
-			"To change a template, copy the default from [src/config/](src/config/) into `~/.stacked-diff-workflow/` and modify.",
+			"To change a template, copy the default from [src/go/config/](src/go/config/) into `~/.stacked-diff-workflow/` and modify.",
 		OnSelected: func(command Command) {
 			if flagSet.NArg() > 1 {
 				commandError(flagSet, "too many arguments", command.Usage)

@@ -46,8 +46,9 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		"   " + strings.Join(getCommandSummaries(commands), "\n   ") + "\n" +
 		"\n" +
 		"To learn more about a command use: sd <command> --help"
-	// clear FlagSet.Usage so that it is not displayed automatically on an invalid parameter.
+	// clear FlagSet.Usage and discard any output so that it is not display automatically on an invalid parameter.
 	commandLine.Usage = func() {}
+	commandLine.SetOutput(io.Discard)
 	// Parse flags common for every command.
 	var logLevelString string
 
@@ -82,6 +83,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		panic("ErrorHandling must be ContinueOnError, not " + fmt.Sprint(commands[selectedIndex].FlagSet.ErrorHandling()))
 	}
 	commands[selectedIndex].FlagSet.Usage = func() {}
+	commands[selectedIndex].FlagSet.SetOutput(io.Discard)
 	if parseErr := commands[selectedIndex].FlagSet.Parse(commandLine.Args()[1:]); parseErr != nil {
 		if parseErr == flag.ErrHelp {
 			commandHelp(commands[selectedIndex].FlagSet, commands[selectedIndex].Description, commands[selectedIndex].Usage, false)
