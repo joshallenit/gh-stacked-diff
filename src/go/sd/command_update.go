@@ -12,10 +12,12 @@ func CreateUpdateCommand() Command {
 	indicatorTypeString := AddIndicatorFlag(flagSet)
 	reviewers, silent, minChecks := AddReviewersFlags(flagSet, "")
 	return Command{
-		FlagSet:     flagSet,
-		Summary:     "Add commits from " + ex.GetMainBranch() + " to an existing PR",
-		Description: "Add commits from local " + ex.GetMainBranch() + " branch to an existing PR",
-		Usage:       "sd update [flags] <commitIndicator> [fixup commitIndicator (defaults to head commit)] [other fixup commitIndicator...]",
+		FlagSet: flagSet,
+		Summary: "Add commits from " + ex.GetMainBranch() + " to an existing PR",
+		Description: "Add commits from local " + ex.GetMainBranch() + " branch to an existing PR.\n" +
+			"\n" +
+			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
+		Usage: "sd update [flags] <PR commitIndicator> [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]",
 		OnSelected: func(command Command) {
 			if flagSet.NArg() == 0 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)

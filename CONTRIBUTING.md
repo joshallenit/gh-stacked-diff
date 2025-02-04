@@ -1,16 +1,14 @@
-# How To Build Scripts
+// this belongs in a dev guide
 
-The scripts are written in golang and bash.
+https://github.com/starfederation/datastar/blob/develop/BUILDING.md
 
-1. Install [golang](https://go.dev/dl/).
-2. Install make. This is already installed on Mac, but to instructions for windows are [here](https://leangaurav.medium.com/how-to-setup-install-gnu-make-on-windows-324480f1da69).
+I can call it DEV_GUIDE.md
 
-Then run:
+this has good install instructions:
 
-```bash
-make build
-```
+https://github.com/danielmiessler/fabric/blob/main/README.md
 
-# Code Organization
 
-The main entry point to the CLI is [src/go/sd/sd_main.go]. 
+// so contributing is usually simpler, and the README can contain build instructions, along with a link to a guide 
+
+https://github.com/syncthing/syncthing/blob/main/README.md

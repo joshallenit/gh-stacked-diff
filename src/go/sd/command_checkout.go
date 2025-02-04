@@ -10,10 +10,16 @@ func CreateCheckoutCommand() Command {
 	flagSet := flag.NewFlagSet("checkout", flag.ContinueOnError)
 	indicatorTypeString := AddIndicatorFlag(flagSet)
 	return Command{
-		FlagSet:     flagSet,
-		Summary:     "Checks out branch associated with commit indicator",
-		Description: "Checks out the branch associated with the PR or commit.",
-		Usage:       "sd " + flagSet.Name() + " [flags] <commitIndicator>",
+		FlagSet: flagSet,
+		Summary: "Checks out branch associated with commit indicator",
+		Description: "Checks out the branch associated with commit indicator.\n" +
+			"\n" +
+			"For when you want to merge only the branch with with origin/" + ex.GetMainBranch() + ",\n" +
+			"rather than your entire local " + ex.GetMainBranch() + " branch, verify why \n" +
+			"CI is failing on that particular branch, or for any other reason.\n" +
+			"\n" +
+			"After modifying the branch you can use \"sd replace-commit\" to sync local " + ex.GetMainBranch() + ".",
+		Usage: "sd " + flagSet.Name() + " [flags] <commitIndicator>",
 		OnSelected: func(command Command) {
 			if flagSet.NArg() == 0 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)

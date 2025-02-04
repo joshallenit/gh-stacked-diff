@@ -20,10 +20,12 @@ func CreateAddReviewersCommand() Command {
 	reviewers, silent, minChecks := AddReviewersFlags(flagSet, "Falls back to "+ex.White+"PR_REVIEWERS"+ex.Reset+" environment variable.")
 
 	return Command{
-		FlagSet:     flagSet,
-		Summary:     "Add reviewers to Pull Request on Github once its checks have passed",
-		Description: "Mark a Draft PR as \"Ready for Review\" and automatically add reviewers.",
-		Usage:       "sd " + flagSet.Name() + " [flags] [commitIndicator [commitIndicator]...]",
+		FlagSet: flagSet,
+		Summary: "Add reviewers to Pull Request on Github once its checks have passed",
+		Description: "Add reviewers to Pull Request on Github once its checks have passed.\n" +
+			"\n" +
+			"If PR is marked as a Draft, it is first marked as \"Ready for Review\".",
+		Usage: "sd " + flagSet.Name() + " [flags] [commitIndicator [commitIndicator]...]",
 		OnSelected: func(command Command) {
 			commitIndicators := flagSet.Args()
 			if len(commitIndicators) == 0 {
