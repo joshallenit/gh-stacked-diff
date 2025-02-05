@@ -15,7 +15,7 @@ func main() {
 		fmt.Printf("Usage: sequence_editor_drop_already_merged dropCommit1 [dropCommit2...] rebaseFilename")
 		os.Exit(1)
 	}
-	slog.Debug(fmt.Sprint("Got args", os.Args))
+	slog.Debug(fmt.Sprint("Got args ", os.Args))
 	dropCommits := os.Args[1 : len(os.Args)-1]
 	rebaseFilename := os.Args[len(os.Args)-1]
 

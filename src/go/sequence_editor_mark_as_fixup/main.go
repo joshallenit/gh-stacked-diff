@@ -18,7 +18,7 @@ func main() {
 	fixupCommits := os.Args[2 : len(os.Args)-1]
 	rebaseFilename := os.Args[len(os.Args)-1]
 
-	slog.Debug(fmt.Sprint("Got args", os.Args))
+	slog.Debug(fmt.Sprint("Got args ", os.Args))
 
 	data, err := os.ReadFile(rebaseFilename)
 

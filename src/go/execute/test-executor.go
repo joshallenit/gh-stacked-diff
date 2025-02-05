@@ -50,7 +50,7 @@ func (t *TestExecutor) Execute(options ExecuteOptions, programName string, args 
 					ProgramName: programName,
 					Args:        args}
 				t.Responses = append(t.Responses, fakeResponse)
-				slog.Debug(fmt.Sprint("Matched", fakeResponse))
+				slog.Debug(fmt.Sprint("Matched ", fakeResponse))
 				return response.Out, response.Err
 			}
 		}

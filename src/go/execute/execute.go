@@ -102,7 +102,7 @@ func getLogMessage(programName string, args []string, out string, err error) str
 
 func GetMainBranch() string {
 	if mainBranchName == "" {
-		remoteMainBranch, err := Execute(ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "origin/HEAD")
+		remoteMainBranch, err := Execute(ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD")
 		if err == nil {
 			remoteMainBranch = strings.TrimSpace(remoteMainBranch)
 			mainBranchName = remoteMainBranch[strings.Index(remoteMainBranch, "/")+1:]

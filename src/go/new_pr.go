@@ -29,40 +29,40 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 	}
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", branchInfo.BranchName)
 	if commitToBranchFrom != "" {
-		slog.Info(fmt.Sprint("Cherry picking", branchInfo.CommitHash))
+		slog.Info(fmt.Sprint("Cherry picking ", branchInfo.CommitHash))
 		cherryPickOutput, cherryPickError := ex.Execute(ex.ExecuteOptions{}, "git", "cherry-pick", branchInfo.CommitHash)
 		if cherryPickError != nil {
-			slog.Info(fmt.Sprint(ex.Red+"Could not cherry-pick, aborting..."+ex.Reset, cherryPickOutput, cherryPickError))
+			slog.Info(fmt.Sprint(ex.Red+"Could not cherry-pick, aborting... "+ex.Reset, cherryPickOutput, " ", cherryPickError))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
-			slog.Info(fmt.Sprint("Deleting created branch", branchInfo.BranchName))
+			slog.Info(fmt.Sprint("Deleting created branch ", branchInfo.BranchName))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 			PopStash(shouldPopStash)
 			os.Exit(1)
 		}
 	}
-	slog.Info(fmt.Sprint("Pushing to remote"))
+	slog.Info("Pushing to remote")
 	// -u is required because in newer versions of Github CLI the upstream must be set.
 	pushOutput, pushErr := ex.Execute(ex.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f", "-u")
 	if pushErr != nil {
-		slog.Info(fmt.Sprint(ex.Red+"Could not push: "+ex.Reset, pushOutput))
+		slog.Info(fmt.Sprint(ex.Red+"Could not push: "+ex.Reset, " ", pushOutput))
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
-		slog.Info(fmt.Sprint("Deleting created branch", branchInfo.BranchName))
+		slog.Info(fmt.Sprint("Deleting created branch ", branchInfo.BranchName))
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 		PopStash(shouldPopStash)
 		os.Exit(1)
 	}
 	prText := GetPullRequestText(branchInfo.CommitHash, featureFlag)
-	slog.Info(fmt.Sprint("Creating PR via gh"))
+	slog.Info("Creating PR via gh")
 	createPrArgs := []string{"pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--base", baseBranch}
 	if draft {
 		createPrArgs = append(createPrArgs, "--draft")
 	}
 	createPrOutput, createPrErr := ex.Execute(ex.ExecuteOptions{}, "gh", createPrArgs...)
 	if createPrErr != nil {
-		slog.Info(fmt.Sprint(ex.Red+"Could not create PR:"+ex.Reset, createPrOutput, createPrErr))
+		slog.Info(fmt.Sprint(ex.Red+"Could not create PR: "+ex.Reset, createPrOutput, " ", createPrErr))
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
-		slog.Info(fmt.Sprint("Deleting created branch", branchInfo.BranchName))
+		slog.Info(fmt.Sprint("Deleting created branch ", branchInfo.BranchName))
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 		PopStash(shouldPopStash)
 		os.Exit(1)
@@ -70,7 +70,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 		slog.Info(fmt.Sprint("Created PR ", createPrOutput))
 	}
 	if prViewOutput, prViewErr := ex.Execute(ex.ExecuteOptions{}, "gh", "pr", "view", "--web"); prViewErr != nil {
-		slog.Info(fmt.Sprint(ex.Red+"Could not open browser to PR:"+ex.Reset, prViewOutput, prViewErr))
+		slog.Info(fmt.Sprint(ex.Red+"Could not open browser to PR: "+ex.Reset, prViewOutput, " ", prViewErr))
 	}
 	slog.Info(fmt.Sprint("Switching back to " + ex.GetMainBranch()))
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())

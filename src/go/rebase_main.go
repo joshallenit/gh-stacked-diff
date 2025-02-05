@@ -31,7 +31,7 @@ func RebaseMain() {
 		localCommit := localLog[0:spaceIndex]
 		localSummary := localLog[len(localCommit)+1:]
 		if contains(originSummaries, localSummary) {
-			slog.Info(fmt.Sprint("Force dropping as it was already merged:", localCommit, localSummary))
+			slog.Info(fmt.Sprint("Force dropping as it was already merged: ", localCommit, " ", localSummary))
 			dropCommits = append(dropCommits, localCommit)
 		}
 	}

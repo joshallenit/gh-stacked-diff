@@ -51,9 +51,9 @@ func checkBranch(wg *sync.WaitGroup, commitIndicator string, indicatorType Indic
 			}
 
 			if summary.Total < minChecks {
-				slog.Info(fmt.Sprint("Waiting for at least", minChecks, "checks to be added to PR. Currently only ", summary.Total))
+				slog.Info(fmt.Sprint("Waiting for at least ", minChecks, " checks to be added to PR. Currently only ", summary.Total))
 			} else if summary.Passing == summary.Total {
-				slog.Info(fmt.Sprint("All", summary.Total, "checks passed"))
+				slog.Info(fmt.Sprint("All ", summary.Total, " checks passed"))
 				break
 			} else if summary.Passing == 0 {
 				slog.Info(fmt.Sprint("Checks pending for ", commitIndicator, ". Completed: 0%"))

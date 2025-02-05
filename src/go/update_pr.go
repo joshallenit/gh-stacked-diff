@@ -22,22 +22,22 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	shouldPopStash := false
 	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before update-pr "+destCommit.CommitHash))
 	if strings.HasPrefix(stashResult, "Saved working") {
-		slog.Info(fmt.Sprint(stashResult))
+		slog.Info(stashResult)
 		shouldPopStash = true
 	}
 	slog.Info(fmt.Sprint("Switching to branch ", destCommit.BranchName))
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", destCommit.BranchName)
-	slog.Info(fmt.Sprint("Fast forwarding in case there were any commits made via github web interface"))
+	slog.Info("Fast forwarding in case there were any commits made via github web interface")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "fetch", "origin", destCommit.BranchName)
 	forcePush := false
 	if _, err := ex.Execute(ex.ExecuteOptions{}, "git", "merge", "--ff-only", "origin/"+destCommit.BranchName); err != nil {
-		slog.Info(fmt.Sprint("Could not fast forward to match origin. Rebasing instead.", err))
+		slog.Info(fmt.Sprint("Could not fast forward to match origin. Rebasing instead. ", err))
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rebase", "origin", destCommit.BranchName)
 		// As we rebased, a force push may be required.
 		forcePush = true
 	}
 
-	slog.Info(fmt.Sprint("Cherry picking", commitsToCherryPick))
+	slog.Info(fmt.Sprint("Cherry picking ", commitsToCherryPick))
 	cherryPickArgs := make([]string, 1+len(commitsToCherryPick))
 	cherryPickArgs[0] = "cherry-pick"
 	for i, commit := range commitsToCherryPick {
@@ -55,17 +55,17 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 			", in case the local "+ex.GetMainBranch()+" was rebased with origin/"+ex.GetMainBranch()))
 		rebaseOutput, rebaseError := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", rebaseCommit)
 		if rebaseError != nil {
-			slog.Info(fmt.Sprint(ex.Red+"Could not rebase, aborting..."+ex.Reset, rebaseOutput))
+			slog.Info(fmt.Sprint(ex.Red+"Could not rebase, aborting... "+ex.Reset, rebaseOutput))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rebase", "--abort")
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
 			PopStash(shouldPopStash)
 			os.Exit(1)
 		}
-		slog.Info(fmt.Sprint("Cherry picking again", commitsToCherryPick))
+		slog.Info(fmt.Sprint("Cherry picking again ", commitsToCherryPick))
 		var cherryPickOutput string
 		cherryPickOutput, cherryPickError = ex.Execute(ex.ExecuteOptions{}, "git", cherryPickArgs...)
 		if cherryPickError != nil {
-			slog.Info(fmt.Sprint(ex.Red+"Could not cherry-pick, aborting..."+ex.Reset, cherryPickArgs, cherryPickOutput, cherryPickError))
+			slog.Info(fmt.Sprint(ex.Red+"Could not cherry-pick, aborting... "+ex.Reset, cherryPickArgs, " ", cherryPickOutput, " ", cherryPickError))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
 			PopStash(shouldPopStash)
@@ -84,7 +84,7 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	}
 	slog.Info("Switching back to " + ex.GetMainBranch())
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
-	slog.Info(fmt.Sprint("Rebasing, marking as fixup", commitsToCherryPick, "for target", destCommit.CommitHash))
+	slog.Info(fmt.Sprint("Rebasing, marking as fixup ", commitsToCherryPick, " for target ", destCommit.CommitHash))
 	environmentVariables := []string{
 		"GIT_SEQUENCE_EDITOR=sequence_editor_mark_as_fixup " +
 			destCommit.CommitHash + " " +
