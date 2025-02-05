@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 	"text/template"
@@ -78,7 +77,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		panic("Invalid IndicatorType " + string(indicatorType))
 	}
 	if commitIndicator == "" {
-		commitIndicator = ex.GetMainBranch()
+		commitIndicator = GetMainBranch()
 		indicatorType = IndicatorTypeCommit
 	}
 	if indicatorType == IndicatorTypeGuess {
@@ -97,7 +96,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		summary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", prCommit))
 		thisBranchCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h"))
 		if thisBranchCommit == "" {
-			panic(fmt.Sprint("Could not find associated commit for PR (\"", summary, "\") in "+ex.GetMainBranch()))
+			panic(fmt.Sprint("Could not find associated commit for PR (\"", summary, "\") in "+GetMainBranch()))
 		}
 		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
 		slog.Info("Using pull request " + commitIndicator + ", commit " + info.CommitHash + ", branch " + info.BranchName)
@@ -108,7 +107,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		slog.Info("Using commit " + info.CommitHash + ", branch " + info.BranchName)
 	case IndicatorTypeList:
 		slog.Debug("Using commitIndicator as a list index " + commitIndicator)
-		newCommits := GetNewCommits(ex.GetMainBranch(), GetCurrentBranchName())
+		newCommits := GetNewCommits(GetMainBranch(), GetCurrentBranchName())
 		listIndex, err := strconv.Atoi(commitIndicator)
 		if err != nil {
 			panic("When indicator type is " + string(IndicatorTypeList) + " commit indicator must be a number, given " + commitIndicator)
@@ -233,102 +232,5 @@ func getConfigFile(filenameWithoutPath string) *string {
 		return &fullPath
 	} else {
 		return nil
-	}
-}
-
-type GitLog struct {
-	Commit  string
-	Subject string
-	Branch  string
-}
-
-func newGitLogs(logsRaw string) []GitLog {
-	logLines := strings.Split(strings.TrimSpace(logsRaw), "\n")
-	var logs []GitLog
-	for _, logLine := range logLines {
-		components := strings.Split(logLine, formatDelimiter)
-		if len(components) != 3 {
-			// No git logs.
-			continue
-		}
-		logs = append(logs, GitLog{Commit: components[0], Subject: components[1], Branch: GetBranchForSantizedSubject(components[2])})
-	}
-	return logs
-}
-
-func GetAllCommits() []GitLog {
-	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h" + formatDelimiter + "%s" + formatDelimiter + "%f", "--abbrev-commit"}
-	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
-	return newGitLogs(logsRaw)
-}
-
-func GetNewCommits(compareFromRemoteBranch string, to string) []GitLog {
-	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h" + formatDelimiter + "%s" + formatDelimiter + "%f", "--abbrev-commit"}
-	if RemoteHasBranch(compareFromRemoteBranch) {
-		gitArgs = append(gitArgs, "origin/"+compareFromRemoteBranch+".."+to)
-	} else {
-		gitArgs = append(gitArgs, to)
-	}
-	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
-	return newGitLogs(logsRaw)
-}
-
-// Returns most recent commit of the given branch that is on origin/main, or "" if the main branch is not on remote.
-func FirstOriginMainCommit(branchName string) string {
-	if !LocalHasBranch(branchName) {
-		panic("Branch does not exist " + branchName)
-	}
-	// Verify that remote has branch, there is no origin commit.
-	if !RemoteHasBranch(ex.GetMainBranch()) {
-		return ""
-	}
-	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge-base", "origin/"+ex.GetMainBranch(), branchName))
-}
-
-func RemoteHasBranch(branchName string) bool {
-	remoteBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r", "--list", "origin/"+branchName))
-	return remoteBranch != ""
-}
-
-func LocalHasBranch(branchName string) bool {
-	localBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "--list", branchName))
-	return localBranch != ""
-}
-
-func RequireMainBranch() {
-	if GetCurrentBranchName() != ex.GetMainBranch() {
-		panic("Must be run from " + ex.GetMainBranch() + " branch")
-	}
-}
-
-func RequireCommitOnMain(commit string) {
-	if commit == ex.GetMainBranch() {
-		return
-	}
-	newCommits := GetNewCommits(ex.GetMainBranch(), "HEAD")
-	if !slices.ContainsFunc(newCommits, func(gitLog GitLog) bool {
-		return gitLog.Commit == commit
-	}) {
-		panic("Commit " + commit + " does not exist on " + ex.GetMainBranch() + ". Check `sd log` for available commits.")
-	}
-}
-
-func GetCurrentBranchName() string {
-	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD"))
-}
-
-func Stash(forName string) bool {
-	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName))
-	if strings.HasPrefix(stashResult, "Saved working") {
-		slog.Info(stashResult)
-		return true
-	}
-	return false
-}
-
-func PopStash(popStash bool) {
-	if popStash {
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "pop")
-		slog.Info("Popped stash back")
 	}
 }

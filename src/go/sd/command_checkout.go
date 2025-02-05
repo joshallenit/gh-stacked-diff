@@ -14,11 +14,11 @@ func CreateCheckoutCommand() Command {
 		Summary: "Checks out branch associated with commit indicator",
 		Description: "Checks out the branch associated with commit indicator.\n" +
 			"\n" +
-			"For when you want to merge only the branch with with origin/" + ex.GetMainBranch() + ",\n" +
-			"rather than your entire local " + ex.GetMainBranch() + " branch, verify why \n" +
+			"For when you want to merge only the branch with with origin/" + sd.GetMainBranch() + ",\n" +
+			"rather than your entire local " + sd.GetMainBranch() + " branch, verify why \n" +
 			"CI is failing on that particular branch, or for any other reason.\n" +
 			"\n" +
-			"After modifying the branch you can use \"sd replace-commit\" to sync local " + ex.GetMainBranch() + ".",
+			"After modifying the branch you can use \"sd replace-commit\" to sync local " + sd.GetMainBranch() + ".",
 		Usage: "sd " + flagSet.Name() + " [flags] <commitIndicator>",
 		OnSelected: func(command Command) {
 			if flagSet.NArg() == 0 {

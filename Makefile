@@ -16,7 +16,7 @@ build: format
 test: build
 	cd src/go; go test ./...
 
-release: build
+release: test
 ifndef PLATFORM
 	$(error PLATFORM is not set)
 endif

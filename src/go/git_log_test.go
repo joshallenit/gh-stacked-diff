@@ -31,7 +31,7 @@ func Test_PrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", ex.GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranch())
 
 	testinginit.AddCommit("second", "")
 
@@ -52,7 +52,7 @@ func TestGitlog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *test
 
 	testinginit.AddCommit("first", "")
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
 	outWriter := testinginit.NewWriteRecorder()
 	PrintGitLog(outWriter)
@@ -70,7 +70,7 @@ func TestGitlog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", ex.GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranch())
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", "-b", "my-branch")
 
@@ -90,7 +90,7 @@ func TestGitlog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	CreateNewPr(true, "", ex.GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
 
 	testinginit.AddCommit("second", "")
 

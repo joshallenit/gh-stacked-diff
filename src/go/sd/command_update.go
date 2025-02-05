@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	sd "stackeddiff"
-	ex "stackeddiff/execute"
 	"time"
 )
 
@@ -13,8 +12,8 @@ func CreateUpdateCommand() Command {
 	reviewers, silent, minChecks := AddReviewersFlags(flagSet, "")
 	return Command{
 		FlagSet: flagSet,
-		Summary: "Add commits from " + ex.GetMainBranch() + " to an existing PR",
-		Description: "Add commits from local " + ex.GetMainBranch() + " branch to an existing PR.\n" +
+		Summary: "Add commits from " + sd.GetMainBranch() + " to an existing PR",
+		Description: "Add commits from local " + sd.GetMainBranch() + " branch to an existing PR.\n" +
 			"\n" +
 			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
 		Usage: "sd update [flags] <PR commitIndicator> [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]",

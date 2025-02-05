@@ -15,8 +15,8 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 
 	var commitToBranchFrom string
 	shouldPopStash := Stash("sd new " + flag.Arg(0))
-	if baseBranch == ex.GetMainBranch() {
-		commitToBranchFrom = FirstOriginMainCommit(ex.GetMainBranch())
+	if baseBranch == GetMainBranch() {
+		commitToBranchFrom = FirstOriginMainCommit(GetMainBranch())
 		slog.Info(fmt.Sprint("Switching to branch ", branchInfo.BranchName, " based off commit ", commitToBranchFrom))
 	} else {
 		commitToBranchFrom = baseBranch
@@ -34,7 +34,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 		if cherryPickError != nil {
 			slog.Info(fmt.Sprint(ex.Red+"Could not cherry-pick, aborting... "+ex.Reset, cherryPickOutput, " ", cherryPickError))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranch())
 			slog.Info(fmt.Sprint("Deleting created branch ", branchInfo.BranchName))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 			PopStash(shouldPopStash)
@@ -46,7 +46,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 	pushOutput, pushErr := ex.Execute(ex.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f", "-u")
 	if pushErr != nil {
 		slog.Info(fmt.Sprint(ex.Red+"Could not push: "+ex.Reset, " ", pushOutput))
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranch())
 		slog.Info(fmt.Sprint("Deleting created branch ", branchInfo.BranchName))
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 		PopStash(shouldPopStash)
@@ -61,7 +61,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 	createPrOutput, createPrErr := ex.Execute(ex.ExecuteOptions{}, "gh", createPrArgs...)
 	if createPrErr != nil {
 		slog.Info(fmt.Sprint(ex.Red+"Could not create PR: "+ex.Reset, createPrOutput, " ", createPrErr))
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranch())
 		slog.Info(fmt.Sprint("Deleting created branch ", branchInfo.BranchName))
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
 		PopStash(shouldPopStash)
@@ -72,8 +72,8 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 	if prViewOutput, prViewErr := ex.Execute(ex.ExecuteOptions{}, "gh", "pr", "view", "--web"); prViewErr != nil {
 		slog.Info(fmt.Sprint(ex.Red+"Could not open browser to PR: "+ex.Reset, prViewOutput, " ", prViewErr))
 	}
-	slog.Info(fmt.Sprint("Switching back to " + ex.GetMainBranch()))
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
+	slog.Info(fmt.Sprint("Switching back to " + GetMainBranch()))
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranch())
 	PopStash(shouldPopStash)
 	/*
 	   This avoids this hint when using `git fetch && git-rebase origin/main` which is not appropriate for stacked diff workflow:

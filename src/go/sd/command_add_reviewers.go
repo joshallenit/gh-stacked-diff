@@ -30,7 +30,7 @@ func CreateAddReviewersCommand() Command {
 			commitIndicators := flagSet.Args()
 			if len(commitIndicators) == 0 {
 				slog.Debug("Using main branch because commitIndicators is empty")
-				commitIndicators = []string{ex.GetMainBranch()}
+				commitIndicators = []string{sd.GetMainBranch()}
 				*indicatorTypeString = string(sd.IndicatorTypeCommit)
 			}
 			if *reviewers == "" {

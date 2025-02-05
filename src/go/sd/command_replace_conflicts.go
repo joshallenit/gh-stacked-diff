@@ -4,7 +4,6 @@ import (
 	"flag"
 	"io"
 	sd "stackeddiff"
-	ex "stackeddiff/execute"
 )
 
 func CreateReplaceConflictsCommand(stdOut io.Writer) Command {
@@ -15,7 +14,7 @@ func CreateReplaceConflictsCommand(stdOut io.Writer) Command {
 		Summary: "For failed rebase: replace changes with its associated branch",
 		Description: "During a rebase that failed because of merge conflicts, replace the\n" +
 			"current uncommitted changes (merge conflicts), with the contents\n" +
-			"(diff between origin/" + ex.GetMainBranch() + " and HEAD) of its associated branch.",
+			"(diff between origin/" + sd.GetMainBranch() + " and HEAD) of its associated branch.",
 		Usage: "sd replace-conflicts",
 		OnSelected: func(command Command) {
 			if flagSet.NArg() > 0 {

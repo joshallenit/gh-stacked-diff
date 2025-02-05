@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	sd "stackeddiff"
 	ex "stackeddiff/execute"
 	"stackeddiff/testinginit"
 )
@@ -19,7 +20,7 @@ func TestSdCodeOwners_OutputsOwnersOfChangedFiles(t *testing.T) {
 
 	testinginit.AddCommit("first", "first-not-changed")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", ex.GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranch())
 
 	testinginit.AddCommit("second", "second-changed")
 

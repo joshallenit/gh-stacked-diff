@@ -15,8 +15,6 @@ var Reset = "\033[0m"
 var White = "\033[97m"
 var Yellow = "\033[33m" // #C0A000 (Buddha Gold)
 
-var mainBranchName string
-
 /*
 Options for [ExecuteWithOptions].
 */
@@ -98,18 +96,4 @@ func getLogMessage(programName string, args []string, out string, err error) str
 		}
 	}
 	return logMessage
-}
-
-func GetMainBranch() string {
-	if mainBranchName == "" {
-		remoteMainBranch, err := Execute(ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD")
-		if err == nil {
-			remoteMainBranch = strings.TrimSpace(remoteMainBranch)
-			mainBranchName = remoteMainBranch[strings.Index(remoteMainBranch, "/")+1:]
-		} else {
-			// Remote is empty, use config.
-			mainBranchName = strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "config", "init.defaultBranch"))
-		}
-	}
-	return mainBranchName
 }

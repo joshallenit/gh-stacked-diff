@@ -10,16 +10,16 @@ import (
 )
 
 func PrintGitLog(out io.Writer) {
-	if GetCurrentBranchName() != ex.GetMainBranch() {
+	if GetCurrentBranchName() != GetMainBranch() {
 		gitArgs := []string{"--no-pager", "log", "--pretty=oneline", "--abbrev-commit"}
-		if RemoteHasBranch(ex.GetMainBranch()) {
-			gitArgs = append(gitArgs, "origin/"+ex.GetMainBranch()+"..HEAD")
+		if RemoteHasBranch(GetMainBranch()) {
+			gitArgs = append(gitArgs, "origin/"+GetMainBranch()+"..HEAD")
 		}
 		gitArgs = append(gitArgs, "--color=always")
 		ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: out, Stderr: out}}, "git", gitArgs...)
 		return
 	}
-	logs := GetNewCommits(ex.GetMainBranch(), "HEAD")
+	logs := GetNewCommits(GetMainBranch(), "HEAD")
 	gitBranchArgs := make([]string, 0, len(logs)+2)
 	gitBranchArgs = append(gitBranchArgs, "branch", "-l")
 	for _, log := range logs {
@@ -37,7 +37,7 @@ func PrintGitLog(out io.Writer) {
 		fmt.Fprintln(out, ex.Yellow+log.Commit+ex.Reset+" "+log.Subject)
 		// find first commit that is not in main branch
 		if slices.Contains(checkedBranches, log.Branch) {
-			branchCommits := GetNewCommits(ex.GetMainBranch(), log.Branch)
+			branchCommits := GetNewCommits(GetMainBranch(), log.Branch)
 			if len(branchCommits) > 1 {
 				for _, branchCommit := range branchCommits {
 					padding := strings.Repeat(" ", len(numberPrefix))

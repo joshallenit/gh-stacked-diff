@@ -12,7 +12,7 @@ func CreateNewCommand() Command {
 
 	draft := flagSet.Bool("draft", true, "Whether to create the PR as draft")
 	featureFlag := flagSet.String("feature-flag", "", "Value for FEATURE_FLAG in PR description")
-	baseBranch := flagSet.String("base", ex.GetMainBranch(), "Base branch for Pull Request")
+	baseBranch := flagSet.String("base", sd.GetMainBranch(), "Base branch for Pull Request")
 
 	reviewers, silent, minChecks := AddReviewersFlags(flagSet, "")
 
@@ -27,7 +27,7 @@ func CreateNewCommand() Command {
 			"on the commit summary), and then uses Github CLI to create a PR.\n" +
 			"\n" +
 			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
-		Usage: "sd new [flags] [commitIndicator (default is HEAD commit on " + ex.GetMainBranch() + ")]\n" +
+		Usage: "sd new [flags] [commitIndicator (default is HEAD commit on " + sd.GetMainBranch() + ")]\n" +
 			"\n" +
 			ex.White + "Ticket Number:" + ex.Reset + "\n" +
 			"\n" +

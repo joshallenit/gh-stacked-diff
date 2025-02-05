@@ -47,17 +47,17 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	if cherryPickError != nil {
 		slog.Info("First attempt at cherry-pick failed")
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-		rebaseCommit := FirstOriginMainCommit(ex.GetMainBranch())
+		rebaseCommit := FirstOriginMainCommit(GetMainBranch())
 		if rebaseCommit == "" {
-			panic("There is no " + ex.GetMainBranch() + " branch on origin, nothing to rebase")
+			panic("There is no " + GetMainBranch() + " branch on origin, nothing to rebase")
 		}
-		slog.Info(fmt.Sprint("Rebasing with the base commit on "+ex.GetMainBranch()+" branch, ", rebaseCommit,
-			", in case the local "+ex.GetMainBranch()+" was rebased with origin/"+ex.GetMainBranch()))
+		slog.Info(fmt.Sprint("Rebasing with the base commit on "+GetMainBranch()+" branch, ", rebaseCommit,
+			", in case the local "+GetMainBranch()+" was rebased with origin/"+GetMainBranch()))
 		rebaseOutput, rebaseError := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", rebaseCommit)
 		if rebaseError != nil {
 			slog.Info(fmt.Sprint(ex.Red+"Could not rebase, aborting... "+ex.Reset, rebaseOutput))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rebase", "--abort")
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranch())
 			PopStash(shouldPopStash)
 			os.Exit(1)
 		}
@@ -67,7 +67,7 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 		if cherryPickError != nil {
 			slog.Info(fmt.Sprint(ex.Red+"Could not cherry-pick, aborting... "+ex.Reset, cherryPickArgs, " ", cherryPickOutput, " ", cherryPickError))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranch())
 			PopStash(shouldPopStash)
 			os.Exit(1)
 		}
@@ -82,8 +82,8 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	} else {
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", destCommit.BranchName)
 	}
-	slog.Info("Switching back to " + ex.GetMainBranch())
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
+	slog.Info("Switching back to " + GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranch())
 	slog.Info(fmt.Sprint("Rebasing, marking as fixup ", commitsToCherryPick, " for target ", destCommit.CommitHash))
 	environmentVariables := []string{
 		"GIT_SEQUENCE_EDITOR=sequence_editor_mark_as_fixup " +

@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	sd "stackeddiff"
-	ex "stackeddiff/execute"
 )
 
 func CreateReplaceCommitCommand() Command {
@@ -11,13 +10,13 @@ func CreateReplaceCommitCommand() Command {
 	indicatorTypeString := AddIndicatorFlag(flagSet)
 	return Command{
 		FlagSet: flagSet,
-		Summary: "Replaces a commit on " + ex.GetMainBranch() + " branch with its associated branch",
-		Description: "Replaces a commit on " + ex.GetMainBranch() + " branch with the squashed contents of its\n" +
+		Summary: "Replaces a commit on " + sd.GetMainBranch() + " branch with its associated branch",
+		Description: "Replaces a commit on " + sd.GetMainBranch() + " branch with the squashed contents of its\n" +
 			"associated branch.\n" +
 			"\n" +
 			"This is useful when you make changes within a branch, for example to\n" +
 			"fix a problem found on CI, and want to bring the changes over to your\n" +
-			"local " + ex.GetMainBranch() + " branch.",
+			"local " + sd.GetMainBranch() + " branch.",
 		Usage: "sd replace-commit [flags] <commitIndicator>",
 		OnSelected: func(command Command) {
 			if flagSet.NArg() == 0 {
