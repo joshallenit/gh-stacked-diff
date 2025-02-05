@@ -89,6 +89,8 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 	testinginit.AddCommit("on-second-branch-only", "3")
 	testinginit.AddCommit("on-second-branch-only", "4")
 
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", allCommits[1].Branch)
+
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", ex.GetMainBranch())
 
 	ParseArguments(

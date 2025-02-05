@@ -68,7 +68,7 @@ func checkBranch(wg *sync.WaitGroup, commitIndicator string, indicatorType Indic
 	slog.Info("Waiting 10 seconds for any automatically assigned reviewers to be added...")
 	time.Sleep(10 * time.Second)
 	prUrl := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "edit", branchName, "--add-reviewer", reviewers))
-	slog.Info(fmt.Sprint("Added reviewers", reviewers, "to", prUrl))
+	slog.Info(fmt.Sprint("Added reviewers ", reviewers, " to ", prUrl))
 	wg.Done()
 }
 

@@ -82,11 +82,20 @@ func setTestExecutor() *ex.TestExecutor {
 	return &testExecutor
 }
 
-func AddCommit(commitMessage string, fileName string) {
-	if fileName == "" {
-		fileName = commitMessage
+func AddCommit(commitMessage string, filename string) {
+	if filename == "" {
+		filename = commitMessage
 	}
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "touch", fileName)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "touch", filename)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", commitMessage)
+}
+
+func CommitFileChange(commitMessage string, filename string, fileContents string) {
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "touch", filename)
+	if writeErr := os.WriteFile(filename, []byte(fileContents), 0); writeErr != nil {
+		panic(writeErr)
+	}
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", commitMessage)
 }
