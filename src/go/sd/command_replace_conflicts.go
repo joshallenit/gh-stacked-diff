@@ -13,7 +13,7 @@ func CreateReplaceConflictsCommand(stdOut io.Writer) Command {
 	return Command{
 		FlagSet: flagSet,
 		Summary: "For failed rebase: replace changes with its associated branch",
-		Description: "During a rebase that failed becuase of merge conflicts, replace the\n" +
+		Description: "During a rebase that failed because of merge conflicts, replace the\n" +
 			"current uncommitted changes (merge conflicts), with the contents\n" +
 			"(diff between origin/" + ex.GetMainBranch() + " and HEAD) of its associated branch.",
 		Usage: "sd replace-conflicts",

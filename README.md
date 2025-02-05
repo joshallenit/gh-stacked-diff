@@ -4,7 +4,7 @@ These scripts make it easier to build from the command line and to create and up
 
 ## TL;DR
 
-Using a stacked diff workflow like this allows you to work on separate streams of work without changing branches. This project is a Command Line Interface that manages git commits and branches to allow you to quickly use a stacked diff workflow. It uses the Github CLI to create pull requests and add reviewers once PR checks have passed.
+Using a stacked diff workflow allows you to work on separate streams of work without the overhead of changing branches. This project is a Command Line Interface that manages git commits and branches to allow you to quickly use a stacked diff workflow. It uses the Github CLI to create pull requests and add reviewers once PR checks have passed.
 
 ## Installation
 
@@ -12,7 +12,7 @@ Clone the repository or download the [latest release](https://github.com/tinyspe
 
 ### Mac
 
-**Optional:** As this is a CLI, do yourself a favor and install [iTerm](https://iterm2.com/) and [zsh](https://ohmyz.sh/), as it makes working for the command line more pleasant.
+*Optional: As this is a CLI, do yourself a favor and install [iTerm](https://iterm2.com/) and [zsh](https://ohmyz.sh/), as they make working from the command line more pleasant.*
 
 ```bash
 # Install Github CLI
@@ -21,7 +21,7 @@ brew install gh
 gh auth login 
 # Add the /bin directory to your PATH. 
 # Replace the directory below to wherever you cloned the repository or unzipped the release.
-# For example if using zsh and cloned in your home directory:
+# For example if using zsh and installed in your home directory:
 echo "export PATH=\$PATH:\$HOME/stacked-diff-workflow/bin" >> ~/.zshrc
 source ~/.zshrc
 ```
@@ -29,7 +29,16 @@ source ~/.zshrc
 ### Windows
 
 Install [Git and Git Bash](https://gitforwindows.org/)
-Install 
+Install [Github CLI](https://cli.github.com/)
+
+```bash
+gh auth login 
+# Add the /bin directory to your PATH. 
+# Replace the directory below to wherever you cloned the repository or unzipped the release.
+# For example if using bash and installed in your home directory:
+echo "export PATH=\$PATH:\$HOME/stacked-diff-workflow/bin" >> ~/.bashrc
+source ~/.bashrc
+```
 
 ## Stacked Diff Workflow CLI
 
@@ -316,7 +325,7 @@ flags:
 
 #### replace-conflicts
 
-During a rebase that failed becuase of merge conflicts, replace the current uncommitted changes (merge conflicts), with the contents (diff between origin/main and HEAD) of its associated branch.
+During a rebase that failed because of merge conflicts, replace the current uncommitted changes (merge conflicts), with the contents (diff between origin/main and HEAD) of its associated branch.
 
 ```bash
 usage: sd replace-conflicts
@@ -393,31 +402,6 @@ Lists all of your open PRs. Useful for copying PR numbers.
 usage: git-prs
 ```
 
-<img width="904" alt="image" src="https://github.com/tinyspeck/stacked-diff-workflow/assets/79605685/7e7a5708-58dc-4060-96b9-89615a86c009">
-
-
-### To Help You Build
-
-*Note: Only [Android](https://github.com/tinyspeck/slack-android-ng) build scripts are currently supported.*
-
-#### Script: assemble-app
-
-`assemble-app`
-
-Calls `./gradlew assembleInternalDebug` and build tests. Use "-s" (silent) flag to not use voice (`say`) to announce success/failure. Any options after, or in-lieu of, "-s" will be passed to the `./gradle` command, for example `--rerun-tasks`.
-
-#### Script: install-app
-
-`install-app`
-
-Calls `./gradlew assembleInternalDebug` and install on real device. Use "-s" (silent) flag to not use voice (`say`) to announce success/failure. Any options after, or in-lieu of, "-s" will be passed to the `./gradle` command, for example `--rerun-tasks`.
-
-#### Script: install-apk
-
-`install-apk`
-
-Installs the already compiled APK on a real devices. Useful for after you have run `install-app` but forgot to plugin in your phone 😄. It's faster than running `install-app` again as it doesn't run gradle.
-
 ## Example Workflow
 
 ### Creating and Updating PRs
@@ -426,7 +410,7 @@ Use **sd new** and **sd update** to create and update PR's while always staying 
 
 ### To Update Main
 
-*Note: This process has been automated by the `sd rebase-main` command.*
+*Note: This process is automated by the `sd rebase-main` command. There is no need to follow these steps manually.*
 
 Once a PR has been merged, just rebase main normally. The local PR commit will be replaced by the one that Github created when squasing and merging.
 
@@ -447,19 +431,16 @@ git reset --hard head && git rebase --continue
 If you just are rebasing with `main` and the commit with merge conflict has already been **merged**, then the process is simpler.
 
 1. Fix Merge Conflict
-
-```bash
-# switch to feature branch that has a merge conflict
-sd checkout <commitIndicator> 
-git fetch && git merge origin/main
-# ... and address any merge conflicts
-# Update your PR
-git push origin/xxx 
-```
-
-2\. Merge PR via Github
-
-3\. [Update your Main Branch](#to-update-main)
+      ```bash
+      # switch to feature branch that has a merge conflict
+      sd checkout <commitIndicator> 
+      git fetch && git merge origin/main
+      # ... and address any merge conflicts
+      # Update your PR
+      git push origin/xxx 
+      ```
+2. Merge PR via Github
+3. [Update your Main Branch](#to-update-main)
 
 ##### Advanced Flow
 
@@ -502,60 +483,3 @@ Join the discussion in [#devel-stacked-diff-workflow](https://slack-pde.slack.co
 https://kastiglione.github.io/git/2020/09/11/git-stacked-commits.html
 
 - Thanks to the Github team for creating a CLI that is leveraged here.
-
-
-Good example
-
-https://github.com/helm/helm
-
-https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/managing-your-profile-readme
-
-
-	// so I could do something like this:
-	// https://github.com/Nutlope/aicommits
-	// to create an AI git commit message
-
-	/*
-					https://www.hatica.io/blog/ai-commit-tools/
-				https://github.com/kamushadenes/chloe/blob/main/.github/scripts/release-notes.py
-		the commit messages don't look that great, probably not the best idea
-		but splitting commits into smaller ones based on compilability could be good. Maybe figuring out which dependencies are declared in which file and then which dependencies are used in each file? That could work
-
-
-				I could actually try these commit messages to see how well they work or don't work
-				Other ideas:
-					- show git log very fast and then check for branches async using ANSI codes
-					- output the latest head commit so that a rollback can be done "git reset --hard xxx", but that doesn't keep track of what it does to branches which could screw up a PR, undo? that could be useful.
-					- Include PR link instead of just a :green-check: beside PR's, there might be a way to http link from terminal. Too long to do it for every branch, would require the ANSI backspace idea. Or it could run in the background and update it next? Not sure if Go can launch background tasks and terminate, but probably? Or do it with a visual gui? wow, that would be something. https://github.com/charmbracelet/bubbletea
-					- Next `gh pr view 83824 --json latestReviews` and ensure developer is already not approved so that the review is not dismissed
-					- show the output of git commands in a tabbed window that uses ANSI escape codes to move around the screen
-					- better error handling so that it reverted on error rather then leaving in an indeterminite state... but wouldn't this mean that I have to save error codes so they can be reported upstream?
-					- aliases for reviewer names, so ideally what
-
-
-
-POLISH
-- update README with latest changes
-- code review, review/organize/document code
-- standardize all test so they are using assert* and named properly
-- test for error conditions (ugh not fun) + but could lead to better error handling (rollback)
-- functions only need to be UpperCase if exported from PACKAGE, not file
-					
-
-create a PR summary message based on commit messages and comments in code? would that work... probably not.
-
-sending a diff would be too exact
-
-migrate git-merge to use the new merge queue -- mention that it was deleted to Evan in case he wants to do it
-
-NOT WORTH DOING
-
-It's easier to just set envionment variables
-
-sd config set reviewer-alias ankit search
-sd config show reviewer-alias
-
-
-
-
-						*/
