@@ -64,7 +64,7 @@ func CreateNewCommand() Command {
 			"   FeatureFlag                  Value passed to feature-flag flag\n" +
 			"   TicketNumber                 Jira ticket as parsed from the commit summary\n" +
 			"   Username                     Name as parsed from git config email.\n" +
-			"   UsernameCleaned              Username with dots (.) to dashes (-).\n",
+			"   UsernameCleaned              Username with dots (.) converted to dashes (-).\n",
 		OnSelected: func(command Command) {
 			if flagSet.NArg() > 1 {
 				commandError(flagSet, "too many arguments", command.Usage)
