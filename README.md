@@ -462,7 +462,7 @@ git add . && git rebase --continue
 # and the merge conflicts only had to be fixed once
 ```
 
-# Building Source and Contributing
+## Building Source and Contributing
 
 See the [Contributing Developer Guide](DEVELOPER_GUIDE.md), which includes instructions on how to build the source, as well as an overview of the code.
 
