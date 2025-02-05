@@ -15,8 +15,9 @@ func CreateBranchNameCommand(stdOut io.Writer) Command {
 		FlagSet:         flagSet,
 		DefaultLogLevel: slog.LevelError,
 		Summary:         "Outputs branch name of commit",
-		Description:     "Outputs the branch name for a given commit indicator. Useful for your own custom scripting.",
-		Usage:           "sd " + flagSet.Name() + " [flags] <commitIndicator>",
+		Description: "Outputs the branch name for a given commit indicator.\n" +
+			"Useful for your own custom scripting.",
+		Usage: "sd " + flagSet.Name() + " [flags] <commitIndicator>",
 		OnSelected: func(command Command) {
 			if flagSet.NArg() == 0 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)

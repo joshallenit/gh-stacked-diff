@@ -11,7 +11,7 @@ func CreateReplaceCommitCommand() Command {
 	indicatorTypeString := AddIndicatorFlag(flagSet)
 	return Command{
 		FlagSet: flagSet,
-		Summary: "Replaces a commit on " + ex.GetMainBranch() + " branch with the contents its associated branch",
+		Summary: "Replaces a commit on " + ex.GetMainBranch() + " branch with its associated branch",
 		Description: "Replaces a commit on " + ex.GetMainBranch() + " branch with the squashed contents of its\n" +
 			"associated branch.\n" +
 			"\n" +

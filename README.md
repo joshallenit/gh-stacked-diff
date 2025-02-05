@@ -29,6 +29,7 @@ source ~/.zshrc
 ### Windows
 
 Install [Git and Git Bash](https://gitforwindows.org/)
+Install 
 
 ## Stacked Diff Workflow CLI
 
@@ -37,16 +38,18 @@ usage: sd [top-level-flags] <command> [<args>]`
 
 Possible commands are:
 
-   add-reviewers    Add reviewers to Pull Request on Github once its checks have passed
-   branch-name      Outputs branch name of commit
-   checkout         Checks out branch associated with commit indicator
-   code-owners      Outputs code owners for all of the changes in branch
-   log              Displays git log of your changes
-   new              Create a new pull request from a commit on main
-   rebase-main      Bring your main branch up to date with remote
-   replace-commit   Replaces a commit on main branch with the contents its associated branch
-   update           Add commits from main to an existing PR
-   wait-for-merge   Waits for a pull request to be merged
+   add-reviewers       Add reviewers to Pull Request on Github once its checks have passed
+   branch-name         Outputs branch name of commit
+   checkout            Checks out branch associated with commit indicator
+   code-owners         Outputs code owners for all of the changes in branch
+   log                 Displays git log of your changes
+   new                 Create a new pull request from a commit on main
+   prs                 Lists all Pull Requests you have open.
+   rebase-main         Bring your main branch up to date with remote
+   replace-commit      Replaces a commit on main branch with its associated branch
+   replace-conflicts   For failed rebase: replace changes with its associated branch
+   update              Add commits from main to an existing PR
+   wait-for-merge      Waits for a pull request to be merged
 
 To learn more about a command use: sd <command> --help
 
@@ -254,6 +257,14 @@ Add this to your shell rc file (`~/.zshrc` or `~/.bashrc`) and run `source <rc-f
 
 #### rebase-main
 
+Rebase with origin/main, dropping any commits who's associated branches have been merged.
+
+This avoids having to manually call "git reset --hard head" whenever you have merge conflicts with a commit that has already been merged but has slight variation with local main because, for example, a change was made with the Github Web UI.
+
+```bash
+usage: sd rebase-main
+```
+
 #### checkout
 
 Checks out the branch associated with commit indicator.
@@ -303,18 +314,78 @@ flags:
          (default "guess")
 ```
 
+#### replace-conflicts
+
+During a rebase that failed becuase of merge conflicts, replace the current uncommitted changes (merge conflicts), with the contents (diff between origin/main and HEAD) of its associated branch.
+
+```bash
+usage: sd replace-conflicts
+
+flags:
+
+  -confirm
+        Whether to automatically confirm to do this rather than ask for y/n input
+```
+
 ### Commands for Custom Scripting
 
 #### branch-name
+
+Outputs the branch name for a given commit indicator. Useful for your own custom scripting.
+
+```bash
+usage: sd branch-name [flags] <commitIndicator>
+
+flags:
+
+  -indicator string
+        Indicator type to use to interpret commitIndicator:
+           commit   a commit hash, can be abbreviated,
+           pr       a github Pull Request number,
+           list     the order of commit listed in the git log, as indicated
+                    by "sd log"
+           guess    the command will guess the indicator type:
+              Number between 0 and 99:       list
+              Number between 100 and 999999: pr
+              Otherwise:                     commit
+         (default "guess")
+```
+
 #### wait-for-merge
+
+Waits for a pull request to be merged. Polls PR every 30 seconds.
+
+Useful for your own custom scripting.
+
+```bash
+usage: sd main [flags] <commit hash or pull request number>
+
+flags:
+
+  -indicator string
+        Indicator type to use to interpret commitIndicator:
+           commit   a commit hash, can be abbreviated,
+           pr       a github Pull Request number,
+           list     the order of commit listed in the git log, as indicated
+                    by "sd log"
+           guess    the command will guess the indicator type:
+              Number between 0 and 99:       list
+              Number between 100 and 999999: pr
+              Otherwise:                     commit
+         (default "guess")
+```
 
 ### Other Commands
 
 #### code-owners
 
-#### git-prs
+Outputs code owners for each file that has been modified in the current local branch when compared to the remote main branch
 
-*Note this is a stand-alone script and not part of the "sd" cli.*
+```bash
+usage: sd code-owners
+```
+
+#### prs
 
 Lists all of your open PRs. Useful for copying PR numbers.
 
@@ -355,6 +426,8 @@ Use **sd new** and **sd update** to create and update PR's while always staying 
 
 ### To Update Main
 
+*Note: This process has been automated by the `sd rebase-main` command.*
+
 Once a PR has been merged, just rebase main normally. The local PR commit will be replaced by the one that Github created when squasing and merging.
 
 ```bash
@@ -366,8 +439,6 @@ If you run into conflicts with a commit that has already been merged you can jus
 ```bash
 git reset --hard head && git rebase --continue
 ```
-
-This process has been automated by the `sd rebase-main` command.
 
 #### To Fix Merge Conflicts
 
@@ -390,9 +461,9 @@ git push origin/xxx
 
 3\. [Update your Main Branch](#to-update-main)
 
-##### Longer Running Flow
+##### Advanced Flow
 
-If you want to update your main branch *before* you merge your PR, you can use **replace-head** to keep your local `main` up to date.
+If you want to update your main branch *before* you merge your PR, you can use **replace-conflicts** to keep your local `main` up to date.
 
 ```bash
 # switch to feature branch that has a merge conflict
