@@ -1,10 +1,8 @@
 # Developer Scripts for Stacked Diff Workflow
 
-These scripts make it easier to build from the command line and to create and update PR's with Github. They facilitates a [stacked diff workflow](https://newsletter.pragmaticengineer.com/p/stacked-diffs), where you always commit on `main` branch and have can have multiple streams of work all on `main`.
+Using a [stacked diff workflow](https://newsletter.pragmaticengineer.com/p/stacked-diffs) allows you to break down a pull request into several smaller PRs. It also allows you to work on separate streams of work without the overhead of changing branches. Once you experience the efficiency of stacked diffs you can't imagine going back to your old workflow.
 
-## TL;DR
-
-Using a stacked diff workflow allows you to work on separate streams of work without the overhead of changing branches. This project is a Command Line Interface that manages git commits and branches to allow you to quickly use a stacked diff workflow. It uses the Github CLI to create pull requests and add reviewers once PR checks have passed.
+This project is a Command Line Interface that manages git commits and branches to allow you to quickly use a stacked diff workflow. It uses the Github CLI to create pull requests and add reviewers once PR checks have passed.
 
 ## Installation
 
@@ -13,6 +11,8 @@ Clone the repository or download the [latest release](https://github.com/tinyspe
 ### Mac
 
 *Optional: As this is a CLI, do yourself a favor and install [iTerm](https://iterm2.com/) and [zsh](https://ohmyz.sh/), as they make working from the command line more pleasant.*
+
+Instructions:
 
 ```bash
 # Install Github CLI
@@ -28,17 +28,17 @@ source ~/.zshrc
 
 ### Windows
 
-Install [Git and Git Bash](https://gitforwindows.org/)
-Install [Github CLI](https://cli.github.com/)
-
-```bash
-gh auth login 
-# Add the /bin directory to your PATH. 
-# Replace the directory below to wherever you cloned the repository or unzipped the release.
-# For example if using bash and installed in your home directory:
-echo "export PATH=\$PATH:\$HOME/stacked-diff-workflow/bin" >> ~/.bashrc
-source ~/.bashrc
-```
+1. Install [Git and Git Bash](https://gitforwindows.org/)
+2. Install [Github CLI](https://cli.github.com/)
+3. Authenticate gh and add bin to path:
+      ```bash
+      gh auth login 
+      # Add the /bin directory to your PATH. 
+      # Replace the directory below to wherever you cloned the repository or unzipped the release.
+      # For example if using bash and installed in your home directory:
+      echo "export PATH=\$PATH:\$HOME/stacked-diff-workflow/bin" >> ~/.bashrc
+      source ~/.bashrc
+      ```
 
 ## Stacked Diff Workflow CLI
 
