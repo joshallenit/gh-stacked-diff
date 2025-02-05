@@ -41,7 +41,7 @@ type PullRequestText struct {
 }
 
 type branchTemplateData struct {
-	Username             string
+	UsernameCleaned      string
 	CommitSummaryCleaned string
 }
 
@@ -210,7 +210,7 @@ func getBranchTemplateData(sanitizedSummary string) branchTemplateData {
 	// Dots are not allowed in branch names of some Github configurations.
 	username := strings.ReplaceAll(GetUsername(), ".", "-")
 	return branchTemplateData{
-		Username:             username,
+		UsernameCleaned:      username,
 		CommitSummaryCleaned: sanitizedSummary,
 	}
 }

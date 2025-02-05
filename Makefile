@@ -17,14 +17,12 @@ test: build
 	cd src/go; go test ./...
 
 release: build
-ifndef RELEASE_VERSION
-	$(error RELEASE_VERSION is not set)
-endif
 ifndef PLATFORM
 	$(error PLATFORM is not set)
 endif
 	rm -rf build/zip
 	mkdir -p build/zip/stacked-diff-workflow
 	cp bin/* build/zip/stacked-diff-workflow
+	export RELEASE_VERSION=`grep "releaseVersion" "project.properties" | cut -d '=' -f2`; \
 	cd build/zip; \
 	zip -vr stacked-diff-workflow-${PLATFORM}-$(RELEASE_VERSION).zip stacked-diff-workflow/ -x "*.DS_Store"
