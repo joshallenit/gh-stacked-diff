@@ -25,6 +25,25 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		// for help.
 		panic("ErrorHandling must be ContinueOnError, not " + fmt.Sprint(commandLine.ErrorHandling()))
 	}
+	// clear FlagSet.Usage and discard any output so that it is not display automatically on an invalid parameter.
+	commandLine.Usage = func() {}
+	commandLine.SetOutput(io.Discard)
+	// Parse top level flags.
+	logLevelString := commandLine.String("log-level", "",
+		"Possible log levels:\n"+
+			"   debug\n"+
+			"   info\n"+
+			"   warn\n"+
+			"   error\n"+
+			"Default is info, except on commands that are for output purposes,\n"+
+			"(namely branch-name and log), which have a default of error.")
+	parseErr := commandLine.Parse(commandLineArgs)
+	if parseErr == nil {
+		// allow for setting of log level to DEBUG so that the very first execute statements can be logged.
+		// setSlogLogger will be called again once we know what command is executed.
+		setSlogLogger(stdOut, *logLevelString, slog.LevelInfo)
+	}
+
 	commands := []Command{
 		CreateAddReviewersCommand(),
 		CreateBranchNameCommand(stdOut),
@@ -48,22 +67,8 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		"   " + strings.Join(getCommandSummaries(commands), "\n   ") + "\n" +
 		"\n" +
 		"To learn more about a command use: sd <command> --help"
-	// clear FlagSet.Usage and discard any output so that it is not display automatically on an invalid parameter.
-	commandLine.Usage = func() {}
-	commandLine.SetOutput(io.Discard)
-	// Parse flags common for every command.
-	var logLevelString string
 
-	commandLine.StringVar(&logLevelString, "log-level", "",
-		"Possible log levels:\n"+
-			"   debug\n"+
-			"   info\n"+
-			"   warn\n"+
-			"   error\n"+
-			"Default is info, except on commands that are for output purposes,\n"+
-			"(namely branch-name and log), which have a default of error.")
-
-	if parseErr := commandLine.Parse(commandLineArgs); parseErr != nil {
+	if parseErr != nil {
 		if parseErr == flag.ErrHelp {
 			commandHelp(commandLine, commandLineDescription, commandLineUsage, false)
 		} else {
@@ -94,7 +99,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		}
 	}
 
-	setSlogLogger(stdOut, logLevelString, commands[selectedIndex])
+	setSlogLogger(stdOut, *logLevelString, commands[selectedIndex].DefaultLogLevel)
 
 	commands[selectedIndex].OnSelected(commands[selectedIndex])
 }
@@ -115,10 +120,10 @@ func getCommandSummaries(commands []Command) []string {
 	return summaries
 }
 
-func setSlogLogger(stdOut io.Writer, logLevelString string, selectedCommand Command) {
+func setSlogLogger(stdOut io.Writer, logLevelString string, defaultLogLevel slog.Level) {
 	var logLevel slog.Level
 	if logLevelString == "" {
-		logLevel = selectedCommand.DefaultLogLevel
+		logLevel = defaultLogLevel
 	} else {
 		var unmarshallErr = logLevel.UnmarshalText([]byte(logLevelString))
 		if unmarshallErr != nil {

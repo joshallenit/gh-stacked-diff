@@ -28,7 +28,8 @@ func GetMainBranch() string {
 			mainBranchName = strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch"))
 			if !LocalHasBranch(mainBranchName) {
 				panic("Cannot determine name of main branch.\n" +
-					"Use \"git remote set-head origin main\" to set the name to main.")
+					"Push a first commit to origin/main if the remote is empty and \n" +
+					"use \"git remote set-head origin main\" to set the name to main.")
 			}
 		}
 	}
