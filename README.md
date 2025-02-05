@@ -136,10 +136,7 @@ The possible values for the templates are:
    FeatureFlag                  Value passed to feature-flag flag
    TicketNumber                 Jira ticket as parsed from the commit summary
    Username                     Name as parsed from git config email.
-                                Note: any dots (.) in username are converted to
-                                      dashes (-) before being used in
-                                      branch-name.template.
-
+   UsernameCleaned              Username with dots (.) converted to dashes (-).
 
 flags:
 

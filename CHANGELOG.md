@@ -6,6 +6,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+- Ability to use log list index for a commit indicator. Avoids having to copy & paste git hashes or PR numbers.
+- Ability to add reviewers from `new` and `update` commands. 
+- `sd log` now also displays commits on associated branches.
+- Ability to set log level via `sd` flag "--log-level".
+- Unit tests
+
 ### Changed
 
+- Moved all scripts to subcommands of a new `sd` executable.
+- Converted all logs to use slog (logs at DEBUG, INFO, or ERROR levels) so that the log level can be changed to help with debugging. 
+- Renamed replace-head to replace-conflicts
+- `sd log` was made faster by running some git commands once, instead of for each commit.
+- `replace-conflicts` now asks for confirmation (also has a confirm flag).
+
 ### Fixed
+
+- Can now use `new` for root commit.
+- More reliable GetMainBranch()
