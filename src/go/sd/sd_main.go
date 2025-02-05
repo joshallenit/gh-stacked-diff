@@ -34,7 +34,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		CreatePrsCommand(stdOut),
 		CreateRebaseMainCommand(),
 		CreateReplaceCommitCommand(),
-		CreateReplaceConflictsCommand(),
+		CreateReplaceConflictsCommand(stdOut),
 		CreateUpdateCommand(),
 		CreateCheckoutCommand(),
 		CreateWaitForMergeCommand(),

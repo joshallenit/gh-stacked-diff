@@ -1,23 +1,26 @@
 package stackeddiff
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"log/slog"
+	"os"
 	ex "stackeddiff/execute"
 	"strings"
 )
 
-func ReplaceConflicts() {
+func ReplaceConflicts(stdOut io.Writer, confirmed bool) {
 	commitWithConflicts := getCommitWithConflicts()
 	branchInfo := GetBranchInfo(commitWithConflicts, IndicatorTypeCommit)
-	Stash("replace-conflicts (you can discard this entry unless you called replace-conflicts by mistake")
+	checkConfirmed(stdOut, confirmed)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
 	slog.Info(fmt.Sprint("Replacing changes (merge conflicts) for failed rebase of commit ", commitWithConflicts, ", with changes from associated branch, ", branchInfo.BranchName))
 	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", "origin/"+ex.GetMainBranch(), branchInfo.BranchName)
 	ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff}, "git", "apply")
 	slog.Info("Adding changes and continuing rebase")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
-	continueOptions := ex.ExecuteOptions{EnvironmentVariables: make([]string, 1)}
-	continueOptions.EnvironmentVariables[0] = "GIT_EDITOR=true"
+	continueOptions := ex.ExecuteOptions{EnvironmentVariables: []string{"GIT_EDITOR=true"}}
 	ex.ExecuteOrDie(continueOptions, "git", "rebase", "--continue")
 }
 
@@ -42,4 +45,20 @@ func getCommitWithConflicts() string {
 	}
 	// Return the 2nd field, from a string such as "pick f52e867 next1"
 	return strings.Fields(statusLines[lastCommandDoneLine])[1]
+}
+
+func checkConfirmed(stdOut io.Writer, confirmed bool) {
+	if confirmed {
+		return
+	}
+
+	fmt.Fprint(stdOut, "This will clear any uncommitted changes, are you sure (y/n)? ")
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	input := strings.ToLower(scanner.Text())
+	slog.Debug(fmt.Sprint("Got input ", input))
+	if input != "y" && input != "yes" {
+		slog.Info("Cancelled by user")
+		os.Exit(0)
+	}
 }

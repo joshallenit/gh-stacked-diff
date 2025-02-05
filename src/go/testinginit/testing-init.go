@@ -1,13 +1,14 @@
 package testinginit
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"path"
 	"runtime"
-	"strings"
-
 	ex "stackeddiff/execute"
+	"strings"
+	"time"
 )
 
 var TestWorkingDir string
@@ -35,6 +36,9 @@ func InitTest(logLevel slog.Level) *ex.TestExecutor {
 	handler := ex.NewPrettyHandler(os.Stdout, opts)
 	slog.SetDefault(slog.New(handler))
 	cdTestRepo()
+	ex.SetDefaultSleep(func(d time.Duration) {
+		slog.Debug(fmt.Sprint("Skipping sleep in tests ", d))
+	})
 	return setTestExecutor()
 }
 

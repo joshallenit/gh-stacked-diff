@@ -2,12 +2,14 @@ package main
 
 import (
 	"flag"
+	"io"
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
 )
 
-func CreateReplaceConflictsCommand() Command {
+func CreateReplaceConflictsCommand(stdOut io.Writer) Command {
 	flagSet := flag.NewFlagSet("replace-conflicts", flag.ContinueOnError)
+	confirmed := flagSet.Bool("confirm", false, "Whether to automatically confirm to do this rather than ask for y/n input")
 	return Command{
 		FlagSet:     flagSet,
 		Summary:     "For failed rebase: replace changes with its associated branch",
@@ -17,6 +19,6 @@ func CreateReplaceConflictsCommand() Command {
 			if flagSet.NArg() > 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			sd.ReplaceConflicts()
+			sd.ReplaceConflicts(stdOut, *confirmed)
 		}}
 }

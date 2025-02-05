@@ -60,13 +60,13 @@ func checkBranch(wg *sync.WaitGroup, commitIndicator string, indicatorType Indic
 			} else {
 				slog.Info(fmt.Sprint("Checks pending for ", commitIndicator, ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%"))
 			}
-			time.Sleep(pollFrequency)
+			ex.Sleep(pollFrequency)
 		}
 	}
 	slog.Info("Marking PR as ready for review")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "ready", branchName)
 	slog.Info("Waiting 10 seconds for any automatically assigned reviewers to be added...")
-	time.Sleep(10 * time.Second)
+	ex.Sleep(10 * time.Second)
 	prUrl := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "edit", branchName, "--add-reviewer", reviewers))
 	slog.Info(fmt.Sprint("Added reviewers ", reviewers, " to ", prUrl))
 	wg.Done()

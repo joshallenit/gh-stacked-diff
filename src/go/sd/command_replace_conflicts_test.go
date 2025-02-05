@@ -15,7 +15,7 @@ import (
 
 func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.InitTest(slog.LevelInfo)
+	testinginit.InitTest(slog.LevelDebug)
 
 	testinginit.AddCommit("first", "file-with-conflicts")
 	testinginit.CommitFileChange("second", "file-with-conflicts", "1")
@@ -39,7 +39,9 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 		panic(writeErr)
 	}
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge", "--continue")
+
+	continueOptions := ex.ExecuteOptions{EnvironmentVariables: []string{"GIT_EDITOR=true"}}
+	ex.ExecuteOrDie(continueOptions, "git", "merge", "--continue")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", ex.GetMainBranch())
 
 	_, rebaseErr := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", "origin/"+ex.GetMainBranch())
@@ -48,7 +50,7 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 	ParseArguments(
 		os.Stdout,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"replace-conflicts"},
+		[]string{"--log-level=debug", "replace-conflicts", "--confirm=true"},
 	)
 
 	allCommits = sd.GetAllCommits()
@@ -68,5 +70,6 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 
 	contents, readErr := os.ReadFile("file-with-conflicts")
 	assert.Nil(readErr)
-	assert.Equal("1\n2", string(contents))
+	// Add a .? to account for eol on windows.
+	assert.Regexp("1.?\n2", string(contents))
 }

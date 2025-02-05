@@ -17,10 +17,10 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 	shouldPopStash := Stash("sd new " + flag.Arg(0))
 	if baseBranch == ex.GetMainBranch() {
 		commitToBranchFrom = FirstOriginMainCommit(ex.GetMainBranch())
-		slog.Info(fmt.Sprint("Switching to branch", branchInfo.BranchName, "based off commit", commitToBranchFrom))
+		slog.Info(fmt.Sprint("Switching to branch ", branchInfo.BranchName, " based off commit ", commitToBranchFrom))
 	} else {
 		commitToBranchFrom = baseBranch
-		slog.Info(fmt.Sprint("Switching to branch", branchInfo.BranchName, "based off branch", baseBranch))
+		slog.Info(fmt.Sprint("Switching to branch ", branchInfo.BranchName, " based off branch ", baseBranch))
 	}
 	if commitToBranchFrom == "" {
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "--no-track", branchInfo.BranchName)

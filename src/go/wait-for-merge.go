@@ -11,7 +11,7 @@ func WaitForMerge(commitIndicator string, indicatorType IndicatorType, silent bo
 	branchName := GetBranchInfo(commitIndicator, indicatorType).BranchName
 	for getMergedAt(branchName) == "" {
 		slog.Info("Not merged yet...")
-		time.Sleep(30 * time.Second)
+		ex.Sleep(30 * time.Second)
 	}
 	slog.Info("Merged!")
 	if !silent {

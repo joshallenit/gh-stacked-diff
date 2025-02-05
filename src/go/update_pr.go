@@ -25,7 +25,7 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 		slog.Info(fmt.Sprint(stashResult))
 		shouldPopStash = true
 	}
-	slog.Info(fmt.Sprint("Switching to branch", destCommit.BranchName))
+	slog.Info(fmt.Sprint("Switching to branch ", destCommit.BranchName))
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", destCommit.BranchName)
 	slog.Info(fmt.Sprint("Fast forwarding in case there were any commits made via github web interface"))
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "fetch", "origin", destCommit.BranchName)
