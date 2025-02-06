@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -38,11 +39,17 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 			"Default is info, except on commands that are for output purposes,\n"+
 			"(namely branch-name and log), which have a default of error.")
 	parseErr := commandLine.Parse(commandLineArgs)
+	var logLevelVar *slog.LevelVar
 	if parseErr == nil {
 		// allow for setting of log level to DEBUG so that the very first execute statements can be logged.
-		// setSlogLogger will be called again once we know what command is executed.
-		setSlogLogger(stdOut, *logLevelString, slog.LevelInfo)
+		// logLevel will be potentially set again once we know what command is executed.
+		var logLevel slog.Level
+		logLevel, parseErr = stringToLogLevel(*logLevelString)
+		if parseErr == nil {
+			logLevelVar = setSlogLogger(stdOut, logLevel)
+		}
 	}
+	// parseErr is dealt with below via commandError and commandHelp.
 
 	commands := []Command{
 		CreateAddReviewersCommand(),
@@ -99,8 +106,9 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 		}
 	}
 
-	setSlogLogger(stdOut, *logLevelString, commands[selectedIndex].DefaultLogLevel)
-
+	if *logLevelString == "" {
+		logLevelVar.Set(commands[selectedIndex].DefaultLogLevel)
+	}
 	commands[selectedIndex].OnSelected(commands[selectedIndex])
 }
 
@@ -120,21 +128,27 @@ func getCommandSummaries(commands []Command) []string {
 	return summaries
 }
 
-func setSlogLogger(stdOut io.Writer, logLevelString string, defaultLogLevel slog.Level) {
-	var logLevel slog.Level
-	if logLevelString == "" {
-		logLevel = defaultLogLevel
-	} else {
-		var unmarshallErr = logLevel.UnmarshalText([]byte(logLevelString))
-		if unmarshallErr != nil {
-			panic("Invalid log level " + logLevelString + ": " + unmarshallErr.Error())
-		}
-	}
+func setSlogLogger(stdOut io.Writer, logLevel slog.Level) *slog.LevelVar {
+	var levelVar slog.LevelVar
+	levelVar.Set(logLevel)
 	opts := ex.PrettyHandlerOptions{
 		SlogOpts: slog.HandlerOptions{
-			Level: logLevel,
+			Level: &levelVar,
 		},
 	}
 	handler := ex.NewPrettyHandler(stdOut, opts)
 	slog.SetDefault(slog.New(handler))
+	return &levelVar
+}
+
+func stringToLogLevel(logLevelString string) (slog.Level, error) {
+	if logLevelString == "" {
+		return slog.LevelInfo, nil
+	}
+	var logLevel slog.Level
+	var unmarshallErr = logLevel.UnmarshalText([]byte(logLevelString))
+	if unmarshallErr != nil {
+		return 0, errors.New("Invalid log level " + logLevelString + ": " + unmarshallErr.Error())
+	}
+	return logLevel, nil
 }
