@@ -20,7 +20,7 @@ func TestSdCodeOwners_OutputsOwnersOfChangedFiles(t *testing.T) {
 
 	testinginit.AddCommit("first", "first-not-changed")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
 
 	testinginit.AddCommit("second", "second-changed")
 

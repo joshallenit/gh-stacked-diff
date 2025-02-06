@@ -17,7 +17,7 @@ func CreateWaitForMergeCommand() Command {
 		Description: "Waits for a pull request to be merged. Polls PR every 30 seconds.\n" +
 			"\n" +
 			"Useful for your own custom scripting.",
-		Usage: "sd " + sd.GetMainBranch() + " [flags] <commit hash or pull request number>",
+		Usage: "sd " + flagSet.Name() + " [flags] <commit hash or pull request number>",
 		OnSelected: func(command Command) {
 			if flagSet.NArg() != 1 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)

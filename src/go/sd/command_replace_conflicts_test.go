@@ -19,7 +19,7 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 
 	testinginit.AddCommit("first", "file-with-conflicts")
 	testinginit.CommitFileChange("second", "file-with-conflicts", "1")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
 	allCommits := sd.GetAllCommits()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 	testinginit.CommitFileChange("third", "file-with-conflicts", "2")
@@ -32,7 +32,7 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 		[]string{"checkout", "1"},
 	)
 
-	_, mergeErr := ex.Execute(ex.ExecuteOptions{}, "git", "merge", "origin/"+sd.GetMainBranch())
+	_, mergeErr := ex.Execute(ex.ExecuteOptions{}, "git", "merge", "origin/"+sd.GetMainBranchOrDie())
 	assert.NotNil(mergeErr)
 
 	if writeErr := os.WriteFile("file-with-conflicts", []byte("1\n2"), 0); writeErr != nil {
@@ -42,9 +42,9 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 
 	continueOptions := ex.ExecuteOptions{EnvironmentVariables: []string{"GIT_EDITOR=true"}}
 	ex.ExecuteOrDie(continueOptions, "git", "merge", "--continue")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", sd.GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", sd.GetMainBranchOrDie())
 
-	_, rebaseErr := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", "origin/"+sd.GetMainBranch())
+	_, rebaseErr := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", "origin/"+sd.GetMainBranchOrDie())
 	assert.NotNil(rebaseErr)
 
 	ParseArguments(

@@ -18,7 +18,7 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "1")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
 	testinginit.AddCommit("second", "will-be-replaced")
 	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 	testinginit.AddCommit("fifth", "5")
@@ -36,7 +36,7 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 	testinginit.AddCommit("on-second-branch-only", "3")
 	testinginit.AddCommit("on-second-branch-only", "4")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", sd.GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", sd.GetMainBranchOrDie())
 
 	ParseArguments(
 		os.Stdout,
@@ -91,7 +91,7 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", allCommits[1].Branch)
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", sd.GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", sd.GetMainBranchOrDie())
 
 	ParseArguments(
 		os.Stdout,

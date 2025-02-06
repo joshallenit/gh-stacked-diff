@@ -23,4 +23,5 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 
 - Can now use `new` for root commit.
-- More reliable GetMainBranch()
+- More reliable getMainBranch()
+- More reliable help and command line parsing error messages

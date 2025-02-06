@@ -16,7 +16,7 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	CreateNewPr(true, "", GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	// Check that the PR was created
 	outWriter := testinginit.NewWriteRecorder()
@@ -34,15 +34,15 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranchOrDie())
 
 	testinginit.AddCommit("second", "")
-	allCommits := GetNewCommits(GetMainBranch(), "HEAD")
+	allCommits := GetNewCommits(GetMainBranchOrDie(), "HEAD")
 
-	CreateNewPr(true, "", GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
-	commitsOnNewBranch := GetNewCommits(GetMainBranch(), "HEAD")
+	commitsOnNewBranch := GetNewCommits(GetMainBranchOrDie(), "HEAD")
 	assert.Equal(1, len(commitsOnNewBranch))
 	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
 }
@@ -53,17 +53,17 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranchOrDie())
 
 	testinginit.AddCommit("second", "")
 
 	testinginit.AddCommit("third", "")
-	allCommits := GetNewCommits(GetMainBranch(), "HEAD")
+	allCommits := GetNewCommits(GetMainBranchOrDie(), "HEAD")
 
-	CreateNewPr(true, "", GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
-	commitsOnNewBranch := GetNewCommits(GetMainBranch(), "HEAD")
+	commitsOnNewBranch := GetNewCommits(GetMainBranchOrDie(), "HEAD")
 	assert.Equal(1, len(commitsOnNewBranch))
 	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
 }

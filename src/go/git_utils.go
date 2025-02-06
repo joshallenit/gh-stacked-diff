@@ -2,6 +2,8 @@ package stackeddiff
 
 import (
 	_ "embed"
+	"errors"
+	"fmt"
 	"log/slog"
 	"slices"
 	"strings"
@@ -17,7 +19,23 @@ type GitLog struct {
 
 var mainBranchName string
 
-func GetMainBranch() string {
+func GetMainBranchOrDie() string {
+	mainBranch, err := getMainBranch()
+	if err != nil {
+		panic(fmt.Sprint("Could not get main branch: ", err))
+	}
+	return mainBranch
+}
+
+func GetMainBranchForHelp() string {
+	mainBranch, err := getMainBranch()
+	if err != nil {
+		return "main"
+	}
+	return mainBranch
+}
+
+func getMainBranch() (string, error) {
 	if mainBranchName == "" {
 		remoteMainBranch, err := ex.Execute(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "origin/HEAD")
 		if err == nil {
@@ -25,15 +43,19 @@ func GetMainBranch() string {
 			mainBranchName = remoteMainBranch[strings.Index(remoteMainBranch, "/")+1:]
 		} else {
 			// Remote is empty, or the repository was not cloned, use config.
-			mainBranchName = strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch"))
+			mainBranchNameRaw, configErr := ex.Execute(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch")
+			if configErr != nil {
+				return "", configErr
+			}
+			mainBranchName = strings.TrimSpace(mainBranchNameRaw)
 			if !LocalHasBranch(mainBranchName) {
-				panic("Cannot determine name of main branch.\n" +
+				return "", errors.New("Cannot determine name of main branch.\n" +
 					"Push a first commit to origin/main if the remote is empty and \n" +
 					"use \"git remote set-head origin main\" to set the name to main.")
 			}
 		}
 	}
-	return mainBranchName
+	return mainBranchName, nil
 }
 
 func newGitLogs(logsRaw string) []GitLog {
@@ -73,10 +95,10 @@ func FirstOriginMainCommit(branchName string) string {
 		panic("Branch does not exist " + branchName)
 	}
 	// Verify that remote has branch, there is no origin commit.
-	if !RemoteHasBranch(GetMainBranch()) {
+	if !RemoteHasBranch(GetMainBranchOrDie()) {
 		return ""
 	}
-	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge-base", "origin/"+GetMainBranch(), branchName))
+	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge-base", "origin/"+GetMainBranchOrDie(), branchName))
 }
 
 func RemoteHasBranch(branchName string) bool {
@@ -90,20 +112,20 @@ func LocalHasBranch(branchName string) bool {
 }
 
 func RequireMainBranch() {
-	if GetCurrentBranchName() != GetMainBranch() {
-		panic("Must be run from " + GetMainBranch() + " branch")
+	if GetCurrentBranchName() != GetMainBranchOrDie() {
+		panic("Must be run from " + GetMainBranchOrDie() + " branch")
 	}
 }
 
 func RequireCommitOnMain(commit string) {
-	if commit == GetMainBranch() {
+	if commit == GetMainBranchOrDie() {
 		return
 	}
-	newCommits := GetNewCommits(GetMainBranch(), "HEAD")
+	newCommits := GetNewCommits(GetMainBranchOrDie(), "HEAD")
 	if !slices.ContainsFunc(newCommits, func(gitLog GitLog) bool {
 		return gitLog.Commit == commit
 	}) {
-		panic("Commit " + commit + " does not exist on " + GetMainBranch() + ". Check `sd log` for available commits.")
+		panic("Commit " + commit + " does not exist on " + GetMainBranchOrDie() + ". Check `sd log` for available commits.")
 	}
 }
 

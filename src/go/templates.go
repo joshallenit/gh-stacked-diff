@@ -77,7 +77,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		panic("Invalid IndicatorType " + string(indicatorType))
 	}
 	if commitIndicator == "" {
-		commitIndicator = GetMainBranch()
+		commitIndicator = GetMainBranchOrDie()
 		indicatorType = IndicatorTypeCommit
 	}
 	if indicatorType == IndicatorTypeGuess {
@@ -96,7 +96,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		summary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", prCommit))
 		thisBranchCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h"))
 		if thisBranchCommit == "" {
-			panic(fmt.Sprint("Could not find associated commit for PR (\"", summary, "\") in "+GetMainBranch()))
+			panic(fmt.Sprint("Could not find associated commit for PR (\"", summary, "\") in "+GetMainBranchOrDie()))
 		}
 		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
 		slog.Info("Using pull request " + commitIndicator + ", commit " + info.CommitHash + ", branch " + info.BranchName)
@@ -107,7 +107,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		slog.Info("Using commit " + info.CommitHash + ", branch " + info.BranchName)
 	case IndicatorTypeList:
 		slog.Debug("Using commitIndicator as a list index " + commitIndicator)
-		newCommits := GetNewCommits(GetMainBranch(), GetCurrentBranchName())
+		newCommits := GetNewCommits(GetMainBranchOrDie(), GetCurrentBranchName())
 		listIndex, err := strconv.Atoi(commitIndicator)
 		if err != nil {
 			panic("When indicator type is " + string(IndicatorTypeList) + " commit indicator must be a number, given " + commitIndicator)

@@ -21,7 +21,7 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 	testinginit.AddCommit("second", "rebase-will-keep-this-file")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
 
 	allOriginalCommits := sd.GetAllCommits()
 

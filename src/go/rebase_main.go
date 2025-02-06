@@ -17,8 +17,8 @@ func RebaseMain() {
 		Output: ex.NewStandardOutput(),
 	}, "git", "fetch")
 	username := GetUsername()
-	originSummaries := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranch(), "-n", "30", "--format=%s", "--author="+username)), "\n")
-	localLogs := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranch()+"..HEAD", "--format=%h %s")), "\n")
+	originSummaries := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranchOrDie(), "-n", "30", "--format=%s", "--author="+username)), "\n")
+	localLogs := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranchOrDie()+"..HEAD", "--format=%h %s")), "\n")
 	// Look for matching summaries between localCommits and originCommits
 	var dropCommits []string
 
@@ -46,12 +46,12 @@ func RebaseMain() {
 			EnvironmentVariables: environmentVariables,
 			Output:               ex.NewStandardOutput(),
 		}
-		ex.ExecuteOrDie(options, "git", "rebase", "-i", "origin/"+GetMainBranch())
+		ex.ExecuteOrDie(options, "git", "rebase", "-i", "origin/"+GetMainBranchOrDie())
 	} else {
 		options := ex.ExecuteOptions{
 			Output: ex.NewStandardOutput(),
 		}
-		ex.ExecuteOrDie(options, "git", "rebase", "origin/"+GetMainBranch())
+		ex.ExecuteOrDie(options, "git", "rebase", "origin/"+GetMainBranchOrDie())
 	}
 	PopStash(shouldPopStash)
 }

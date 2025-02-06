@@ -15,7 +15,7 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 	testinginit.InitTest(slog.LevelInfo)
 	testinginit.AddCommit("first", "")
 
-	CreateNewPr(true, "", GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	testinginit.AddCommit("second", "")
 
@@ -35,11 +35,11 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranch())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranchOrDie())
 
 	testinginit.AddCommit("second", "")
 
-	CreateNewPr(true, "", GetMainBranch(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	testinginit.AddCommit("third", "")
 
@@ -58,7 +58,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 	assert.Equal(allCommitsOnBranch[1].Subject, "second")
 	assert.Equal(allCommitsOnBranch[2].Subject, "first")
 
-	newCommitsOnBranch := GetNewCommits(GetMainBranch(), "HEAD")
+	newCommitsOnBranch := GetNewCommits(GetMainBranchOrDie(), "HEAD")
 
 	assert.Equal(2, len(newCommitsOnBranch))
 	assert.Equal(newCommitsOnBranch[0].Subject, "fourth")
