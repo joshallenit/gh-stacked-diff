@@ -85,17 +85,17 @@ func parseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 
 	commands := []Command{
 		createAddReviewersCommand(),
-		CreateBranchNameCommand(stdOut),
-		CreateCodeOwnersCommand(stdOut),
-		CreateLogCommand(stdOut),
-		CreateNewCommand(),
-		CreatePrsCommand(stdOut),
-		CreateRebaseMainCommand(),
-		CreateReplaceCommitCommand(),
-		CreateReplaceConflictsCommand(stdOut),
-		CreateUpdateCommand(),
-		CreateCheckoutCommand(),
-		CreateWaitForMergeCommand(),
+		createBranchNameCommand(stdOut),
+		createCodeOwnersCommand(stdOut),
+		createLogCommand(stdOut),
+		createNewCommand(),
+		createPrsCommand(stdOut),
+		createRebaseMainCommand(),
+		createReplaceCommitCommand(),
+		createReplaceConflictsCommand(stdOut),
+		createUpdateCommand(),
+		createCheckoutCommand(),
+		createWaitForMergeCommand(),
 	}
 
 	commandLineDescription := "Stacked Diff Workflow"

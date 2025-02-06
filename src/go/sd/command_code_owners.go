@@ -8,7 +8,7 @@ import (
 	sd "stackeddiff"
 )
 
-func CreateCodeOwnersCommand(stdOut io.Writer) Command {
+func createCodeOwnersCommand(stdOut io.Writer) Command {
 	flagSet := flag.NewFlagSet("code-owners", flag.ContinueOnError)
 
 	return Command{

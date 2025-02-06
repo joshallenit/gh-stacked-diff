@@ -11,13 +11,13 @@ import (
 
 func createAddReviewersCommand() Command {
 	flagSet := flag.NewFlagSet("add-reviewers", flag.ContinueOnError)
-	var indicatorTypeString *string = AddIndicatorFlag(flagSet)
+	var indicatorTypeString *string = addIndicatorFlag(flagSet)
 
 	var whenChecksPass *bool = flagSet.Bool("when-checks-pass", true, "Poll until all checks pass before adding reviewers")
 	var defaultPollFrequency time.Duration = 30 * time.Second
 	var pollFrequency *time.Duration = flagSet.Duration("poll-frequency", defaultPollFrequency,
 		"Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration")
-	reviewers, silent, minChecks := AddReviewersFlags(flagSet, "Falls back to "+ex.White+"PR_REVIEWERS"+ex.Reset+" environment variable.")
+	reviewers, silent, minChecks := addReviewersFlags(flagSet, "Falls back to "+ex.White+"PR_REVIEWERS"+ex.Reset+" environment variable.")
 
 	return Command{
 		FlagSet: flagSet,
@@ -39,7 +39,7 @@ func createAddReviewersCommand() Command {
 					commandError(flagSet, "reviewers not specified. Use reviewers flag or set PR_REVIEWERS environment variable", command.Usage)
 				}
 			}
-			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
+			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			sd.AddReviewersToPr(commitIndicators, indicatorType, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
 		}}
 }

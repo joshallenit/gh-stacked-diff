@@ -12,6 +12,7 @@ import (
 	"github.com/hairyhenderson/go-codeowners"
 )
 
+// Returns changed files and their owners.
 func ChangedFilesOwnersString() string {
 	var ownerString strings.Builder
 	ownedFiles := changedFilesOwners(getChangedFiles())
@@ -67,7 +68,7 @@ Returns changed files against main.
 */
 func getChangedFiles() []string {
 	gitLogArgs := []string{"--no-pager", "log", "--pretty=format:\"\"", "--name-only"}
-	firstOriginCommit := FirstOriginMainCommit(GetCurrentBranchName())
+	firstOriginCommit := firstOriginMainCommit(getCurrentBranchName())
 	if firstOriginCommit != "" {
 		gitLogArgs = append(gitLogArgs, firstOriginCommit+"..HEAD")
 	}

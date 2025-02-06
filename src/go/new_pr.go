@@ -10,13 +10,13 @@ import (
 )
 
 func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo BranchInfo) {
-	RequireMainBranch()
-	RequireCommitOnMain(branchInfo.CommitHash)
+	requireMainBranch()
+	requireCommitOnMain(branchInfo.CommitHash)
 
 	var commitToBranchFrom string
-	shouldPopStash := Stash("sd new " + flag.Arg(0))
+	shouldPopStash := stash("sd new " + flag.Arg(0))
 	if baseBranch == GetMainBranchOrDie() {
-		commitToBranchFrom = FirstOriginMainCommit(GetMainBranchOrDie())
+		commitToBranchFrom = firstOriginMainCommit(GetMainBranchOrDie())
 		slog.Info(fmt.Sprint("Switching to branch ", branchInfo.BranchName, " based off commit ", commitToBranchFrom))
 	} else {
 		commitToBranchFrom = baseBranch
@@ -37,7 +37,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
 			slog.Info(fmt.Sprint("Deleting created branch ", branchInfo.BranchName))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
-			PopStash(shouldPopStash)
+			popStash(shouldPopStash)
 			os.Exit(1)
 		}
 	}
@@ -49,7 +49,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
 		slog.Info(fmt.Sprint("Deleting created branch ", branchInfo.BranchName))
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
-		PopStash(shouldPopStash)
+		popStash(shouldPopStash)
 		os.Exit(1)
 	}
 	prText := GetPullRequestText(branchInfo.CommitHash, featureFlag)
@@ -64,7 +64,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
 		slog.Info(fmt.Sprint("Deleting created branch ", branchInfo.BranchName))
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
-		PopStash(shouldPopStash)
+		popStash(shouldPopStash)
 		os.Exit(1)
 	} else {
 		slog.Info(fmt.Sprint("Created PR ", createPrOutput))
@@ -74,7 +74,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 	}
 	slog.Info(fmt.Sprint("Switching back to " + GetMainBranchOrDie()))
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
-	PopStash(shouldPopStash)
+	popStash(shouldPopStash)
 	/*
 	   This avoids this hint when using `git fetch && git-rebase origin/main` which is not appropriate for stacked diff workflow:
 	   > hint: use --reapply-cherry-picks to include skipped commits

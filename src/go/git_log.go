@@ -9,17 +9,18 @@ import (
 	ex "stackeddiff/execute"
 )
 
+// Prints changes in the current branch compared to the main branch to out.
 func PrintGitLog(out io.Writer) {
-	if GetCurrentBranchName() != GetMainBranchOrDie() {
+	if getCurrentBranchName() != GetMainBranchOrDie() {
 		gitArgs := []string{"--no-pager", "log", "--pretty=oneline", "--abbrev-commit"}
-		if RemoteHasBranch(GetMainBranchOrDie()) {
+		if remoteHasBranch(GetMainBranchOrDie()) {
 			gitArgs = append(gitArgs, "origin/"+GetMainBranchOrDie()+"..HEAD")
 		}
 		gitArgs = append(gitArgs, "--color=always")
 		ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: out, Stderr: out}}, "git", gitArgs...)
 		return
 	}
-	logs := GetNewCommits(GetMainBranchOrDie(), "HEAD")
+	logs := getNewCommits(GetMainBranchOrDie(), "HEAD")
 	gitBranchArgs := make([]string, 0, len(logs)+2)
 	gitBranchArgs = append(gitBranchArgs, "branch", "-l")
 	for _, log := range logs {
@@ -37,7 +38,7 @@ func PrintGitLog(out io.Writer) {
 		fmt.Fprintln(out, ex.Yellow+log.Commit+ex.Reset+" "+log.Subject)
 		// find first commit that is not in main branch
 		if slices.Contains(checkedBranches, log.Branch) {
-			branchCommits := GetNewCommits(GetMainBranchOrDie(), log.Branch)
+			branchCommits := getNewCommits(GetMainBranchOrDie(), log.Branch)
 			if len(branchCommits) > 1 {
 				for _, branchCommit := range branchCommits {
 					padding := strings.Repeat(" ", len(numberPrefix))

@@ -10,8 +10,8 @@ import (
 )
 
 func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType IndicatorType) {
-	RequireMainBranch()
-	RequireCommitOnMain(destCommit.CommitHash)
+	requireMainBranch()
+	requireCommitOnMain(destCommit.CommitHash)
 	var commitsToCherryPick []string
 	if len(otherCommits) > 0 {
 		commitsToCherryPick = otherCommits
@@ -47,7 +47,7 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	if cherryPickError != nil {
 		slog.Info("First attempt at cherry-pick failed")
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-		rebaseCommit := FirstOriginMainCommit(GetMainBranchOrDie())
+		rebaseCommit := firstOriginMainCommit(GetMainBranchOrDie())
 		if rebaseCommit == "" {
 			panic("There is no " + GetMainBranchOrDie() + " branch on origin, nothing to rebase")
 		}
@@ -58,7 +58,7 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 			slog.Info(fmt.Sprint(ex.Red+"Could not rebase, aborting... "+ex.Reset, rebaseOutput))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rebase", "--abort")
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
-			PopStash(shouldPopStash)
+			popStash(shouldPopStash)
 			os.Exit(1)
 		}
 		slog.Info(fmt.Sprint("Cherry picking again ", commitsToCherryPick))
@@ -68,7 +68,7 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 			slog.Info(fmt.Sprint(ex.Red+"Could not cherry-pick, aborting... "+ex.Reset, cherryPickArgs, " ", cherryPickOutput, " ", cherryPickError))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
-			PopStash(shouldPopStash)
+			popStash(shouldPopStash)
 			os.Exit(1)
 		}
 		forcePush = true
@@ -99,5 +99,5 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	} else {
 		ex.ExecuteOrDie(options, "git", "rebase", "-i", destCommit.CommitHash+"^")
 	}
-	PopStash(shouldPopStash)
+	popStash(shouldPopStash)
 }

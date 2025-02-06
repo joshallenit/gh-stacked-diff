@@ -6,7 +6,7 @@ import (
 	sd "stackeddiff"
 )
 
-func CreateReplaceConflictsCommand(stdOut io.Writer) Command {
+func createReplaceConflictsCommand(stdOut io.Writer) Command {
 	flagSet := flag.NewFlagSet("replace-conflicts", flag.ContinueOnError)
 	confirmed := flagSet.Bool("confirm", false, "Whether to automatically confirm to do this rather than ask for y/n input")
 	return Command{

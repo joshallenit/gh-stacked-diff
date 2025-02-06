@@ -1,3 +1,6 @@
+/*
+Utilities for unit testing this project.
+*/
 package testinginit
 
 import (
@@ -27,6 +30,7 @@ func init() {
 	TestWorkingDir = path.Join(userCacheDir, "stacked-diff-workflow-unit-tests")
 }
 
+// CD into repository directory and set any global DI variables (slog, sleep, and executor).
 func InitTest(logLevel slog.Level) *ex.TestExecutor {
 	opts := ex.PrettyHandlerOptions{
 		SlogOpts: slog.HandlerOptions{

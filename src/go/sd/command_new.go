@@ -7,16 +7,16 @@ import (
 	"time"
 )
 
-func CreateNewCommand() Command {
+func createNewCommand() Command {
 	flagSet := flag.NewFlagSet("new", flag.ContinueOnError)
 
 	draft := flagSet.Bool("draft", true, "Whether to create the PR as draft")
 	featureFlag := flagSet.String("feature-flag", "", "Value for FEATURE_FLAG in PR description")
 	baseBranch := flagSet.String("base", sd.GetMainBranchForHelp(), "Base branch for Pull Request")
 
-	reviewers, silent, minChecks := AddReviewersFlags(flagSet, "")
+	reviewers, silent, minChecks := addReviewersFlags(flagSet, "")
 
-	indicatorTypeString := AddIndicatorFlag(flagSet)
+	indicatorTypeString := addIndicatorFlag(flagSet)
 
 	return Command{
 		FlagSet: flagSet,
@@ -70,7 +70,7 @@ func CreateNewCommand() Command {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
 
-			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
+			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			branchInfo := sd.GetBranchInfo(flagSet.Arg(0), indicatorType)
 			sd.CreateNewPr(*draft, *featureFlag, *baseBranch, branchInfo)
 			if *reviewers != "" {

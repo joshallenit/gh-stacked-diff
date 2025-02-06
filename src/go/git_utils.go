@@ -83,9 +83,9 @@ func GetAllCommits() []GitLog {
 	return newGitLogs(logsRaw)
 }
 
-func GetNewCommits(compareFromRemoteBranch string, to string) []GitLog {
+func getNewCommits(compareFromRemoteBranch string, to string) []GitLog {
 	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h" + formatDelimiter + "%s" + formatDelimiter + "%f", "--abbrev-commit"}
-	if RemoteHasBranch(compareFromRemoteBranch) {
+	if remoteHasBranch(compareFromRemoteBranch) {
 		gitArgs = append(gitArgs, "origin/"+compareFromRemoteBranch+".."+to)
 	} else {
 		gitArgs = append(gitArgs, to)
@@ -95,23 +95,23 @@ func GetNewCommits(compareFromRemoteBranch string, to string) []GitLog {
 }
 
 // Returns most recent commit of the given branch that is on origin/main, or "" if the main branch is not on remote.
-func FirstOriginMainCommit(branchName string) string {
-	if !GetLocalHasBranchOrDie(branchName) {
+func firstOriginMainCommit(branchName string) string {
+	if !getLocalHasBranchOrDie(branchName) {
 		panic("Branch does not exist " + branchName)
 	}
 	// Verify that remote has branch, there is no origin commit.
-	if !RemoteHasBranch(GetMainBranchOrDie()) {
+	if !remoteHasBranch(GetMainBranchOrDie()) {
 		return ""
 	}
 	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge-base", "origin/"+GetMainBranchOrDie(), branchName))
 }
 
-func RemoteHasBranch(branchName string) bool {
+func remoteHasBranch(branchName string) bool {
 	remoteBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r", "--list", "origin/"+branchName))
 	return remoteBranch != ""
 }
 
-func GetLocalHasBranchOrDie(branchName string) bool {
+func getLocalHasBranchOrDie(branchName string) bool {
 	hasBranch, err := localHasBranch(branchName)
 	if err != nil {
 		panic(err)
@@ -128,17 +128,17 @@ func localHasBranch(branchName string) (bool, error) {
 	return localBranch != "", nil
 }
 
-func RequireMainBranch() {
-	if GetCurrentBranchName() != GetMainBranchOrDie() {
+func requireMainBranch() {
+	if getCurrentBranchName() != GetMainBranchOrDie() {
 		panic("Must be run from " + GetMainBranchOrDie() + " branch")
 	}
 }
 
-func RequireCommitOnMain(commit string) {
+func requireCommitOnMain(commit string) {
 	if commit == GetMainBranchOrDie() {
 		return
 	}
-	newCommits := GetNewCommits(GetMainBranchOrDie(), "HEAD")
+	newCommits := getNewCommits(GetMainBranchOrDie(), "HEAD")
 	if !slices.ContainsFunc(newCommits, func(gitLog GitLog) bool {
 		return gitLog.Commit == commit
 	}) {
@@ -146,11 +146,11 @@ func RequireCommitOnMain(commit string) {
 	}
 }
 
-func GetCurrentBranchName() string {
+func getCurrentBranchName() string {
 	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD"))
 }
 
-func Stash(forName string) bool {
+func stash(forName string) bool {
 	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName))
 	if strings.HasPrefix(stashResult, "Saved working") {
 		slog.Info(stashResult)
@@ -159,7 +159,7 @@ func Stash(forName string) bool {
 	return false
 }
 
-func PopStash(popStash bool) {
+func popStash(popStash bool) {
 	if popStash {
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "pop")
 		slog.Info("Popped stash back")

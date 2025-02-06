@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-func CreateUpdateCommand() Command {
+func createUpdateCommand() Command {
 	flagSet := flag.NewFlagSet("update", flag.ContinueOnError)
-	indicatorTypeString := AddIndicatorFlag(flagSet)
-	reviewers, silent, minChecks := AddReviewersFlags(flagSet, "")
+	indicatorTypeString := addIndicatorFlag(flagSet)
+	reviewers, silent, minChecks := addReviewersFlags(flagSet, "")
 	return Command{
 		FlagSet: flagSet,
 		Summary: "Add commits from " + sd.GetMainBranchForHelp() + " to an existing PR",
@@ -21,7 +21,7 @@ func CreateUpdateCommand() Command {
 			if flagSet.NArg() == 0 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)
 			}
-			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
+			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			var otherCommits []string
 			if len(flagSet.Args()) > 1 {
 				otherCommits = flagSet.Args()[1:]

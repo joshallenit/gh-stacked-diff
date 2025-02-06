@@ -7,7 +7,7 @@ import (
 	sd "stackeddiff"
 )
 
-func CreateLogCommand(stdOut io.Writer) Command {
+func createLogCommand(stdOut io.Writer) Command {
 	flagSet := flag.NewFlagSet("log", flag.ContinueOnError)
 
 	return Command{

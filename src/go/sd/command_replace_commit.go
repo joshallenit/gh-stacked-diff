@@ -5,9 +5,9 @@ import (
 	sd "stackeddiff"
 )
 
-func CreateReplaceCommitCommand() Command {
+func createReplaceCommitCommand() Command {
 	flagSet := flag.NewFlagSet("replace-commit", flag.ContinueOnError)
-	indicatorTypeString := AddIndicatorFlag(flagSet)
+	indicatorTypeString := addIndicatorFlag(flagSet)
 	return Command{
 		FlagSet: flagSet,
 		Summary: "Replaces a commit on " + sd.GetMainBranchForHelp() + " branch with its associated branch",
@@ -25,7 +25,7 @@ func CreateReplaceCommitCommand() Command {
 			if flagSet.NArg() > 1 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
+			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			sd.ReplaceCommit(flagSet.Arg(0), indicatorType)
 		}}
 }

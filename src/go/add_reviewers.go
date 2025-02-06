@@ -20,6 +20,7 @@ type pullRequestChecksStatus struct {
 	Total   int
 }
 
+// Adds reviewers to a PR once checks have passed via Github CLI.
 func AddReviewersToPr(commitIndicators []string, indicatorType IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
 	if reviewers == "" {
 		panic("Reviewers cannot be empty")

@@ -5,11 +5,11 @@ import (
 	sd "stackeddiff"
 )
 
-func CreateWaitForMergeCommand() Command {
+func createWaitForMergeCommand() Command {
 	flagSet := flag.NewFlagSet("wait-for-merge", flag.ContinueOnError)
 
-	indicatorTypeString := AddIndicatorFlag(flagSet)
-	silent := AddSilentFlag(flagSet, "")
+	indicatorTypeString := addIndicatorFlag(flagSet)
+	silent := addSilentFlag(flagSet, "")
 
 	return Command{
 		FlagSet: flagSet,
@@ -22,7 +22,7 @@ func CreateWaitForMergeCommand() Command {
 			if flagSet.NArg() != 1 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)
 			}
-			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
+			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			sd.WaitForMerge(flagSet.Arg(0), indicatorType, *silent)
 		}}
 }

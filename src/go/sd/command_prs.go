@@ -7,7 +7,7 @@ import (
 	ex "stackeddiff/execute"
 )
 
-func CreatePrsCommand(stdOut io.Writer) Command {
+func createPrsCommand(stdOut io.Writer) Command {
 	flagSet := flag.NewFlagSet("prs", flag.ContinueOnError)
 
 	return Command{

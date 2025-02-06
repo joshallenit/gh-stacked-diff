@@ -9,8 +9,8 @@ import (
 )
 
 func RebaseMain() {
-	RequireMainBranch()
-	shouldPopStash := Stash("rebase-main")
+	requireMainBranch()
+	shouldPopStash := stash("rebase-main")
 
 	slog.Info("Fetching...")
 	ex.ExecuteOrDie(ex.ExecuteOptions{
@@ -53,7 +53,7 @@ func RebaseMain() {
 		}
 		ex.ExecuteOrDie(options, "git", "rebase", "origin/"+GetMainBranchOrDie())
 	}
-	PopStash(shouldPopStash)
+	popStash(shouldPopStash)
 }
 
 func contains(originSummaries []string, localSummary string) bool {

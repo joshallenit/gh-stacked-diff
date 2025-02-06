@@ -8,19 +8,19 @@ import (
 )
 
 func ReplaceCommit(commitIndicator string, indicatorType IndicatorType) {
-	RequireMainBranch()
+	requireMainBranch()
 	branchInfo := GetBranchInfo(commitIndicator, indicatorType)
-	RequireCommitOnMain(branchInfo.CommitHash)
-	shouldPopStash := Stash("replace-commit " + commitIndicator)
+	requireCommitOnMain(branchInfo.CommitHash)
+	shouldPopStash := stash("replace-commit " + commitIndicator)
 	replaceCommitOfBranchInfo(branchInfo)
-	PopStash(shouldPopStash)
+	popStash(shouldPopStash)
 }
 
 // Replaces commit `branchInfo.CommitHash“ with the contents of branch `branchInfo.BranchName`
 func replaceCommitOfBranchInfo(branchInfo BranchInfo) {
 	commitsAfter := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", branchInfo.CommitHash+"..HEAD", "--pretty=format:%h")))
 	reverseArrayInPlace(commitsAfter)
-	commitToDiffFrom := FirstOriginMainCommit(branchInfo.BranchName)
+	commitToDiffFrom := firstOriginMainCommit(branchInfo.BranchName)
 	if commitToDiffFrom == "" {
 		panic("replace-commit cannot be used if there is no origin/" + GetMainBranchOrDie() + " because changes are calculated from there")
 	}

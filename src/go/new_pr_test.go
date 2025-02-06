@@ -37,12 +37,12 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranchOrDie())
 
 	testinginit.AddCommit("second", "")
-	allCommits := GetNewCommits(GetMainBranchOrDie(), "HEAD")
+	allCommits := getNewCommits(GetMainBranchOrDie(), "HEAD")
 
 	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
-	commitsOnNewBranch := GetNewCommits(GetMainBranchOrDie(), "HEAD")
+	commitsOnNewBranch := getNewCommits(GetMainBranchOrDie(), "HEAD")
 	assert.Equal(1, len(commitsOnNewBranch))
 	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
 }
@@ -58,12 +58,12 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 	testinginit.AddCommit("second", "")
 
 	testinginit.AddCommit("third", "")
-	allCommits := GetNewCommits(GetMainBranchOrDie(), "HEAD")
+	allCommits := getNewCommits(GetMainBranchOrDie(), "HEAD")
 
 	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
-	commitsOnNewBranch := GetNewCommits(GetMainBranchOrDie(), "HEAD")
+	commitsOnNewBranch := getNewCommits(GetMainBranchOrDie(), "HEAD")
 	assert.Equal(1, len(commitsOnNewBranch))
 	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
 }

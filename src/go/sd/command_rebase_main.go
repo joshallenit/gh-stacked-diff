@@ -5,7 +5,7 @@ import (
 	sd "stackeddiff"
 )
 
-func CreateRebaseMainCommand() Command {
+func createRebaseMainCommand() Command {
 	flagSet := flag.NewFlagSet("rebase-main", flag.ContinueOnError)
 
 	return Command{

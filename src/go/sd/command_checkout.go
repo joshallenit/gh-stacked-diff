@@ -6,9 +6,9 @@ import (
 	ex "stackeddiff/execute"
 )
 
-func CreateCheckoutCommand() Command {
+func createCheckoutCommand() Command {
 	flagSet := flag.NewFlagSet("checkout", flag.ContinueOnError)
-	indicatorTypeString := AddIndicatorFlag(flagSet)
+	indicatorTypeString := addIndicatorFlag(flagSet)
 	return Command{
 		FlagSet: flagSet,
 		Summary: "Checks out branch associated with commit indicator",
@@ -27,7 +27,7 @@ func CreateCheckoutCommand() Command {
 			if flagSet.NArg() > 1 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			indicatorType := CheckIndicatorFlag(command, indicatorTypeString)
+			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			branchName := sd.GetBranchInfo(flagSet.Arg(0), indicatorType).BranchName
 			ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "checkout", branchName)
 		}}

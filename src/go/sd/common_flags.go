@@ -10,7 +10,7 @@ import (
 	ex "stackeddiff/execute"
 )
 
-func AddIndicatorFlag(flagSet *flag.FlagSet) *string {
+func addIndicatorFlag(flagSet *flag.FlagSet) *string {
 	var usage string = "Indicator type to use to interpret commitIndicator:\n" +
 		"   commit   a commit hash, can be abbreviated,\n" +
 		"   pr       a github Pull Request number,\n" +
@@ -23,7 +23,7 @@ func AddIndicatorFlag(flagSet *flag.FlagSet) *string {
 	return flagSet.String("indicator", string(sd.IndicatorTypeGuess), usage)
 }
 
-func CheckIndicatorFlag(command Command, indicatorTypeString *string) sd.IndicatorType {
+func checkIndicatorFlag(command Command, indicatorTypeString *string) sd.IndicatorType {
 	indicatorType := sd.IndicatorType(*indicatorTypeString)
 	if !indicatorType.IsValid() {
 		commandError(command.FlagSet, "Invalid indicator type: "+*indicatorTypeString, command.Usage)
@@ -31,12 +31,12 @@ func CheckIndicatorFlag(command Command, indicatorTypeString *string) sd.Indicat
 	return indicatorType
 }
 
-func AddReviewersFlags(flagSet *flag.FlagSet, reviewersUseCaseExtra string) (*string, *bool, *int) {
+func addReviewersFlags(flagSet *flag.FlagSet, reviewersUseCaseExtra string) (*string, *bool, *int) {
 	reviewers := flagSet.String("reviewers", "",
 		"Comma-separated list of Github usernames to add as reviewers once\n"+
 			"checks have passed.\n"+
 			reviewersUseCaseExtra)
-	silent := AddSilentFlag(flagSet, "reviewers have been added")
+	silent := addSilentFlag(flagSet, "reviewers have been added")
 	minChecks := flagSet.Int("min-checks", 4,
 		"Minimum number of checks to wait for before verifying that checks\n"+
 			"have passed before adding reviewers. It takes some time for checks\n"+
@@ -45,7 +45,7 @@ func AddReviewersFlags(flagSet *flag.FlagSet, reviewersUseCaseExtra string) (*st
 	return reviewers, silent, minChecks
 }
 
-func AddSilentFlag(flagSet *flag.FlagSet, usageUseCase string) *bool {
+func addSilentFlag(flagSet *flag.FlagSet, usageUseCase string) *bool {
 	if runtime.GOOS == "darwin" {
 		// Only supported on Mac OS X because it uses "say" command.
 		return flagSet.Bool("silent", false, "Whether to use voice output (false) or be silent (true) to notify that "+usageUseCase+".")
