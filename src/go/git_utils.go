@@ -45,10 +45,15 @@ func getMainBranch() (string, error) {
 			// Remote is empty, or the repository was not cloned, use config.
 			mainBranchNameRaw, configErr := ex.Execute(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch")
 			if configErr != nil {
+				// Note that git config works even if dir is not a git repo.
 				return "", configErr
 			}
 			mainBranchName = strings.TrimSpace(mainBranchNameRaw)
-			if !LocalHasBranch(mainBranchName) {
+			hasBranch, hasBranchErr := localHasBranch(mainBranchName)
+			if hasBranchErr != nil {
+				return "", hasBranchErr
+			}
+			if !hasBranch {
 				return "", errors.New("Cannot determine name of main branch.\n" +
 					"Push a first commit to origin/main if the remote is empty and \n" +
 					"use \"git remote set-head origin main\" to set the name to main.")
@@ -91,7 +96,7 @@ func GetNewCommits(compareFromRemoteBranch string, to string) []GitLog {
 
 // Returns most recent commit of the given branch that is on origin/main, or "" if the main branch is not on remote.
 func FirstOriginMainCommit(branchName string) string {
-	if !LocalHasBranch(branchName) {
+	if !GetLocalHasBranchOrDie(branchName) {
 		panic("Branch does not exist " + branchName)
 	}
 	// Verify that remote has branch, there is no origin commit.
@@ -106,9 +111,21 @@ func RemoteHasBranch(branchName string) bool {
 	return remoteBranch != ""
 }
 
-func LocalHasBranch(branchName string) bool {
-	localBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "--list", branchName))
-	return localBranch != ""
+func GetLocalHasBranchOrDie(branchName string) bool {
+	hasBranch, err := localHasBranch(branchName)
+	if err != nil {
+		panic(err)
+	}
+	return hasBranch
+}
+
+func localHasBranch(branchName string) (bool, error) {
+	out, err := ex.Execute(ex.ExecuteOptions{}, "git", "branch", "--list", branchName)
+	if err != nil {
+		return false, err
+	}
+	localBranch := strings.TrimSpace(out)
+	return localBranch != "", nil
 }
 
 func RequireMainBranch() {
