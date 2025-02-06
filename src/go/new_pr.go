@@ -53,7 +53,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 		popStash(shouldPopStash)
 		os.Exit(1)
 	}
-	prText := GetPullRequestText(branchInfo.CommitHash, featureFlag)
+	prText := getPullRequestText(branchInfo.CommitHash, featureFlag)
 	slog.Info("Creating PR via gh")
 	createPrArgs := []string{"pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--base", baseBranch}
 	if draft {

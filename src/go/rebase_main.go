@@ -17,7 +17,7 @@ func RebaseMain() {
 	ex.ExecuteOrDie(ex.ExecuteOptions{
 		Output: ex.NewStandardOutput(),
 	}, "git", "fetch")
-	username := GetUsername()
+	username := getUsername()
 	originSummaries := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranchOrDie(), "-n", "30", "--format=%s", "--author="+username)), "\n")
 	localLogs := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", "origin/"+GetMainBranchOrDie()+"..HEAD", "--format=%h %s")), "\n")
 	// Look for matching summaries between localCommits and originCommits

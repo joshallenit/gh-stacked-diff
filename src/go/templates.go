@@ -29,12 +29,15 @@ var prDescriptionTemplateText string
 // Cached value of user email.
 var userEmail string
 
+// Commit and associated branch.
 type BranchInfo struct {
+	// Git commit hash, might be abbreviated.
 	CommitHash string
+	// Name of associated branch, might exist or not.
 	BranchName string
 }
 
-type PullRequestText struct {
+type pullRequestText struct {
 	Title       string
 	Description string
 }
@@ -54,15 +57,21 @@ type templateData struct {
 	FeatureFlag                string
 }
 
+// Enum for what commitIndicator represents.
 type IndicatorType string
 
 const (
+	// commitIndicator is a commit hash.
 	IndicatorTypeCommit IndicatorType = "commit"
-	IndicatorTypePr     IndicatorType = "pr"
-	IndicatorTypeList   IndicatorType = "list"
-	IndicatorTypeGuess  IndicatorType = "guess"
+	// commitIndicator is a PR number.
+	IndicatorTypePr IndicatorType = "pr"
+	// commitIndicator is a list index from log (1 based).
+	IndicatorTypeList IndicatorType = "list"
+	// Guess based on length of commitIndicator and whether it is all numeric.
+	IndicatorTypeGuess IndicatorType = "guess"
 )
 
+// Returns weather the indicator type is of a known type.
 func (indicator IndicatorType) IsValid() bool {
 	switch indicator {
 	case IndicatorTypeCommit, IndicatorTypePr, IndicatorTypeList, IndicatorTypeGuess:
@@ -72,6 +81,7 @@ func (indicator IndicatorType) IsValid() bool {
 	}
 }
 
+// Returns BranchInfo for commitIndicator and indicatorType.
 func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchInfo {
 	if !indicatorType.IsValid() {
 		panic("Invalid IndicatorType " + string(indicatorType))
@@ -161,11 +171,11 @@ func truncateString(str string, maxBytes int) string {
 	return str
 }
 
-func GetPullRequestText(commitHash string, featureFlag string) PullRequestText {
+func getPullRequestText(commitHash string, featureFlag string) pullRequestText {
 	data := getPullRequestTemplateData(commitHash, featureFlag)
 	title := runTemplate("pr-title.template", prTitleTemplateText, data)
 	description := runTemplate("pr-description.template", prDescriptionTemplateText, data)
-	return PullRequestText{Description: description, Title: title}
+	return pullRequestText{Description: description, Title: title}
 }
 
 func runTemplate(configFilename string, defaultTemplateText string, data any) string {
@@ -195,7 +205,7 @@ func getPullRequestTemplateData(commitHash string, featureFlag string) templateD
 	expression := regexp.MustCompile("^(\\S+-[[:digit:]]+ )?(.*)")
 	summaryMatches := expression.FindStringSubmatch(commitSummary)
 	return templateData{
-		Username:                   GetUsername(),
+		Username:                   getUsername(),
 		TicketNumber:               strings.TrimSpace(summaryMatches[1]),
 		CommitBody:                 commitBody,
 		CommitSummary:              commitSummary,
@@ -207,14 +217,14 @@ func getPullRequestTemplateData(commitHash string, featureFlag string) templateD
 
 func getBranchTemplateData(sanitizedSummary string) branchTemplateData {
 	// Dots are not allowed in branch names of some Github configurations.
-	username := strings.ReplaceAll(GetUsername(), ".", "-")
+	username := strings.ReplaceAll(getUsername(), ".", "-")
 	return branchTemplateData{
 		UsernameCleaned:      username,
 		CommitSummaryCleaned: sanitizedSummary,
 	}
 }
 
-func GetUsername() string {
+func getUsername() string {
 	if userEmail == "" {
 		userEmailRaw := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email"))
 		userEmail = userEmailRaw[0:strings.Index(userEmailRaw, "@")]

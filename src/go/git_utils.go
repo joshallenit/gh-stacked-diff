@@ -11,14 +11,19 @@ import (
 	ex "stackeddiff/execute"
 )
 
+// Returned by some of the Get*Commit functions.
 type GitLog struct {
-	Commit  string
+	// Abbreviated commit hash.
+	Commit string
+	// Commit subject.
 	Subject string
-	Branch  string
+	// Associated branch name. Branch might not exist.
+	Branch string
 }
 
 var mainBranchName string
 
+// Returns name of main branch, or panics if cannot be determined.
 func GetMainBranchOrDie() string {
 	mainBranch, err := getMainBranch()
 	if err != nil {
@@ -27,6 +32,7 @@ func GetMainBranchOrDie() string {
 	return mainBranch
 }
 
+// Returns name of main branch, or "main" if cannot be determined. For use by CLI help.
 func GetMainBranchForHelp() string {
 	mainBranch, err := getMainBranch()
 	if err != nil {
@@ -77,6 +83,7 @@ func newGitLogs(logsRaw string) []GitLog {
 	return logs
 }
 
+// Returns all the commits on the current branch. For use by tests.
 func GetAllCommits() []GitLog {
 	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h" + formatDelimiter + "%s" + formatDelimiter + "%f", "--abbrev-commit"}
 	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
@@ -106,6 +113,7 @@ func firstOriginMainCommit(branchName string) string {
 	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge-base", "origin/"+GetMainBranchOrDie(), branchName))
 }
 
+// Returns whether branchName is on remote.
 func RemoteHasBranch(branchName string) bool {
 	remoteBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r", "--list", "origin/"+branchName))
 	return remoteBranch != ""
@@ -146,6 +154,7 @@ func requireCommitOnMain(commit string) {
 	}
 }
 
+// Returns current branch name.
 func GetCurrentBranchName() string {
 	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD"))
 }

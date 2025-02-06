@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// For failed rebase: replace changes with its associated branch.
 func ReplaceConflicts(stdOut io.Writer, confirmed bool) {
 	commitWithConflicts := getCommitWithConflicts()
 	branchInfo := GetBranchInfo(commitWithConflicts, IndicatorTypeCommit)
