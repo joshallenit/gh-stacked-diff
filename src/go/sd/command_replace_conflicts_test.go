@@ -15,7 +15,7 @@ import (
 
 func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.InitTest(slog.LevelDebug)
+	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "file-with-conflicts")
 	testinginit.CommitFileChange("second", "file-with-conflicts", "1")
@@ -50,7 +50,7 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 	ParseArguments(
 		os.Stdout,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"--log-level=debug", "replace-conflicts", "--confirm=true"},
+		[]string{"replace-conflicts", "--confirm=true"},
 	)
 
 	allCommits = sd.GetAllCommits()
