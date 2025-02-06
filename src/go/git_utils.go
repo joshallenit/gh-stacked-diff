@@ -54,9 +54,9 @@ func getMainBranch() (string, error) {
 				return "", hasBranchErr
 			}
 			if !hasBranch {
-				return "", errors.New("Cannot determine name of main branch.\n" +
+				return "", errors.New("cannot determine name of main branch.\n" +
 					"Push a first commit to origin/main if the remote is empty and \n" +
-					"use \"git remote set-head origin main\" to set the name to main.")
+					"use \"git remote set-head origin main\" to set the name to main")
 			}
 		}
 	}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -148,7 +147,7 @@ func stringToLogLevel(logLevelString string) (slog.Level, error) {
 	var logLevel slog.Level
 	var unmarshallErr = logLevel.UnmarshalText([]byte(logLevelString))
 	if unmarshallErr != nil {
-		return 0, errors.New("Invalid log level " + logLevelString + ": " + unmarshallErr.Error())
+		return 0, unmarshallErr
 	}
 	return logLevel, nil
 }
