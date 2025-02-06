@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 
+- `sd rebase-main` now outputs in real time instead of only when rebase ends.
 - Moved all scripts to subcommands of a new `sd` executable.
 - Converted all logs to use slog (logs at DEBUG, INFO, or ERROR levels) so that the log level can be changed to help with debugging. 
 - Renamed replace-head to replace-conflicts
