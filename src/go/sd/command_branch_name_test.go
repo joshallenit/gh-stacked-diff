@@ -21,7 +21,7 @@ func TestSdBranchName_OutputsBranchName(t *testing.T) {
 	allCommits := sd.GetAllCommits()
 
 	outWriter := testinginit.NewWriteRecorder()
-	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"branch-name", allCommits[0].Commit})
+	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"branch-name", allCommits[0].Commit})
 	out := outWriter.String()
 
 	assert.Equal(allCommits[0].Branch, out)

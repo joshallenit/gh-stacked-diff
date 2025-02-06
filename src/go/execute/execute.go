@@ -1,3 +1,6 @@
+/*
+Provides a simple way to execute shell commands.
+*/
 package execute
 
 import (
@@ -10,43 +13,48 @@ import (
 	"strings"
 )
 
-var Red = "\033[31m"
-var Reset = "\033[0m"
-var White = "\033[97m"
-var Yellow = "\033[33m" // #C0A000 (Buddha Gold)
+var Red = "\033[31m"    // ANSI escape code for red (errors)
+var White = "\033[97m"  // ANSI escape code bright white for bold
+var Yellow = "\033[33m" // ANSI escape code for #C0A000 (Buddha Gold), used by git.
+var Reset = "\033[0m"   // ANSI escape code to reset to default color
 
-/*
-Options for [ExecuteWithOptions].
-*/
+// Options for [ExecuteWithOptions].
 type ExecuteOptions struct {
 	// String to use for stdin. Useful for "git apply".
 	Stdin *string
 	// For example "MY_VAR=some_value"
 	EnvironmentVariables []string
-	Output               *ExecutionOutput
+	// Where to send program output, or nil for [Execute] to return it.
+	Output *ExecutionOutput
 }
 
+// Where output should go for [Execute].
 type ExecutionOutput struct {
-	Stdout io.Writer
-	Stderr io.Writer
+	Stdout io.Writer // For standard out.
+	Stderr io.Writer // For standard error.
 }
 
+// Send outout to stdout and stderr.
 func NewStandardOutput() *ExecutionOutput {
 	return &ExecutionOutput{Stdout: os.Stdout, Stderr: os.Stderr}
 }
 
+// Allows swapping in a [TestExecutor] via Dependency Injection during tests.
 type Executor interface {
 	Execute(options ExecuteOptions, programName string, args ...string) (string, error)
 }
 
 var globalExecutor Executor = DefaultExecutor{}
 
+// Default implementation of [Executor].
 type DefaultExecutor struct{}
 
+// Sets the executor that [Execute] will use.
 func SetGlobalExecutor(executor Executor) {
 	globalExecutor = executor
 }
 
+// Implementation of Execute that uses [exec.Command].
 func (defaultExecutor DefaultExecutor) Execute(options ExecuteOptions, programName string, args ...string) (string, error) {
 	cmd := exec.Command(programName, args...)
 	if options.EnvironmentVariables != nil {
@@ -70,10 +78,12 @@ func (defaultExecutor DefaultExecutor) Execute(options ExecuteOptions, programNa
 	return stringOut, err
 }
 
+// Executes a shell program with arguments.
 func Execute(options ExecuteOptions, programName string, args ...string) (string, error) {
 	return globalExecutor.Execute(options, programName, args...)
 }
 
+// Executes a shell program with arguments. Panics if there is an error.
 func ExecuteOrDie(options ExecuteOptions, programName string, args ...string) string {
 	out, err := Execute(options, programName, args...)
 	if err != nil {

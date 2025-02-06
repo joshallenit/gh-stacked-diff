@@ -22,7 +22,7 @@ func TestSdWaitForMerge_WaitsForMerge(t *testing.T) {
 	testExecutor.SetResponse("2025-01-01", nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
 	outWriter := testinginit.NewWriteRecorder()
-	ParseArguments(
+	parseArguments(
 		outWriter,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
 		[]string{"wait-for-merge", allCommits[0].Commit},

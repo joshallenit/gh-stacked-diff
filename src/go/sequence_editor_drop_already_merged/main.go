@@ -1,3 +1,9 @@
+/*
+For use as a sequence editor for an interactive git rebase.
+Drop any commits specified in the input parameters, keep the others.
+
+usage: sequence_editor_drop_already_merged dropCommit1 [dropCommit2...] rebaseFilename
+*/
 package main
 
 import (
@@ -7,12 +13,9 @@ import (
 	"strings"
 )
 
-/*
-Drop any commits specified in the input parameters, keep the others.
-*/
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Printf("Usage: sequence_editor_drop_already_merged dropCommit1 [dropCommit2...] rebaseFilename")
+		fmt.Printf("usage: sequence_editor_drop_already_merged dropCommit1 [dropCommit2...] rebaseFilename")
 		os.Exit(1)
 	}
 	slog.Debug(fmt.Sprint("Got args ", os.Args))

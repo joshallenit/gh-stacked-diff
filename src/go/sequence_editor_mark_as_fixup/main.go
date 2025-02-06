@@ -1,3 +1,9 @@
+/*
+For use as a sequence editor for an interactive git rebase.
+Marks commits as fixup commits.
+
+usage: sequence_editor_mark_as_fixup targetCommit fixupCommit1 [fixupCommit2...] rebaseFilename
+*/
 package main
 
 import (
@@ -11,7 +17,7 @@ import (
  */
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Printf("Usage: sequence_editor_mark_as_fixup targetCommit fixupCommit1 [fixupCommit2...] rebaseFilename")
+		fmt.Printf("usage: sequence_editor_mark_as_fixup targetCommit fixupCommit1 [fixupCommit2...] rebaseFilename")
 		os.Exit(1)
 	}
 	targetCommit := os.Args[1]

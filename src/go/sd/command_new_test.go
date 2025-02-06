@@ -20,10 +20,10 @@ func TestSdNew_CreatesPr(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 
 	outWriter := testinginit.NewWriteRecorder()
-	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
+	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
 	out := outWriter.String()
 
 	assert.Contains(out, "✅")
@@ -44,7 +44,7 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "--reviewers=mybestie"})
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "--reviewers=mybestie"})
 
 	allCommits := sd.GetAllCommits()
 
@@ -65,7 +65,7 @@ func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 
 	allCommits := sd.GetAllCommits()
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "2"})
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "2"})
 
 	assert.Equal(true, sd.RemoteHasBranch(allCommits[1].Branch))
 }

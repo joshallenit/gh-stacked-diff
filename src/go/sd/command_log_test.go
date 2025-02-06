@@ -18,7 +18,7 @@ func TestSdLog_LogsOutput(t *testing.T) {
 	testinginit.AddCommit("first", "")
 
 	outWriter := testinginit.NewWriteRecorder()
-	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
+	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
 	out := outWriter.String()
 
 	assert.Contains(out, "first")
@@ -41,7 +41,7 @@ func TestGitlog_WhenManyCommits_PadsFirstCommits(t *testing.T) {
 	testinginit.AddCommit("tenth", "")
 
 	outWriter := testinginit.NewWriteRecorder()
-	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
+	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
 	out := outWriter.String()
 
 	assert.Contains(out, "\n 2.    ")

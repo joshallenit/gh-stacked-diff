@@ -10,16 +10,14 @@ import (
 	"github.com/fatih/color"
 )
 
+// Options for [PrettyHandler].
 type PrettyHandlerOptions struct {
 	SlogOpts slog.HandlerOptions
 }
 
-/*
-Handler for [slog] that uses diffdrent ANSI colors for each level (DEBUG, INFO, etc.).
-
-Modified from
-https://betterstack.com/community/guides/logging/logging-in-go/
-*/
+// Handler for [slog] that uses diffdrent ANSI colors for each level (DEBUG, INFO, etc.).
+//
+// Modified from https://betterstack.com/community/guides/logging/logging-in-go/
 type PrettyHandler struct {
 	slog.Handler
 	l *log.Logger
@@ -28,6 +26,7 @@ type PrettyHandler struct {
 // Verify that [PrettyHandler] implements [slog.Handler].
 var _ slog.Handler = new(PrettyHandler)
 
+// Print a log record.
 func (h *PrettyHandler) Handle(ctx context.Context, r slog.Record) error {
 	level := r.Level.String()
 
@@ -63,6 +62,7 @@ func (h *PrettyHandler) Handle(ctx context.Context, r slog.Record) error {
 	return nil
 }
 
+// Create a new [PrettyHandler].
 func NewPrettyHandler(
 	out io.Writer,
 	opts PrettyHandlerOptions,

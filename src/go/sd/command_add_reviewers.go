@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func CreateAddReviewersCommand() Command {
+func createAddReviewersCommand() Command {
 	flagSet := flag.NewFlagSet("add-reviewers", flag.ContinueOnError)
 	var indicatorTypeString *string = AddIndicatorFlag(flagSet)
 
