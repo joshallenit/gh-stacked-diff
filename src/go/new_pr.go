@@ -9,6 +9,7 @@ import (
 	ex "stackeddiff/execute"
 )
 
+// Creates a new pull request via Github CLI.
 func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo BranchInfo) {
 	requireMainBranch()
 	requireCommitOnMain(branchInfo.CommitHash)

@@ -107,7 +107,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		slog.Info("Using commit " + info.CommitHash + ", branch " + info.BranchName)
 	case IndicatorTypeList:
 		slog.Debug("Using commitIndicator as a list index " + commitIndicator)
-		newCommits := getNewCommits(GetMainBranchOrDie(), getCurrentBranchName())
+		newCommits := getNewCommits(GetMainBranchOrDie(), GetCurrentBranchName())
 		listIndex, err := strconv.Atoi(commitIndicator)
 		if err != nil {
 			panic("When indicator type is " + string(IndicatorTypeList) + " commit indicator must be a number, given " + commitIndicator)
@@ -142,10 +142,10 @@ func guessIndicatorType(commitIndicator string) IndicatorType {
 
 func getBranchForCommit(commit string) string {
 	sanitizedSubject := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commit))
-	return GetBranchForSantizedSubject(sanitizedSubject)
+	return getBranchForSantizedSubject(sanitizedSubject)
 }
 
-func GetBranchForSantizedSubject(sanitizedSubject string) string {
+func getBranchForSantizedSubject(sanitizedSubject string) string {
 	name := runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(sanitizedSubject))
 	// Branch names that are too long cause problems with Github.
 	name = truncateString(name, 120)

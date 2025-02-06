@@ -8,6 +8,7 @@ import (
 	ex "stackeddiff/execute"
 )
 
+// Bring local main branch up to date with remote
 func RebaseMain() {
 	requireMainBranch()
 	shouldPopStash := stash("rebase-main")

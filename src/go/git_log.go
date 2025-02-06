@@ -11,9 +11,9 @@ import (
 
 // Prints changes in the current branch compared to the main branch to out.
 func PrintGitLog(out io.Writer) {
-	if getCurrentBranchName() != GetMainBranchOrDie() {
+	if GetCurrentBranchName() != GetMainBranchOrDie() {
 		gitArgs := []string{"--no-pager", "log", "--pretty=oneline", "--abbrev-commit"}
-		if remoteHasBranch(GetMainBranchOrDie()) {
+		if RemoteHasBranch(GetMainBranchOrDie()) {
 			gitArgs = append(gitArgs, "origin/"+GetMainBranchOrDie()+"..HEAD")
 		}
 		gitArgs = append(gitArgs, "--color=always")

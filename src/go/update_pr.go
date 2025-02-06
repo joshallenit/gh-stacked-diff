@@ -9,6 +9,7 @@ import (
 	ex "stackeddiff/execute"
 )
 
+// Add commits from main to an existing PR.
 func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType IndicatorType) {
 	requireMainBranch()
 	requireCommitOnMain(destCommit.CommitHash)

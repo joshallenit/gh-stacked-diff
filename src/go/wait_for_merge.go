@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// Waits for a pull request to be merged.
 func WaitForMerge(commitIndicator string, indicatorType IndicatorType, silent bool) {
 	branchName := GetBranchInfo(commitIndicator, indicatorType).BranchName
 	for getMergedAt(branchName) == "" {

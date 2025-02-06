@@ -72,7 +72,7 @@ func newGitLogs(logsRaw string) []GitLog {
 			// No git logs.
 			continue
 		}
-		logs = append(logs, GitLog{Commit: components[0], Subject: components[1], Branch: GetBranchForSantizedSubject(components[2])})
+		logs = append(logs, GitLog{Commit: components[0], Subject: components[1], Branch: getBranchForSantizedSubject(components[2])})
 	}
 	return logs
 }
@@ -85,7 +85,7 @@ func GetAllCommits() []GitLog {
 
 func getNewCommits(compareFromRemoteBranch string, to string) []GitLog {
 	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h" + formatDelimiter + "%s" + formatDelimiter + "%f", "--abbrev-commit"}
-	if remoteHasBranch(compareFromRemoteBranch) {
+	if RemoteHasBranch(compareFromRemoteBranch) {
 		gitArgs = append(gitArgs, "origin/"+compareFromRemoteBranch+".."+to)
 	} else {
 		gitArgs = append(gitArgs, to)
@@ -100,13 +100,13 @@ func firstOriginMainCommit(branchName string) string {
 		panic("Branch does not exist " + branchName)
 	}
 	// Verify that remote has branch, there is no origin commit.
-	if !remoteHasBranch(GetMainBranchOrDie()) {
+	if !RemoteHasBranch(GetMainBranchOrDie()) {
 		return ""
 	}
 	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge-base", "origin/"+GetMainBranchOrDie(), branchName))
 }
 
-func remoteHasBranch(branchName string) bool {
+func RemoteHasBranch(branchName string) bool {
 	remoteBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r", "--list", "origin/"+branchName))
 	return remoteBranch != ""
 }
@@ -129,7 +129,7 @@ func localHasBranch(branchName string) (bool, error) {
 }
 
 func requireMainBranch() {
-	if getCurrentBranchName() != GetMainBranchOrDie() {
+	if GetCurrentBranchName() != GetMainBranchOrDie() {
 		panic("Must be run from " + GetMainBranchOrDie() + " branch")
 	}
 }
@@ -146,7 +146,7 @@ func requireCommitOnMain(commit string) {
 	}
 }
 
-func getCurrentBranchName() string {
+func GetCurrentBranchName() string {
 	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD"))
 }
 
