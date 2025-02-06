@@ -20,12 +20,12 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 	testinginit.AddCommit("first", "1")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
 	testinginit.AddCommit("second", "will-be-replaced")
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 	testinginit.AddCommit("fifth", "5")
 
 	allCommits := sd.GetAllCommits()
 
-	ParseArguments(
+	parseArguments(
 		os.Stdout,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
 		[]string{"checkout", allCommits[1].Commit},
@@ -38,7 +38,7 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", sd.GetMainBranchOrDie())
 
-	ParseArguments(
+	parseArguments(
 		os.Stdout,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
 		[]string{"replace-commit", allCommits[1].Commit},
@@ -73,12 +73,12 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 
 	testinginit.AddCommit("first", "1")
 	testinginit.AddCommit("second", "will-be-replaced")
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 	testinginit.AddCommit("fifth", "5")
 
 	allCommits := sd.GetAllCommits()
 
-	ParseArguments(
+	parseArguments(
 		os.Stdout,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
 		[]string{"checkout", allCommits[1].Commit},
@@ -93,7 +93,7 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", sd.GetMainBranchOrDie())
 
-	ParseArguments(
+	parseArguments(
 		os.Stdout,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
 		[]string{"replace-commit", allCommits[1].Commit},

@@ -35,7 +35,7 @@ func TestSdCodeOwners_OutputsOwnersOfChangedFiles(t *testing.T) {
 		panic(writeErr)
 	}
 	outWriter := testinginit.NewWriteRecorder()
-	ParseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"code-owners"})
+	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"code-owners"})
 	out := outWriter.String()
 
 	assert.Equal("Owner: secondOwners\n"+

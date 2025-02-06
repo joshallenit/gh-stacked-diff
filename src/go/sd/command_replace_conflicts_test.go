@@ -24,9 +24,9 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 	testinginit.CommitFileChange("third", "file-with-conflicts", "2")
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 
-	ParseArguments(
+	parseArguments(
 		os.Stdout,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
 		[]string{"checkout", "1"},
@@ -47,7 +47,7 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 	_, rebaseErr := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", "origin/"+sd.GetMainBranchOrDie())
 	assert.NotNil(rebaseErr)
 
-	ParseArguments(
+	parseArguments(
 		os.Stdout,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
 		[]string{"replace-conflicts", "--confirm=true"},

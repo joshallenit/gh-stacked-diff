@@ -29,7 +29,7 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 	testinginit.AddCommit("second", "rebase-will-drop-this-file")
 
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"rebase-main"})
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"rebase-main"})
 
 	dirEntries, err := os.ReadDir(".")
 	if err != nil {

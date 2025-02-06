@@ -1,3 +1,36 @@
+/*
+Stacked Diff Workflow
+
+usage: sd [top-level-flags] <command> [<args>]
+
+Possible commands are:
+
+	add-reviewers       Add reviewers to Pull Request on Github once its checks have passed
+	branch-name         Outputs branch name of commit
+	checkout            Checks out branch associated with commit indicator
+	code-owners         Outputs code owners for all of the changes in branch
+	log                 Displays git log of your changes
+	new                 Create a new pull request from a commit on main
+	prs                 Lists all Pull Requests you have open.
+	rebase-main         Bring your main branch up to date with remote
+	replace-commit      Replaces a commit on main branch with its associated branch
+	replace-conflicts   For failed rebase: replace changes with its associated branch
+	update              Add commits from main to an existing PR
+	wait-for-merge      Waits for a pull request to be merged
+
+To learn more about a command use: sd <command> --help
+
+flags:
+
+	-log-level string
+	      Possible log levels:
+	         debug
+	         info
+	         warn
+	         error
+	      Default is info, except on commands that are for output purposes,
+	      (namely branch-name and log), which have a default of error.
+*/
 package main
 
 import (
@@ -13,13 +46,13 @@ import (
 )
 
 /*
-sd - stacked diff - command line interface.
+sd - stacked diff -
 */
 func main() {
-	ParseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), os.Args[1:])
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), os.Args[1:])
 }
 
-func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs []string) {
+func parseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs []string) {
 	if commandLine.ErrorHandling() != flag.ContinueOnError {
 		// Use ContinueOnError so that a description of the command can be included before usage
 		// for help.
@@ -51,7 +84,7 @@ func ParseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 	// parseErr is dealt with below via commandError and commandHelp.
 
 	commands := []Command{
-		CreateAddReviewersCommand(),
+		createAddReviewersCommand(),
 		CreateBranchNameCommand(stdOut),
 		CreateCodeOwnersCommand(stdOut),
 		CreateLogCommand(stdOut),

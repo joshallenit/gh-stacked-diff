@@ -6,23 +6,29 @@ import (
 	"slices"
 )
 
+// Response that was executed or will be faked.
 type ExecuteResponse struct {
-	Out         string
-	Err         error
-	ProgramName string
-	Args        []string
+	Out         string // Out to return.
+	Err         error  // error to return.
+	ProgramName string // Program name to match or that was used.
+	// Arguments to match or that were used.
+	// Set last value to MatchAnyRemainingArgs to match any remaining arguments.
+	Args []string
 }
 
+// Fake [Executor] for testing.
 type TestExecutor struct {
 	fakeResponses []ExecuteResponse
 	Responses     []ExecuteResponse
 }
 
+// Can be used use as last value of [TestExecutor.fakeResponses] [ExecuteResponse.Args]
 const MatchAnyRemainingArgs = "MatchCommandWithAnyRemainingArgs"
 
 // Ensure that [TestExecutor] implements [Executor].
 var _ Executor = &TestExecutor{}
 
+// Checks [TestExecutor.fakeResponses] for any match before calling [DefaultExecutor.Execute].
 func (t *TestExecutor) Execute(options ExecuteOptions, programName string, args ...string) (string, error) {
 	for _, response := range t.fakeResponses {
 		if response.ProgramName == programName {
@@ -60,6 +66,7 @@ func (t *TestExecutor) Execute(options ExecuteOptions, programName string, args 
 	return out, err
 }
 
+// Adds a response to [TestExecutor.fakeResponses].
 func (t *TestExecutor) SetResponse(out string, err error, programName string, args ...string) {
 	t.fakeResponses = append(t.fakeResponses, ExecuteResponse{Out: out, Err: err, ProgramName: programName, Args: args})
 	slices.SortFunc(t.fakeResponses, func(a ExecuteResponse, b ExecuteResponse) int {
