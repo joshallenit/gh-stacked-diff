@@ -20,7 +20,7 @@ func PrintGitLog(out io.Writer) {
 		ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: out, Stderr: out}}, "git", gitArgs...)
 		return
 	}
-	logs := getNewCommits(GetMainBranchOrDie(), "HEAD")
+	logs := getNewCommits("HEAD")
 	gitBranchArgs := make([]string, 0, len(logs)+2)
 	gitBranchArgs = append(gitBranchArgs, "branch", "-l")
 	for _, log := range logs {
@@ -38,7 +38,7 @@ func PrintGitLog(out io.Writer) {
 		fmt.Fprintln(out, ex.Yellow+log.Commit+ex.Reset+" "+log.Subject)
 		// find first commit that is not in main branch
 		if slices.Contains(checkedBranches, log.Branch) {
-			branchCommits := getNewCommits(GetMainBranchOrDie(), log.Branch)
+			branchCommits := getNewCommits(log.Branch)
 			if len(branchCommits) > 1 {
 				for _, branchCommit := range branchCommits {
 					padding := strings.Repeat(" ", len(numberPrefix))
