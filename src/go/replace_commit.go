@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Replaces a commit on main branch with its associated branch.
 func ReplaceCommit(commitIndicator string, indicatorType IndicatorType) {
 	requireMainBranch()
 	branchInfo := GetBranchInfo(commitIndicator, indicatorType)
