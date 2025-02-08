@@ -51,8 +51,22 @@ func RebaseMain() {
 func getMergedBranches() []string {
 	mergedBranchesRaw := ex.ExecuteOrDie(ex.ExecuteOptions{},
 		"gh", "pr", "list", "--author", "@me", "--state", "merged", "--base", GetMainBranchOrDie(),
-		"--json", "headRefName", "--jq", ".[ ] | .headRefName")
-	return strings.Split(strings.TrimSpace(mergedBranchesRaw), "\n")
+		"--json", "headRefName,mergeCommit", "--jq", ".[ ] | .headRefName + \" \" +  .mergeCommit.oid")
+	mergedBranchesRawLines := strings.Split(strings.TrimSpace(mergedBranchesRaw), "\n")
+	mergedBranches := make([]string, 0, len(mergedBranchesRawLines))
+	for _, mergedBranchRawLine := range mergedBranchesRawLines {
+		fields := strings.Fields(mergedBranchRawLine)
+		if len(fields) != 2 {
+			panic(fmt.Sprint("Unexpected output from gh pr list: ", mergedBranchRawLine))
+		}
+		// Checking for ancestor is more reliable than filtering on merge date via "gh pr list --search".
+		_, mergeBaseErr := ex.Execute(ex.ExecuteOptions{}, "git", "merge-base", "--is-ancestor", fields[1], "HEAD")
+		if mergeBaseErr != nil {
+			// Not an ancestor, so it was merged after the first origin commit.
+			mergedBranches = append(mergedBranches, fields[0])
+		}
+	}
+	return mergedBranches
 }
 
 func getDropCommits(localLogs []GitLog, mergedBranches []string) []GitLog {

@@ -27,7 +27,8 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 	testinginit.AddCommit("second", "rebase-will-drop-this-file")
 
-	testExecutor.SetResponse(allOriginalCommits[0].Branch, nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
+		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
 
 	RebaseMain()
 
