@@ -42,9 +42,9 @@ func RebaseMain() {
 		_, rebaseError = ex.Execute(options, "git", "rebase", "origin/"+GetMainBranchOrDie())
 	}
 	if rebaseError != nil {
-		popStash(shouldPopStash)
-	} else {
 		slog.Warn("Rebase failed, check output ^^ for details. Continue rebase manually.")
+	} else {
+		popStash(shouldPopStash)
 	}
 }
 
