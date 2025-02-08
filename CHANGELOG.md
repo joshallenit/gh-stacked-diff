@@ -10,7 +10,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Ability to add reviewers from `new` and `update` commands. 
 - `sd log` now also displays commits on associated branches.
 - Ability to set log level via `sd` flag "--log-level".
-- Unit tests
+- Unit tests.
 
 ### Changed
 
@@ -19,10 +19,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Converted all logs to use slog (logs at DEBUG, INFO, or ERROR levels) so that the log level can be changed to help with debugging. 
 - Renamed replace-head to replace-conflicts
 - `sd log` was made faster by running some git commands once, instead of for each commit.
-- `replace-conflicts` now asks for confirmation (also has a confirm flag).
+- `sd replace-conflicts` now asks for confirmation (also has a confirm flag).
+- `sd rebase-main` now deletes branches that have been merged.
 
 ### Fixed
 
-- Can now use `new` for root commit.
-- More reliable getMainBranch()
-- More reliable help and command line parsing error messages
+- Can now use `sd new` for root commit.
+- More reliable `getMainBranch`.
+- More reliable help and command line parsing error messages.
+- More reliable `sd rebase-main` by using Github CLI to check for merged branches.

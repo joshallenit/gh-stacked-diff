@@ -102,19 +102,25 @@ func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 	testExecutor := testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "file-with-conflicts")
-	testinginit.CommitFileChange("second", "file-with-conflicts", "1")
-
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
-
+	testinginit.AddCommit("second", "")
+	testinginit.CommitFileChange("third", "file-with-conflicts", "1")
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "2"})
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
+
 	allCommits := sd.GetAllCommits()
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
-	testinginit.CommitFileChange("second", "file-with-conflicts", "2")
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
+	testinginit.AddCommit("second", "")
+	testinginit.CommitFileChange("third", "file-with-conflicts", "2")
 
-	testExecutor.SetResponse(allCommits[0].Branch, nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
-
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"--log-level=debug", "rebase-main"})
+	testExecutor.SetResponse(allCommits[1].Branch, nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
 
 	branches := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch")
+	assert.Contains(branches, "second")
+
+	outWriter := testinginit.NewWriteRecorder()
+	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"rebase-main"})
+
+	assert.Contains(outWriter.String(), "Rebase failed")
+	branches = ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch")
 	assert.NotContains(branches, "second")
 }
