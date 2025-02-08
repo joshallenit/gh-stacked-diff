@@ -89,6 +89,7 @@ func mapSlice[V, R any](slice []V, f func(V) R) []R {
 
 func dropBranches(dropCommits []GitLog) {
 	for _, dropCommit := range dropCommits {
-		ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "branch", "-D", dropCommit.Branch)
+		// Ignore any error.
+		ex.Execute(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "branch", "-D", dropCommit.Branch)
 	}
 }
