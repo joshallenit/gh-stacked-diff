@@ -75,8 +75,8 @@ func getDropCommits(localLogs []GitLog, mergedBranches []string) []GitLog {
 func checkUniqueBranches(dropCommits []GitLog) {
 	branchToCommit := make(map[string]string)
 	for _, dropCommit := range dropCommits {
-		if _, otherCommit := branchToCommit[dropCommit.Branch]; otherCommit {
-			panic(fmt.Sprint("Multiple commits, (", dropCommit.Commit, " ", otherCommit, "), have the same branch:\n",
+		if otherCommit, ok := branchToCommit[dropCommit.Branch]; ok {
+			panic(fmt.Sprint("Multiple commits, (", dropCommit.Commit, ", ", otherCommit, "), have the same branch:\n",
 				dropCommit.Branch, "\n",
 				"Ensure that all the commits in the diff stack have unique commit summaries."))
 		}

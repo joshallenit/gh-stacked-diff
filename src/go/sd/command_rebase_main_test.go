@@ -96,3 +96,25 @@ func TestSdRebaseMain_WithDuplicateBranches_Panics(t *testing.T) {
 	// Never reaches here if `OtherFunctionThatPanics` panics.
 	assert.Fail("did not panic with duplicate branches")
 }
+
+func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
+	assert := assert.New(t)
+	testExecutor := testinginit.InitTest(slog.LevelInfo)
+
+	testinginit.AddCommit("first", "file-with-conflicts")
+	testinginit.CommitFileChange("second", "file-with-conflicts", "1")
+
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
+	allCommits := sd.GetAllCommits()
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
+	testinginit.CommitFileChange("second", "file-with-conflicts", "2")
+
+	testExecutor.SetResponse(allCommits[0].Branch, nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"--log-level=debug", "rebase-main"})
+
+	branches := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch")
+	assert.NotContains(branches, "second")
+}
