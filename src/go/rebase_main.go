@@ -38,6 +38,8 @@ func RebaseMain() {
 		}
 		ex.ExecuteOrDie(options, "git", "rebase", "origin/"+GetMainBranchOrDie())
 	}
+	slog.Info("Deleting merged branches...")
+	dropBranches(dropCommits)
 	popStash(shouldPopStash)
 }
 
@@ -82,4 +84,10 @@ func mapSlice[V, R any](slice []V, f func(V) R) []R {
 		mapped = append(mapped, f(s))
 	}
 	return mapped
+}
+
+func dropBranches(dropCommits []GitLog) {
+	for _, dropCommit := range dropCommits {
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", dropCommit.Branch)
+	}
 }
