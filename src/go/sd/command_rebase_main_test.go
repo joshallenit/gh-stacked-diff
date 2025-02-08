@@ -18,7 +18,7 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-
+	// oh yeah, so if it merges without conflicts we still want to delete it...
 	testinginit.AddCommit("second", "rebase-will-keep-this-file")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())

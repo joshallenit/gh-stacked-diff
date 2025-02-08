@@ -117,7 +117,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		slog.Info("Using commit " + info.CommitHash + ", branch " + info.BranchName)
 	case IndicatorTypeList:
 		slog.Debug("Using commitIndicator as a list index " + commitIndicator)
-		newCommits := getNewCommits(GetMainBranchOrDie(), GetCurrentBranchName())
+		newCommits := getNewCommits(GetCurrentBranchName())
 		listIndex, err := strconv.Atoi(commitIndicator)
 		if err != nil {
 			panic("When indicator type is " + string(IndicatorTypeList) + " commit indicator must be a number, given " + commitIndicator)
