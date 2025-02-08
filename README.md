@@ -396,7 +396,7 @@ usage: sd code-owners
 Lists all of your open PRs. Useful for copying PR numbers.
 
 ```bash
-usage: git-prs
+usage: sd prs
 ```
 
 ## Example Workflow
