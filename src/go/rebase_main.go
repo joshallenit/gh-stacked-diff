@@ -66,6 +66,7 @@ func getDropCommits(localLogs []GitLog, mergedBranches []string) []GitLog {
 	return dropCommits
 }
 
+// panics if there are duplicate branches in dropCommits.
 func checkUniqueBranches(dropCommits []GitLog) {
 	branchToCommit := make(map[string]string)
 	for _, dropCommit := range dropCommits {
