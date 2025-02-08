@@ -14,9 +14,6 @@ import (
 	ex "stackeddiff/execute"
 )
 
-// Delimter for git log format when a space cannot be used.
-const formatDelimiter = "|stackeddiff-delim|"
-
 //go:embed config/branch-name.template
 var branchNameTemplateText string
 
@@ -25,9 +22,6 @@ var prTitleTemplateText string
 
 //go:embed config/pr-description.template
 var prDescriptionTemplateText string
-
-// Cached value of user email.
-var userEmail string
 
 // Commit and associated branch.
 type BranchInfo struct {
@@ -222,14 +216,6 @@ func getBranchTemplateData(sanitizedSummary string) branchTemplateData {
 		UsernameCleaned:      username,
 		CommitSummaryCleaned: sanitizedSummary,
 	}
-}
-
-func getUsername() string {
-	if userEmail == "" {
-		userEmailRaw := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email"))
-		userEmail = userEmailRaw[0:strings.Index(userEmailRaw, "@")]
-	}
-	return userEmail
 }
 
 func getConfigFile(filenameWithoutPath string) *string {
