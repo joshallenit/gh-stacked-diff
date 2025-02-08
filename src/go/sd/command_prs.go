@@ -22,6 +22,7 @@ func createPrsCommand(stdOut io.Writer) Command {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: stdOut, Stderr: stdOut}}, "gh", "pr", "list", "-A", "@me")
+			ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: stdOut, Stderr: stdOut}},
+				"gh", "pr", "list", "--author", "@me")
 		}}
 }

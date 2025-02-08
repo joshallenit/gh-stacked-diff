@@ -13,7 +13,7 @@ import (
 
 func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
 
@@ -26,6 +26,8 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
 
 	testinginit.AddCommit("second", "rebase-will-drop-this-file")
+
+	testExecutor.SetResponse(allOriginalCommits[0].Branch, nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
 
 	RebaseMain()
 

@@ -21,7 +21,17 @@ type GitLog struct {
 	Branch string
 }
 
+// Cached value of main branch name.
 var mainBranchName string
+
+// Cached value of user email.
+var userEmail string
+
+// Delimter for git log format when a space cannot be used.
+const formatDelimiter = "|stackeddiff-delim|"
+
+// Format sent to "git log" for use by [newGitLogs].
+const newGitLogsFormat = "--pretty=format:%h" + formatDelimiter + "%s" + formatDelimiter + "%f"
 
 // Returns name of main branch, or panics if cannot be determined.
 func GetMainBranchOrDie() string {
@@ -69,6 +79,33 @@ func getMainBranch() (string, error) {
 	return mainBranchName, nil
 }
 
+func getUsername() string {
+	if userEmail == "" {
+		userEmailRaw := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email"))
+		userEmail = userEmailRaw[0:strings.Index(userEmailRaw, "@")]
+	}
+	return userEmail
+}
+
+// Returns all the commits on the current branch. For use by tests.
+func GetAllCommits() []GitLog {
+	gitArgs := []string{"--no-pager", "log", newGitLogsFormat, "--abbrev-commit"}
+	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
+	return newGitLogs(logsRaw)
+}
+
+func getNewCommits(to string) []GitLog {
+	compareFromRemoteBranch := GetMainBranchOrDie()
+	gitArgs := []string{"--no-pager", "log", newGitLogsFormat, "--abbrev-commit"}
+	if RemoteHasBranch(compareFromRemoteBranch) {
+		gitArgs = append(gitArgs, "origin/"+compareFromRemoteBranch+".."+to)
+	} else {
+		gitArgs = append(gitArgs, to)
+	}
+	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
+	return newGitLogs(logsRaw)
+}
+
 func newGitLogs(logsRaw string) []GitLog {
 	logLines := strings.Split(strings.TrimSpace(logsRaw), "\n")
 	var logs []GitLog
@@ -81,25 +118,6 @@ func newGitLogs(logsRaw string) []GitLog {
 		logs = append(logs, GitLog{Commit: components[0], Subject: components[1], Branch: getBranchForSantizedSubject(components[2])})
 	}
 	return logs
-}
-
-// Returns all the commits on the current branch. For use by tests.
-func GetAllCommits() []GitLog {
-	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h" + formatDelimiter + "%s" + formatDelimiter + "%f", "--abbrev-commit"}
-	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
-	return newGitLogs(logsRaw)
-}
-
-func getNewCommits(to string) []GitLog {
-	compareFromRemoteBranch := GetMainBranchOrDie()
-	gitArgs := []string{"--no-pager", "log", "--pretty=format:%h" + formatDelimiter + "%s" + formatDelimiter + "%f", "--abbrev-commit"}
-	if RemoteHasBranch(compareFromRemoteBranch) {
-		gitArgs = append(gitArgs, "origin/"+compareFromRemoteBranch+".."+to)
-	} else {
-		gitArgs = append(gitArgs, to)
-	}
-	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
-	return newGitLogs(logsRaw)
 }
 
 // Returns most recent commit of the given branch that is on origin/main, or "" if the main branch is not on remote.
