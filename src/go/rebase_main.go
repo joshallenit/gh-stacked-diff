@@ -21,6 +21,7 @@ func RebaseMain() {
 	localLogs := getNewCommits("HEAD")
 	dropCommits := getDropCommits(localLogs, mergedBranches)
 	slog.Info("Rebasing...")
+	var rebaseError error
 	if len(dropCommits) > 0 {
 		environmentVariables := []string{
 			"GIT_SEQUENCE_EDITOR=sequence_editor_drop_already_merged " +
@@ -31,16 +32,20 @@ func RebaseMain() {
 			EnvironmentVariables: environmentVariables,
 			Output:               ex.NewStandardOutput(),
 		}
-		ex.ExecuteOrDie(options, "git", "rebase", "-i", "origin/"+GetMainBranchOrDie())
+		_, rebaseError = ex.Execute(options, "git", "rebase", "-i", "origin/"+GetMainBranchOrDie())
+		slog.Info("Deleting merged branches...")
+		dropBranches(dropCommits)
 	} else {
 		options := ex.ExecuteOptions{
 			Output: ex.NewStandardOutput(),
 		}
-		ex.ExecuteOrDie(options, "git", "rebase", "origin/"+GetMainBranchOrDie())
+		_, rebaseError = ex.Execute(options, "git", "rebase", "origin/"+GetMainBranchOrDie())
 	}
-	slog.Info("Deleting merged branches...")
-	dropBranches(dropCommits)
-	popStash(shouldPopStash)
+	if rebaseError != nil {
+		popStash(shouldPopStash)
+	} else {
+		slog.Warn("Rebase failed, check output ^^ for details. Continue rebase manually.")
+	}
 }
 
 func getMergedBranches() []string {
