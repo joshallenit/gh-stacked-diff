@@ -57,7 +57,7 @@ func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"--log-level=debug", "update", "--reviewers=mybestie", "2"})
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"update", "--reviewers=mybestie", "2"})
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[1].Branch, "--add-reviewer", "mybestie"}
