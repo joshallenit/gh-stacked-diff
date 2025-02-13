@@ -4,12 +4,15 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"slices"
 	sd "stackeddiff"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"errors"
 	ex "stackeddiff/execute"
+	"stackeddiff/sliceutil"
 	"stackeddiff/testinginit"
 )
 
@@ -48,9 +51,13 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 
 	allCommits := sd.GetAllCommits()
 
-	ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
-	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}
-	assert.Contains(testExecutor.Responses, expectedResponse)
+	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
+		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
+	})
+	assert.True(contains, sliceutil.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+		return next.ProgramName == "gh"
+	}))
 }
 
 func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
@@ -68,4 +75,23 @@ func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "2"})
 
 	assert.Equal(true, sd.RemoteHasBranch(allCommits[1].Branch))
+}
+
+func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
+	assert := assert.New(t)
+
+	testExecutor := testinginit.InitTest(slog.LevelInfo)
+
+	testinginit.AddCommit("first", "")
+
+	draftNotSupported := "pull request create failed: GraphQL: Draft pull requests are not supported in this repository. (createPullRequest)"
+	testExecutor.SetResponseFunc(draftNotSupported, errors.New("sss"), func(programName string, args ...string) bool {
+		return programName == "gh" && args[0] == "pr" && args[1] == "create" && slices.Contains(args, "--draft")
+	})
+
+	out := testinginit.NewWriteRecorder()
+	parseArguments(out, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+
+	assert.Contains(out.String(), "Use \"--draft=false\" to avoid this warning")
+	assert.Contains(out.String(), "Created PR ")
 }

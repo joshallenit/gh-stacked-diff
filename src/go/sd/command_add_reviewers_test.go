@@ -4,12 +4,14 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
 	ex "stackeddiff/execute"
+	"stackeddiff/sliceutil"
 	"stackeddiff/testinginit"
 )
 
@@ -33,9 +35,13 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 
 	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"add-reviewers", "--reviewers=mybestie", allCommits[0].Commit})
 
-	ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
-	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}
-	assert.Contains(testExecutor.Responses, expectedResponse)
+	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
+		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
+	})
+	assert.True(contains, sliceutil.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+		return next.ProgramName == "gh"
+	}))
 }
 
 func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
@@ -58,9 +64,13 @@ func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 
 	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"add-reviewers", "--indicator=list", "--reviewers=mybestie", "1"})
 
-	ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
-	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}
-	assert.Contains(testExecutor.Responses, expectedResponse)
+	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
+		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
+	})
+	assert.True(contains, sliceutil.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+		return next.ProgramName == "gh"
+	}))
 }
 
 func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
@@ -83,7 +93,11 @@ func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
 
 	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"add-reviewers", "--indicator=list", "--reviewers=mybestie"})
 
-	ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
-	expectedResponse := ex.ExecuteResponse{Out: "Ok", Err: nil, ProgramName: "gh", Args: ghExpectedArgs}
-	assert.Contains(testExecutor.Responses, expectedResponse)
+	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
+		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
+	})
+	assert.True(contains, sliceutil.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+		return next.ProgramName == "gh"
+	}))
 }
