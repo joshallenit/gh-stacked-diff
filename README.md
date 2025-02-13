@@ -15,7 +15,7 @@ Clone the repository or download the [latest release](https://github.com/tinyspe
 Instructions:
 
 ```bash
-# Install Github CLI
+# Install Github CLI. 
 brew install gh 
 # Setup login for Github CLI
 gh auth login 
@@ -29,7 +29,7 @@ source ~/.zshrc
 ### Windows
 
 1. Install [Git and Git Bash](https://gitforwindows.org/)
-2. Install [Github CLI](https://cli.github.com/)
+2. Install [Github CLI](https://cli.github.com/). Winget is possible: `winget install --id GitHub.cli`
 3. Authenticate gh and add bin to path:
       ```bash
       gh auth login 
@@ -476,7 +476,13 @@ Join the discussion in [#devel-stacked-diff-workflow](https://slack-pde.slack.co
 
 ## Acknowledgments
 
-- Thanks to for publishing this article that inspired the first version of the scripts 
-https://kastiglione.github.io/git/2020/09/11/git-stacked-commits.html
+- Thanks to [Dave Lee](https://x.com/kastiglione) for publishing [this article](https://kastiglione.github.io/git/2020/09/11/git-stacked-commits.html) that inspired the first version of the scripts.  
 
-- Thanks to the Github team for creating a CLI that is leveraged here.
+- Thanks to the Github team for creating [their CLI](https://cli.github.com/) that is leveraged here.
+
+## Version Compatibility
+
+| Stacked Diff version | gh CLI versions tested | git versions tested |
+| -------------------- | ---------------------- | ------------------- |
+| 2.0.0 (2025-02-28)   | 2.64.0 (2024-12-20)    | 2.47.1              |
+|                      | 2.66.1 (2025-01-31)    |                     |
