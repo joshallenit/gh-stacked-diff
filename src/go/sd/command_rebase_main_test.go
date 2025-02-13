@@ -150,7 +150,7 @@ func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 	testExecutor.SetResponse(allCommits[1].Branch+" "+allCommits[1].Commit,
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"--log-level=debug", "rebase-main"})
+	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"rebase-main"})
 
 	branches := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch")
 	assert.Contains(branches, "second")
