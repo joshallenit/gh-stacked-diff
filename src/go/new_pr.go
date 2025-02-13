@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 
 	ex "stackeddiff/execute"
 )
@@ -55,11 +56,7 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 	}
 	prText := getPullRequestText(branchInfo.CommitHash, featureFlag)
 	slog.Info("Creating PR via gh")
-	createPrArgs := []string{"pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--base", baseBranch}
-	if draft {
-		createPrArgs = append(createPrArgs, "--draft")
-	}
-	createPrOutput, createPrErr := ex.Execute(ex.ExecuteOptions{}, "gh", createPrArgs...)
+	createPrOutput, createPrErr := createPr(prText, baseBranch, draft)
 	if createPrErr != nil {
 		slog.Info(fmt.Sprint(ex.Red+"Could not create PR: "+ex.Reset, createPrOutput, " ", createPrErr))
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
@@ -79,7 +76,21 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 	/*
 	   This avoids this hint when using `git fetch && git-rebase origin/main` which is not appropriate for stacked diff workflow:
 	   > hint: use --reapply-cherry-picks to include skipped commits
-	   > hint: Disable this message with "git config advice.skippedCherryPicks false"
+	   > hint: Disable this message with "git config advice.skippedCherryPicks false",
 	*/
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "advice.skippedCherryPicks", "false")
+}
+
+func createPr(prText pullRequestText, baseBranch string, draft bool) (string, error) {
+	createPrArgsNoDraft := []string{"pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--base", baseBranch}
+	createPrArgs := createPrArgsNoDraft
+	if draft {
+		createPrArgs = append(createPrArgs, "--draft")
+	}
+	createPrOutput, createPrErr := ex.Execute(ex.ExecuteOptions{}, "gh", createPrArgs...)
+	if createPrErr != nil && draft && strings.Contains(createPrOutput, "Draft pull requests are not supported") {
+		slog.Warn("Draft PRs not supported, trying again without draft.\nUse \"--draft=false\" to avoid this warning.")
+		createPrOutput, createPrErr = ex.Execute(ex.ExecuteOptions{}, "gh", createPrArgsNoDraft...)
+	}
+	return createPrOutput, createPrErr
 }

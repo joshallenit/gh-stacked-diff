@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	ex "stackeddiff/execute"
+	"stackeddiff/sliceutil"
 )
 
 // Bring local main branch up to date with remote
@@ -25,7 +26,7 @@ func RebaseMain() {
 	if len(dropCommits) > 0 {
 		environmentVariables := []string{
 			"GIT_SEQUENCE_EDITOR=sequence_editor_drop_already_merged " +
-				strings.Join(mapSlice(dropCommits, func(gitLog GitLog) string {
+				strings.Join(sliceutil.MapSlice(dropCommits, func(gitLog GitLog) string {
 					return gitLog.Commit
 				}), " ")}
 		options := ex.ExecuteOptions{
@@ -96,14 +97,6 @@ func checkUniqueBranches(dropCommits []GitLog) {
 		}
 		branchToCommit[dropCommit.Branch] = dropCommit.Commit
 	}
-}
-
-func mapSlice[V, R any](slice []V, f func(V) R) []R {
-	var mapped []R
-	for _, s := range slice {
-		mapped = append(mapped, f(s))
-	}
-	return mapped
 }
 
 func dropBranches(dropCommits []GitLog) {
