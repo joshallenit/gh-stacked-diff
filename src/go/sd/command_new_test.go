@@ -92,5 +92,6 @@ func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 	outWriter := testinginit.NewWriteRecorder()
 	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 
-	assert.Contains(outWriter.String(), "Created PR Ok")
+	assert.Contains(outWriter.String(), "Use \"--draft=false\" to avoid this warning")
+	assert.Contains(outWriter.String(), "Created PR ")
 }
