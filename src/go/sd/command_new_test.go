@@ -89,9 +89,9 @@ func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 		return programName == "gh" && args[0] == "pr" && args[1] == "create" && slices.Contains(args, "--draft")
 	})
 
-	outWriter := testinginit.NewWriteRecorder()
-	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	out := testinginit.NewWriteRecorder()
+	parseArguments(out, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
 
-	assert.Contains(outWriter.String(), "Use \"--draft=false\" to avoid this warning")
-	assert.Contains(outWriter.String(), "Created PR ")
+	assert.Contains(out.String(), "Use \"--draft=false\" to avoid this warning")
+	assert.Contains(out.String(), "Created PR ")
 }
