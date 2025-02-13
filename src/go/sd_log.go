@@ -26,8 +26,7 @@ func PrintGitLog(out io.Writer) {
 	for _, log := range logs {
 		gitBranchArgs = append(gitBranchArgs, log.Branch)
 	}
-	checkedBranchesRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitBranchArgs...)
-	checkedBranches := strings.Split(strings.TrimSpace(checkedBranchesRaw), "\n")
+	checkedBranches := strings.Fields(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitBranchArgs...))
 	for i, log := range logs {
 		numberPrefix := getNumberPrefix(i, len(logs))
 		if slices.Contains(checkedBranches, log.Branch) {
