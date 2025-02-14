@@ -49,9 +49,6 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 		slog.Info("First attempt at cherry-pick failed")
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
 		rebaseCommit := firstOriginMainCommit(GetMainBranchOrDie())
-		if rebaseCommit == "" {
-			panic("There is no " + GetMainBranchOrDie() + " branch on origin, nothing to rebase")
-		}
 		slog.Info(fmt.Sprint("Rebasing with the base commit on "+GetMainBranchOrDie()+" branch, ", rebaseCommit,
 			", in case the local "+GetMainBranchOrDie()+" was rebased with origin/"+GetMainBranchOrDie()))
 		rebaseOutput, rebaseError := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", rebaseCommit)

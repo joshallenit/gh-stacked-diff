@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
 	"testing"
 
@@ -21,13 +20,7 @@ func TestSdWaitForMerge_WaitsForMerge(t *testing.T) {
 	allCommits := sd.GetAllCommits()
 	testExecutor.SetResponse("2025-01-01", nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	outWriter := testinginit.NewWriteRecorder()
-	parseArguments(
-		outWriter,
-		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"wait-for-merge", allCommits[0].Commit},
-	)
-	out := outWriter.String()
+	out := testParseArguments("wait-for-merge", allCommits[0].Commit)
 
 	assert.Contains(out, "Merged!")
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
 	"os"
 	"testing"
@@ -24,13 +23,9 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 	testinginit.CommitFileChange("third", "file-with-conflicts", "2")
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	testParseArguments("new")
 
-	parseArguments(
-		os.Stdout,
-		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"checkout", "1"},
-	)
+	testParseArguments("checkout", "1")
 
 	_, mergeErr := ex.Execute(ex.ExecuteOptions{}, "git", "merge", "origin/"+sd.GetMainBranchOrDie())
 	assert.NotNil(mergeErr)
@@ -47,18 +42,15 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 	_, rebaseErr := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", "origin/"+sd.GetMainBranchOrDie())
 	assert.NotNil(rebaseErr)
 
-	parseArguments(
-		os.Stdout,
-		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"replace-conflicts", "--confirm=true"},
-	)
+	testParseArguments("replace-conflicts", "--confirm=true")
 
 	allCommits = sd.GetAllCommits()
 
-	assert.Equal(3, len(allCommits))
+	assert.Equal(4, len(allCommits))
 	assert.Equal("third", allCommits[0].Subject)
 	assert.Equal("second", allCommits[1].Subject)
 	assert.Equal("first", allCommits[2].Subject)
+	assert.Equal(testinginit.InitialCommitSubject, allCommits[3].Subject)
 
 	dirEntries, err := os.ReadDir(".")
 	if err != nil {

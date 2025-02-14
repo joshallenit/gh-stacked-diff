@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
 	"os"
 	"testing"
@@ -34,9 +33,7 @@ func TestSdCodeOwners_OutputsOwnersOfChangedFiles(t *testing.T) {
 	if writeErr := os.WriteFile(".github/CODEOWNERS", []byte(codeOwners), 0); writeErr != nil {
 		panic(writeErr)
 	}
-	outWriter := testinginit.NewWriteRecorder()
-	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"code-owners"})
-	out := outWriter.String()
+	out := testParseArguments("code-owners")
 
 	assert.Equal("Owner: secondOwners\n"+
 		"second-changed\n"+

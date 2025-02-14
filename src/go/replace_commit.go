@@ -22,9 +22,6 @@ func replaceCommitOfBranchInfo(branchInfo BranchInfo) {
 	commitsAfter := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", branchInfo.CommitHash+"..HEAD", "--pretty=format:%h")))
 	reverseArrayInPlace(commitsAfter)
 	commitToDiffFrom := firstOriginMainCommit(branchInfo.BranchName)
-	if commitToDiffFrom == "" {
-		panic("replace-commit cannot be used if there is no origin/" + GetMainBranchOrDie() + " because changes are calculated from there")
-	}
 	slog.Info("Resetting to " + branchInfo.CommitHash + "~1")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", branchInfo.CommitHash+"~1")
 	slog.Info("Adding diff from commits " + branchInfo.BranchName)

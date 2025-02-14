@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
 	"os"
 	"testing"
@@ -20,16 +19,12 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 	testinginit.AddCommit("first", "1")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
 	testinginit.AddCommit("second", "will-be-replaced")
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	testParseArguments("new")
 	testinginit.AddCommit("fifth", "5")
 
 	allCommits := sd.GetAllCommits()
 
-	parseArguments(
-		os.Stdout,
-		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"checkout", allCommits[1].Commit},
-	)
+	testParseArguments("checkout", allCommits[1].Commit)
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
 	testinginit.AddCommit("on-second-branch-only", "2")
@@ -38,18 +33,15 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", sd.GetMainBranchOrDie())
 
-	parseArguments(
-		os.Stdout,
-		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"replace-commit", allCommits[1].Commit},
-	)
+	testParseArguments("replace-commit", allCommits[1].Commit)
 
 	allCommits = sd.GetAllCommits()
 
-	assert.Equal(3, len(allCommits))
+	assert.Equal(4, len(allCommits))
 	assert.Equal("fifth", allCommits[0].Subject)
 	assert.Equal("second", allCommits[1].Subject)
 	assert.Equal("first", allCommits[2].Subject)
+	assert.Equal(testinginit.InitialCommitSubject, allCommits[3].Subject)
 
 	dirEntries, err := os.ReadDir(".")
 	if err != nil {
@@ -73,16 +65,12 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 
 	testinginit.AddCommit("first", "1")
 	testinginit.AddCommit("second", "will-be-replaced")
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	testParseArguments("new")
 	testinginit.AddCommit("fifth", "5")
 
 	allCommits := sd.GetAllCommits()
 
-	parseArguments(
-		os.Stdout,
-		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"checkout", allCommits[1].Commit},
-	)
+	testParseArguments("checkout", allCommits[1].Commit)
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
 	testinginit.AddCommit("on-second-branch-only", "2")
@@ -93,11 +81,7 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", sd.GetMainBranchOrDie())
 
-	parseArguments(
-		os.Stdout,
-		flag.NewFlagSet("sd", flag.ContinueOnError),
-		[]string{"replace-commit", allCommits[1].Commit},
-	)
+	testParseArguments("replace-commit", allCommits[1].Commit)
 
 	allCommits = sd.GetAllCommits()
 

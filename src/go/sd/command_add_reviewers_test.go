@@ -1,9 +1,7 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
-	"os"
 	"slices"
 	"testing"
 
@@ -22,7 +20,7 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	testParseArguments("new")
 
 	allCommits := sd.GetAllCommits()
 	testExecutor.SetResponse(
@@ -33,7 +31,7 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"add-reviewers", "--reviewers=mybestie", allCommits[0].Commit})
+	testParseArguments("add-reviewers", "--reviewers=mybestie", allCommits[0].Commit)
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
@@ -51,7 +49,7 @@ func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	testParseArguments("new")
 
 	allCommits := sd.GetAllCommits()
 	testExecutor.SetResponse(
@@ -62,7 +60,7 @@ func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"add-reviewers", "--indicator=list", "--reviewers=mybestie", "1"})
+	testParseArguments("add-reviewers", "--indicator=list", "--reviewers=mybestie", "1")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
@@ -80,7 +78,7 @@ func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	testParseArguments("new")
 
 	allCommits := sd.GetAllCommits()
 	testExecutor.SetResponse(
@@ -91,7 +89,7 @@ func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"add-reviewers", "--indicator=list", "--reviewers=mybestie"})
+	testParseArguments("add-reviewers", "--indicator=list", "--reviewers=mybestie")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}

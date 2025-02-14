@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
 	"testing"
 
@@ -20,9 +19,7 @@ func TestSdBranchName_OutputsBranchName(t *testing.T) {
 
 	allCommits := sd.GetAllCommits()
 
-	outWriter := testinginit.NewWriteRecorder()
-	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"branch-name", allCommits[0].Commit})
-	out := outWriter.String()
+	out := testParseArguments("branch-name", allCommits[0].Commit)
 
 	assert.Equal(allCommits[0].Branch, out)
 }

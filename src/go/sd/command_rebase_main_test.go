@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
 	"os"
 	"testing"
@@ -31,7 +30,7 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"rebase-main"})
+	testParseArguments("rebase-main")
 
 	dirEntries, err := os.ReadDir(".")
 	if err != nil {
@@ -65,7 +64,7 @@ func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommitss(t *testing.T) {
 		allOriginalCommits[0].Branch+" fakeMergeCommit\n"+allOriginalCommits[1].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"rebase-main"})
+	testParseArguments("rebase-main")
 
 	dirEntries, err := os.ReadDir(".")
 	if err != nil {
@@ -95,7 +94,7 @@ func TestSdRebaseMain_WithDuplicateBranches_Panics(t *testing.T) {
 	// Return on panic
 	defer func() { _ = recover() }()
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"rebase-main"})
+	testParseArguments("rebase-main")
 
 	// Never reaches here if `OtherFunctionThatPanics` panics.
 	assert.Fail("did not panic with duplicate branches")
@@ -108,7 +107,7 @@ func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 	testinginit.AddCommit("first", "file-with-conflicts")
 	testinginit.AddCommit("second", "")
 	testinginit.CommitFileChange("third", "file-with-conflicts", "1")
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "2"})
+	testParseArguments("new", "2")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
 
 	allCommits := sd.GetAllCommits()
@@ -122,10 +121,9 @@ func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 	branches := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch")
 	assert.Contains(branches, "second")
 
-	outWriter := testinginit.NewWriteRecorder()
-	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"rebase-main"})
+	out := testParseArguments("rebase-main")
 
-	assert.Contains(outWriter.String(), "Rebase failed")
+	assert.Contains(out, "Rebase failed")
 	branches = ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch")
 	assert.NotContains(branches, "second")
 }
@@ -143,14 +141,14 @@ func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 
 	testinginit.AddCommit("second", "second-2")
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	testParseArguments("new")
 
 	// Use the commit of the first "second" commit as the branch
 	// that was merged so that the second "second" commit is not dropped.
 	testExecutor.SetResponse(allCommits[1].Branch+" "+allCommits[1].Commit,
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"rebase-main"})
+	testParseArguments("rebase-main")
 
 	branches := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch")
 	assert.Contains(branches, "second")

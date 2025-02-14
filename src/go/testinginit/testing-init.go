@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+const InitialCommitSubject = "Initial empty commit"
+
 var TestWorkingDir string
 var thisFile string
 
@@ -40,6 +42,10 @@ func InitTest(logLevel slog.Level) *ex.TestExecutor {
 	handler := ex.NewPrettyHandler(os.Stdout, opts)
 	slog.SetDefault(slog.New(handler))
 	cdTestRepo()
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "--allow-empty", "-m", InitialCommitSubject)
+	defaultBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch"))
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", defaultBranch)
+
 	ex.SetDefaultSleep(func(d time.Duration) {
 		slog.Debug(fmt.Sprint("Skipping sleep in tests ", d))
 	})

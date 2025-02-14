@@ -58,25 +58,45 @@ func getMainBranch() (string, error) {
 			remoteMainBranch = strings.TrimSpace(remoteMainBranch)
 			mainBranchName = remoteMainBranch[strings.Index(remoteMainBranch, "/")+1:]
 		} else {
-			// Remote is empty, or the repository was not cloned, use config.
-			mainBranchNameRaw, configErr := ex.Execute(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch")
-			if configErr != nil {
-				// Note that git config works even if dir is not a git repo.
-				return "", configErr
+			// Check possible reasons.
+			_, inRepositoryErr := ex.Execute(ex.ExecuteOptions{}, "git", "rev-parse")
+			if inRepositoryErr != nil {
+				return "", errors.New("not in a git repository. Must be run from a git repository")
 			}
-			mainBranchName = strings.TrimSpace(mainBranchNameRaw)
-			hasBranch, hasBranchErr := localHasBranch(mainBranchName)
-			if hasBranchErr != nil {
-				return "", hasBranchErr
+			_, hasHeadErr := ex.Execute(ex.ExecuteOptions{}, "git", "rev-list", "--max-parents=0", "HEAD")
+			if hasHeadErr != nil {
+				return "", errors.New("the remote repository is empty.\n" +
+					"Push an initial inconsequential commit to origin/main and try again. \n" +
+					"Using a repository without an initial remote commit is not recommended because git \n" +
+					"requires special handling for the root commit, and you might accidentially \n" +
+					"create more than one root commit")
 			}
-			if !hasBranch {
-				return "", errors.New("cannot determine name of main branch.\n" +
-					"Push a first commit to origin/main if the remote is empty and \n" +
-					"use \"git remote set-head origin main\" to set the name to main")
+			// Try to set the remote head and try again.
+			trySetRemoteHead()
+			remoteMainBranch, err := ex.Execute(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "origin/HEAD")
+			if err == nil {
+				remoteMainBranch = strings.TrimSpace(remoteMainBranch)
+				mainBranchName = remoteMainBranch[strings.Index(remoteMainBranch, "/")+1:]
+			} else {
+				// else the repository was not cloned
+				return "", errors.New("cannot determine name of main branch because remote head is not set.\n" +
+					"This usually means that repository was not cloned (git init was used instead). \n" +
+					"Set the name of the main branch on remote and try again:\n" +
+					"git remote set-head origin main")
 			}
 		}
 	}
 	return mainBranchName, nil
+}
+
+func trySetRemoteHead() {
+	defer func() { _ = recover() }()
+	currentBranch := GetCurrentBranchName()
+	defaultBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch"))
+	if currentBranch == defaultBranch || currentBranch == "main" {
+		slog.Warn("Setting remote head to " + currentBranch + " because it was not set.")
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "remote", "set-head", "origin", currentBranch)
+	}
 }
 
 func getUsername() string {
@@ -120,14 +140,10 @@ func newGitLogs(logsRaw string) []GitLog {
 	return logs
 }
 
-// Returns most recent commit of the given branch that is on origin/main, or "" if the main branch is not on remote.
+// Returns most recent commit of the given branch that is on origin/main.
 func firstOriginMainCommit(branchName string) string {
 	if !getLocalHasBranchOrDie(branchName) {
 		panic("Branch does not exist " + branchName)
-	}
-	// Verify that remote has branch, there is no origin commit.
-	if !RemoteHasBranch(GetMainBranchOrDie()) {
-		return ""
 	}
 	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge-base", "origin/"+GetMainBranchOrDie(), branchName))
 }

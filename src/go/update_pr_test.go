@@ -27,7 +27,7 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 
 	commitsOnBranch := GetAllCommits()
 
-	assert.Equal(2, len(commitsOnBranch))
+	assert.Equal(3, len(commitsOnBranch))
 }
 
 func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
@@ -53,10 +53,11 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	allCommitsOnBranch := GetAllCommits()
 
-	assert.Equal(3, len(allCommitsOnBranch))
-	assert.Equal(allCommitsOnBranch[0].Subject, "fourth")
-	assert.Equal(allCommitsOnBranch[1].Subject, "second")
-	assert.Equal(allCommitsOnBranch[2].Subject, "first")
+	assert.Equal(4, len(allCommitsOnBranch))
+	assert.Equal("fourth", allCommitsOnBranch[0].Subject)
+	assert.Equal("second", allCommitsOnBranch[1].Subject)
+	assert.Equal("first", allCommitsOnBranch[2].Subject)
+	assert.Equal(testinginit.InitialCommitSubject, allCommitsOnBranch[3].Subject)
 
 	newCommitsOnBranch := getNewCommits("HEAD")
 

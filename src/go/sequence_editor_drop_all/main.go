@@ -1,8 +1,8 @@
 /*
 For use as a sequence editor for an interactive git rebase.
-Drop any commits specified in the input parameters, keep the others.
+Drop all commits.
 
-usage: sequence_editor_drop_already_merged dropCommit1 [dropCommit2...] rebaseFilename
+usage: sequence_editor_drop_all rebaseFilename
 */
 package main
 
@@ -15,12 +15,11 @@ import (
 
 func main() {
 	slog.Debug(fmt.Sprint("Got args ", os.Args))
-	if len(os.Args) < 2 {
-		fmt.Printf("usage: sequence_editor_drop_already_merged dropCommit1 [dropCommit2...] rebaseFilename")
+	if len(os.Args) != 2 {
+		fmt.Printf("usage: sequence_editor_drop_all rebaseFilename")
 		os.Exit(1)
 	}
-	dropCommits := os.Args[1 : len(os.Args)-1]
-	rebaseFilename := os.Args[len(os.Args)-1]
+	rebaseFilename := os.Args[1]
 
 	data, err := os.ReadFile(rebaseFilename)
 
@@ -34,7 +33,7 @@ func main() {
 	i := 0
 	lines := strings.Split(strings.TrimSuffix(originalText, "\n"), "\n")
 	for _, line := range lines {
-		if isDropLine(line, dropCommits) {
+		if isDropLine(line) {
 			dropLine := strings.Replace(line, "pick", "drop", 1)
 			newText.WriteString(dropLine)
 			newText.WriteString("\n")
@@ -51,14 +50,6 @@ func main() {
 	}
 }
 
-func isDropLine(line string, dropCommits []string) bool {
-	if !strings.HasPrefix(line, "pick ") {
-		return false
-	}
-	for _, commit := range dropCommits {
-		if strings.Index(line, commit) != -1 {
-			return true
-		}
-	}
-	return false
+func isDropLine(line string) bool {
+	return strings.HasPrefix(line, "pick ")
 }

@@ -49,10 +49,20 @@ import (
 sd - stacked diff -
 */
 func main() {
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), os.Args[1:])
+	parseArguments(os.Stdout, os.Stderr, flag.NewFlagSet("sd", flag.ContinueOnError), os.Args[1:], defaultExit)
 }
 
-func parseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs []string) {
+func defaultExit(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any) {
+	// Show panic stack trace during debug log level.
+	if logLevelVar.Level() <= slog.LevelDebug {
+		panic(err)
+	} else {
+		fmt.Fprintln(stdErr, fmt.Sprint(ex.Reset, "error: ", err))
+		os.Exit(1)
+	}
+}
+
+func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSet, commandLineArgs []string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
 	if commandLine.ErrorHandling() != flag.ContinueOnError {
 		// Use ContinueOnError so that a description of the command can be included before usage
 		// for help.
@@ -141,6 +151,12 @@ func parseArguments(stdOut io.Writer, commandLine *flag.FlagSet, commandLineArgs
 	if *logLevelString == "" {
 		logLevelVar.Set(commands[selectedIndex].DefaultLogLevel)
 	}
+	defer func() {
+		r := recover()
+		if r != nil {
+			exit(stdErr, 1, logLevelVar, r)
+		}
+	}()
 	commands[selectedIndex].OnSelected(commands[selectedIndex])
 }
 
