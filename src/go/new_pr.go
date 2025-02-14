@@ -24,24 +24,18 @@ func CreateNewPr(draft bool, featureFlag string, baseBranch string, branchInfo B
 		commitToBranchFrom = baseBranch
 		slog.Info(fmt.Sprint("Switching to branch ", branchInfo.BranchName, " based off branch ", baseBranch))
 	}
-	if commitToBranchFrom == "" {
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "--no-track", branchInfo.BranchName)
-	} else {
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
-	}
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "--no-track", branchInfo.BranchName, commitToBranchFrom)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", branchInfo.BranchName)
-	if commitToBranchFrom != "" {
-		slog.Info(fmt.Sprint("Cherry picking ", branchInfo.CommitHash))
-		cherryPickOutput, cherryPickError := ex.Execute(ex.ExecuteOptions{}, "git", "cherry-pick", branchInfo.CommitHash)
-		if cherryPickError != nil {
-			slog.Info(fmt.Sprint(ex.Red+"Could not cherry-pick, aborting... "+ex.Reset, cherryPickOutput, " ", cherryPickError))
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
-			slog.Info(fmt.Sprint("Deleting created branch ", branchInfo.BranchName))
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
-			popStash(shouldPopStash)
-			os.Exit(1)
-		}
+	slog.Info(fmt.Sprint("Cherry picking ", branchInfo.CommitHash))
+	cherryPickOutput, cherryPickError := ex.Execute(ex.ExecuteOptions{}, "git", "cherry-pick", branchInfo.CommitHash)
+	if cherryPickError != nil {
+		slog.Info(fmt.Sprint(ex.Red+"Could not cherry-pick, aborting... "+ex.Reset, cherryPickOutput, " ", cherryPickError))
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
+		slog.Info(fmt.Sprint("Deleting created branch ", branchInfo.BranchName))
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branchInfo.BranchName)
+		popStash(shouldPopStash)
+		os.Exit(1)
 	}
 	slog.Info("Pushing to remote")
 	// -u is required because in newer versions of Github CLI the upstream must be set.
