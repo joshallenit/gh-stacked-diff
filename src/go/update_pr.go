@@ -88,7 +88,7 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 			destCommit.CommitHash + " " +
 			strings.Join(commitsToCherryPick, " "),
 	}
-	slog.Info(fmt.Sprint("Using sequence editor ", environmentVariables))
+	slog.Debug(fmt.Sprint("Using sequence editor ", environmentVariables))
 	options := ex.ExecuteOptions{EnvironmentVariables: environmentVariables, Output: ex.NewStandardOutput()}
 	rootCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--max-parents=0", "--format=%h", "HEAD"))
 	if rootCommit == destCommit.CommitHash {
