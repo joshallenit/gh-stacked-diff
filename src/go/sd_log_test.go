@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGitlog_OnEmptyRemote_PrintsLog(t *testing.T) {
+func TestPrintGitLog_OnEmptyRemote_PrintsLog(t *testing.T) {
 
 	testinginit.InitTest(slog.LevelInfo)
 
@@ -47,7 +47,7 @@ func Test_PrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 	}
 }
 
-func TestGitlog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *testing.T) {
+func TestPrintGitLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *testing.T) {
 	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
@@ -63,7 +63,7 @@ func TestGitlog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *test
 	}
 }
 
-func TestGitlog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
+func TestPrintGitLog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 	assert := assert.New(t)
 
 	testinginit.InitTest(slog.LevelInfo)
@@ -84,7 +84,7 @@ func TestGitlog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 	assert.Contains(out, "second")
 }
 
-func TestGitlog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
+func TestPrintGitLog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
 	assert := assert.New(t)
 	testinginit.InitTest(slog.LevelInfo)
 

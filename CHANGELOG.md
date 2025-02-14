@@ -24,7 +24,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Fixed
 
-- Can now use `sd new` for root commit.
 - More reliable `getMainBranch`.
 - More reliable help and command line parsing error messages.
 - More reliable `sd rebase-main` by using Github CLI to check for merged branches.

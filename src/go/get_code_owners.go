@@ -67,12 +67,9 @@ func changedFilesOwners(changedFiles []string) map[string][]string {
 Returns changed files against main.
 */
 func getChangedFiles() []string {
-	gitLogArgs := []string{"--no-pager", "log", "--pretty=format:\"\"", "--name-only"}
 	firstOriginCommit := firstOriginMainCommit(GetCurrentBranchName())
-	if firstOriginCommit != "" {
-		gitLogArgs = append(gitLogArgs, firstOriginCommit+"..HEAD")
-	}
-	filenamesRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitLogArgs...)
+	filenamesRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager",
+		"log", "--pretty=format:\"\"", "--name-only", firstOriginCommit+"..HEAD")
 	return strings.Split(strings.TrimSpace(filenamesRaw), "\n")
 }
 

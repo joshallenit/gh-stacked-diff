@@ -16,6 +16,7 @@ import (
 /*
  */
 func main() {
+	slog.Debug(fmt.Sprint("Got args ", os.Args))
 	if len(os.Args) < 3 {
 		fmt.Printf("usage: sequence_editor_mark_as_fixup targetCommit fixupCommit1 [fixupCommit2...] rebaseFilename")
 		os.Exit(1)
@@ -23,8 +24,6 @@ func main() {
 	targetCommit := os.Args[1]
 	fixupCommits := os.Args[2 : len(os.Args)-1]
 	rebaseFilename := os.Args[len(os.Args)-1]
-
-	slog.Debug(fmt.Sprint("Got args ", os.Args))
 
 	data, err := os.ReadFile(rebaseFilename)
 

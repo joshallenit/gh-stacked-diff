@@ -1,9 +1,7 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,9 +16,7 @@ func TestSdLog_LogsOutput(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	outWriter := testinginit.NewWriteRecorder()
-	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
-	out := outWriter.String()
+	out := testParseArguments("log")
 
 	assert.Contains(out, "first")
 }
@@ -41,9 +37,7 @@ func TestGitlog_WhenManyCommits_PadsFirstCommits(t *testing.T) {
 	testinginit.AddCommit("ninth", "")
 	testinginit.AddCommit("tenth", "")
 
-	outWriter := testinginit.NewWriteRecorder()
-	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
-	out := outWriter.String()
+	out := testParseArguments("log")
 
 	assert.Contains(out, "\n 2.    ")
 	assert.Contains(out, "\n10.    ")
@@ -57,12 +51,11 @@ func TestSdLog_WhenMultiplePrs_MatchesAllPrs(t *testing.T) {
 	testinginit.AddCommit("first", "")
 	testinginit.AddCommit("second", "")
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "2"})
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "1"})
+	testParseArguments("new", "2")
+	testParseArguments("new", "1")
 
-	out := testinginit.NewWriteRecorder()
-	parseArguments(out, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
+	out := testParseArguments("log")
 
-	assert.Regexp("✅.*first", out.String())
-	assert.Regexp("✅.*second", out.String())
+	assert.Regexp("✅.*first", out)
+	assert.Regexp("✅.*second", out)
 }

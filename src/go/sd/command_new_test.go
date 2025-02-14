@@ -1,9 +1,7 @@
 package main
 
 import (
-	"flag"
 	"log/slog"
-	"os"
 	"slices"
 	sd "stackeddiff"
 	"testing"
@@ -23,11 +21,9 @@ func TestSdNew_CreatesPr(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	testParseArguments("new")
 
-	outWriter := testinginit.NewWriteRecorder()
-	parseArguments(outWriter, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"log"})
-	out := outWriter.String()
+	out := testParseArguments("log")
 
 	assert.Contains(out, "✅")
 }
@@ -47,7 +43,7 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "--reviewers=mybestie"})
+	testParseArguments("new", "--reviewers=mybestie")
 
 	allCommits := sd.GetAllCommits()
 
@@ -72,7 +68,7 @@ func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 
 	allCommits := sd.GetAllCommits()
 
-	parseArguments(os.Stdout, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new", "2"})
+	testParseArguments("new", "2")
 
 	assert.Equal(true, sd.RemoteHasBranch(allCommits[1].Branch))
 }
@@ -89,9 +85,34 @@ func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 		return programName == "gh" && args[0] == "pr" && args[1] == "create" && slices.Contains(args, "--draft")
 	})
 
-	out := testinginit.NewWriteRecorder()
-	parseArguments(out, flag.NewFlagSet("sd", flag.ContinueOnError), []string{"new"})
+	out := testParseArguments("new")
 
-	assert.Contains(out.String(), "Use \"--draft=false\" to avoid this warning")
-	assert.Contains(out.String(), "Created PR ")
+	assert.Contains(out, "Use \"--draft=false\" to avoid this warning")
+	assert.Contains(out, "Created PR ")
+}
+
+func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
+	assert := assert.New(t)
+
+	testinginit.InitTest(slog.LevelInfo)
+
+	testinginit.AddCommit("first", "")
+	testinginit.AddCommit("second", "")
+
+	testParseArguments("new", "2")
+	testParseArguments("new")
+
+	mainCommits := sd.GetAllCommits()
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", mainCommits[1].Branch)
+	firstCommits := sd.GetAllCommits()
+	assert.Equal(2, len(firstCommits))
+	assert.Equal(mainCommits[1].Subject, firstCommits[0].Subject)
+	assert.Equal(testinginit.InitialCommitSubject, firstCommits[1].Subject)
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", mainCommits[0].Branch)
+	secondCommits := sd.GetAllCommits()
+	assert.Equal(2, len(secondCommits))
+	assert.Equal(mainCommits[0].Subject, secondCommits[0].Subject)
+	assert.Equal(testinginit.InitialCommitSubject, firstCommits[1].Subject)
 }
