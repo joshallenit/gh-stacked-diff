@@ -7,6 +7,7 @@ import (
 
 	"fmt"
 	ex "stackeddiff/execute"
+	"stackeddiff/sliceutil"
 )
 
 // Add commits from main to an existing PR.
@@ -15,7 +16,13 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	requireCommitOnMain(destCommit.CommitHash)
 	var commitsToCherryPick []string
 	if len(otherCommits) > 0 {
-		commitsToCherryPick = otherCommits
+		if indicatorType == IndicatorTypeGuess || indicatorType == IndicatorTypeList {
+			commitsToCherryPick = sliceutil.MapSlice(otherCommits, func(commit string) string {
+				return GetBranchInfo(commit, indicatorType).CommitHash
+			})
+		} else {
+			commitsToCherryPick = otherCommits
+		}
 	} else {
 		commitsToCherryPick = make([]string, 1)
 		commitsToCherryPick[0] = strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--short", "HEAD"))

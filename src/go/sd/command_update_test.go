@@ -35,6 +35,36 @@ func TestSdUpdate_UpdatesPr(t *testing.T) {
 	assert.Equal(testinginit.InitialCommitSubject, allCommits[1].Subject)
 }
 
+func TestSdUpdate_WithListIndicators_UpdatesPr(t *testing.T) {
+	assert := assert.New(t)
+
+	testinginit.InitTest(slog.LevelInfo)
+
+	testinginit.AddCommit("first", "")
+
+	testParseArguments("new")
+
+	testinginit.AddCommit("second", "")
+	testinginit.AddCommit("third", "")
+
+	testParseArguments("update", "3", "2", "1")
+
+	allCommits := sd.GetAllCommits()
+
+	assert.Equal(2, len(allCommits))
+	assert.Equal("first", allCommits[0].Subject)
+	assert.Equal(testinginit.InitialCommitSubject, allCommits[1].Subject)
+
+	ex.Execute(ex.ExecuteOptions{}, "sd", "checkout", "1")
+	allCommits = sd.GetAllCommits()
+
+	assert.Equal(4, len(allCommits))
+	assert.Equal("third", allCommits[0].Subject)
+	assert.Equal("second", allCommits[1].Subject)
+	assert.Equal("first", allCommits[2].Subject)
+	assert.Equal(testinginit.InitialCommitSubject, allCommits[3].Subject)
+}
+
 func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
