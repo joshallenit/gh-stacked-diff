@@ -13,6 +13,7 @@ import (
 	"strings"
 )
 
+// TODO move these out
 var Red = "\033[31m"    // ANSI escape code for red (errors)
 var White = "\033[97m"  // ANSI escape code bright white for bold
 var Yellow = "\033[33m" // ANSI escape code for #C0A000 (Buddha Gold), used by git.
@@ -86,6 +87,9 @@ func Execute(options ExecuteOptions, programName string, args ...string) (string
 // Executes a shell program with arguments. Panics if there is an error.
 func ExecuteOrDie(options ExecuteOptions, programName string, args ...string) string {
 	out, err := Execute(options, programName, args...)
+	// TODO change panic to "not in git" if it's a failed git arg.
+	// TODO look for "locked" message from git and wait to see if we can get lock eventually
+	// NOT  TODO add a confirmation for the warnings messages? Seems unnecessary as they aren't dangers
 	if err != nil {
 		panic(fmt.Sprint(Red + "Failed executing " + Reset + getLogMessage(programName, args, out, err)))
 	}
