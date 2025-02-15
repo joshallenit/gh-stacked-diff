@@ -6,7 +6,9 @@ This project is a Command Line Interface that manages git commits and branches t
 
 ## Installation From a Release
 
-Download the [latest release](https://github.com/tinyspeck/stacked-diff-workflow/releases), and then:
+Download the latest release.
+
+*Note: no pre-built releases are provided yet, see [Installation from Source](#installation-from-source)*
 
 ### Mac
 
@@ -42,7 +44,7 @@ source ~/.zshrc
 
 ## Installation From Source
 
-Clone the repository, [then build](DEVELOPER_GUIDE.md#how-to-build), and then follow the [install instructions](#installation-from-a-release).
+Clone the repository, [then build](DEVELOPER_GUIDE.md#how-to-build), and then follow the [install instructions](#installation-from-a-release) for your platform.
 
 ## Stacked Diff Workflow CLI
 
