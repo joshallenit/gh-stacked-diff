@@ -5,6 +5,8 @@ import (
 	"io"
 	"log/slog"
 	sd "stackeddiff"
+
+	"github.com/fatih/color"
 )
 
 func createLogCommand(stdOut io.Writer) Command {
@@ -19,7 +21,7 @@ func createLogCommand(stdOut io.Writer) Command {
 			"Useful to view list indexes, or copy commit hashes, to use for the\n" +
 			"commitIndicator required by other commands.\n" +
 			"\n" +
-			"A ✅ means that there is a PR associated with the commit (actually it\n" +
+			"A " + color.GreenString("✅") + " means that there is a PR associated with the commit (actually it\n" +
 			"means there is a branch, but having a branch means there is a PR when\n" +
 			"using this workflow). If there is more than one commit on the\n" +
 			"associated branch, those commits are also listed (indented under the\n" +
