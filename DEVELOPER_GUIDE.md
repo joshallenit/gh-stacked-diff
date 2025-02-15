@@ -1,11 +1,13 @@
 # Contributing Developer Guide
 
-## How To Build Scripts
+## How To Build
 
-The scripts are written in golang and bash.
+The Stacked Diff Workflow CLI (also known as, the `sd` command) is written in golang. 
+
+*Note: There are some legacy scripts written in `bash` for building on Android but these will be removed from the project as they are unrelated to Stacked Diff Workflow.*
 
 1. Install [golang](https://go.dev/dl/).
-2. Install make. This is already installed on Mac, but to instructions for windows are [here](https://leangaurav.medium.com/how-to-setup-install-gnu-make-on-windows-324480f1da69).
+2. Install make. This is already installed on Mac, but instructions for windows are [here](https://leangaurav.medium.com/how-to-setup-install-gnu-make-on-windows-324480f1da69).
 
 Then run:
 

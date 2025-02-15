@@ -4,9 +4,9 @@ Using a [stacked diff workflow](https://newsletter.pragmaticengineer.com/p/stack
 
 This project is a Command Line Interface that manages git commits and branches to allow you to quickly use a stacked diff workflow. It uses the Github CLI to create pull requests and add reviewers once PR checks have passed.
 
-## Installation
+## Installation From a Release
 
-Clone the repository or download the [latest release](https://github.com/tinyspeck/stacked-diff-workflow/releases), and then:
+Download the [latest release](https://github.com/tinyspeck/stacked-diff-workflow/releases), and then:
 
 ### Mac
 
@@ -39,6 +39,10 @@ source ~/.zshrc
       echo "export PATH=\$PATH:\$HOME/stacked-diff-workflow/bin" >> ~/.bashrc
       source ~/.bashrc
       ```
+
+## Installation From Source
+
+Clone the repository, [then build](DEVELOPER_GUIDE.md#how-to-build), and then follow the [install instructions](#installation-from-a-release).
 
 ## Stacked Diff Workflow CLI
 
