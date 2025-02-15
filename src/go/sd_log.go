@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	ex "stackeddiff/execute"
+
+	"github.com/fatih/color"
 )
 
 // Prints changes in the current branch compared to the main branch to out.
@@ -30,7 +32,8 @@ func PrintGitLog(out io.Writer) {
 	for i, log := range logs {
 		numberPrefix := getNumberPrefix(i, len(logs))
 		if slices.Contains(checkedBranches, log.Branch) {
-			fmt.Fprint(out, numberPrefix+"✅ ")
+			// Use color for ✅ otherwise in Git Bash on Windows it will appear as black and white.
+			fmt.Fprint(out, numberPrefix+color.GreenString("✅ "))
 		} else {
 			fmt.Fprint(out, numberPrefix+"   ")
 		}
