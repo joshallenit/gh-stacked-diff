@@ -2,7 +2,7 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2025-02-28
+## [2.0.0](https://github.com/joshallenit/stacked-diff-workflow/compare/v1.3.0...v2.0.0) - 2025-02-28
 
 ### Added
 

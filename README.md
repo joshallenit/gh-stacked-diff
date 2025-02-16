@@ -490,5 +490,4 @@ Join the discussion in [#devel-stacked-diff-workflow](https://slack-pde.slack.co
 
 | Stacked Diff version | gh CLI versions tested | git versions tested |
 | -------------------- | ---------------------- | ------------------- |
-| 2.0.0 (2025-02-28)   | 2.64.0 (2024-12-20)    | 2.47.1              |
-|                      | 2.66.1 (2025-01-31)    |                     |
+| [2.0.0](CHANGELOG.md#200---2025-02-28) | 2.66.1, 2.64.0 | 2.47.1 |
