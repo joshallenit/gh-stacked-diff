@@ -14,7 +14,9 @@ build: format
 	cp src/bash/* bin
 
 test: build
-	cd src/go; go test ./...
+	export PATH=${PATH}:; \
+	cd src/go; \
+	go test ./...
 
 release: test
 ifndef PLATFORM
