@@ -7,19 +7,20 @@ import (
 	"strings"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
 	"github.com/joshallenit/stacked-diff/util"
 )
 
 // Bring local main branch up to date with remote
 func RebaseMain() {
 	util.RequireMainBranch()
-	shouldPopStash := stash("rebase-main")
+	shouldPopStash := util.Stash("rebase-main")
 
 	slog.Info("Fetching...")
 	ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "fetch")
 	slog.Info("Getting merged branches from Github...")
 	mergedBranches := getMergedBranches()
-	localLogs := getNewCommits("HEAD")
+	localLogs := templates.GetNewCommits("HEAD")
 	dropCommits := getDropCommits(localLogs, mergedBranches)
 	slog.Info("Rebasing...")
 	var rebaseError error
@@ -45,7 +46,7 @@ func RebaseMain() {
 	if rebaseError != nil {
 		slog.Warn("Rebase failed, check output ^^ for details. Continue rebase manually.")
 	} else {
-		popStash(shouldPopStash)
+		util.PopStash(shouldPopStash)
 	}
 }
 

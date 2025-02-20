@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"slices"
-	"stackeddiff/testinginit"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
 	"github.com/joshallenit/stacked-diff/util"
@@ -17,13 +16,13 @@ import (
 func TestSdUpdate_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.InitTest(slog.LevelInfo)
+	testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
 	testParseArguments("new")
 
-	testinginit.AddCommit("second", "")
+	testutil.AddCommit("second", "")
 
 	allCommits := sd.GetAllCommits()
 
@@ -33,20 +32,20 @@ func TestSdUpdate_UpdatesPr(t *testing.T) {
 
 	assert.Equal(2, len(allCommits))
 	assert.Equal("first", allCommits[0].Subject)
-	assert.Equal(testinginit.InitialCommitSubject, allCommits[1].Subject)
+	assert.Equal(testutil.InitialCommitSubject, allCommits[1].Subject)
 }
 
 func TestSdUpdate_WithListIndicators_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.InitTest(slog.LevelInfo)
+	testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
 	testParseArguments("new")
 
-	testinginit.AddCommit("second", "")
-	testinginit.AddCommit("third", "")
+	testutil.AddCommit("second", "")
+	testutil.AddCommit("third", "")
 
 	testParseArguments("update", "3", "2", "1")
 
@@ -54,7 +53,7 @@ func TestSdUpdate_WithListIndicators_UpdatesPr(t *testing.T) {
 
 	assert.Equal(2, len(allCommits))
 	assert.Equal("first", allCommits[0].Subject)
-	assert.Equal(testinginit.InitialCommitSubject, allCommits[1].Subject)
+	assert.Equal(testutil.InitialCommitSubject, allCommits[1].Subject)
 
 	ex.Execute(ex.ExecuteOptions{}, "sd", "checkout", "1")
 	allCommits = sd.GetAllCommits()
@@ -63,19 +62,19 @@ func TestSdUpdate_WithListIndicators_UpdatesPr(t *testing.T) {
 	assert.Equal("third", allCommits[0].Subject)
 	assert.Equal("second", allCommits[1].Subject)
 	assert.Equal("first", allCommits[2].Subject)
-	assert.Equal(testinginit.InitialCommitSubject, allCommits[3].Subject)
+	assert.Equal(testutil.InitialCommitSubject, allCommits[3].Subject)
 }
 
 func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
 	testParseArguments("new")
 
-	testinginit.AddCommit("second", "")
+	testutil.AddCommit("second", "")
 
 	allCommits := sd.GetAllCommits()
 

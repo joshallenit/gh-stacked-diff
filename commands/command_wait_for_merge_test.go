@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
-	"stackeddiff/testinginit"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
 )
@@ -15,9 +14,9 @@ import (
 func TestSdWaitForMerge_WaitsForMerge(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 	allCommits := sd.GetAllCommits()
 	testExecutor.SetResponse("2025-01-01", nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 

@@ -1,4 +1,4 @@
-package testinginit
+package testutil
 
 import (
 	"bytes"

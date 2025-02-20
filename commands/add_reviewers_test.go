@@ -8,18 +8,18 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
-	"stackeddiff/testinginit"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/testutil"
 	"github.com/joshallenit/stacked-diff/util"
 )
 
 func TestSdAddReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
 	testParseArguments("new")
 
@@ -46,9 +46,9 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
 	testParseArguments("new")
 
@@ -75,9 +75,9 @@ func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
 	testParseArguments("new")
 

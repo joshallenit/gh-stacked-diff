@@ -3,6 +3,8 @@ package commands
 import (
 	"flag"
 	sd "stackeddiff"
+
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 func createRebaseMainCommand() Command {
@@ -11,7 +13,7 @@ func createRebaseMainCommand() Command {
 	return Command{
 		FlagSet: flagSet,
 		Summary: "Bring your main branch up to date with remote",
-		Description: "Rebase with origin/" + sd.GetMainBranchForHelp() + ", dropping any commits who's associated\n" +
+		Description: "Rebase with origin/" + util.GetMainBranchForHelp() + ", dropping any commits who's associated\n" +
 			"branches have been merged.\n" +
 			"\n" +
 			"This avoids having to manually call \"git reset --hard head\" whenever\n" +

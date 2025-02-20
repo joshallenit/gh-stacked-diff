@@ -26,7 +26,7 @@ var prDescriptionTemplateText string
 
 // Replace with GitLog
 
-type pullRequestText struct {
+type PullRequestText struct {
 	Title       string
 	Description string
 }
@@ -160,7 +160,7 @@ func truncateString(str string, maxBytes int) string {
 	return str
 }
 
-func getPullRequestText(commitHash string, featureFlag string) pullRequestText {
+func GetPullRequestText(commitHash string, featureFlag string) pullRequestText {
 	data := getPullRequestTemplateData(commitHash, featureFlag)
 	title := runTemplate("pr-title.template", prTitleTemplateText, data)
 	description := runTemplate("pr-description.template", prDescriptionTemplateText, data)

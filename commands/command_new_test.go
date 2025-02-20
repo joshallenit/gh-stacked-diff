@@ -9,18 +9,78 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"errors"
-	"stackeddiff/testinginit"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/testutil"
 	"github.com/joshallenit/stacked-diff/util"
+
+	"strings"
 )
+
+func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
+	testutil.InitTest(slog.LevelInfo)
+
+	testutil.AddCommit("first", "")
+
+	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+
+	// Check that the PR was created
+	outWriter := testutil.NewWriteRecorder()
+	PrintGitLog(outWriter)
+	out := outWriter.String()
+
+	if !strings.Contains(out, "✅") {
+		t.Errorf("'✅' should be in %s", out)
+	}
+}
+
+func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
+	assert := assert.New(t)
+
+	testutil.InitTest(slog.LevelInfo)
+
+	testutil.AddCommit("first", "")
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+
+	testutil.AddCommit("second", "")
+	allCommits := templates.GetNewCommits("HEAD")
+
+	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
+	commitsOnNewBranch := templates.GetNewCommits("HEAD")
+	assert.Equal(1, len(commitsOnNewBranch))
+	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
+}
+
+func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
+	assert := assert.New(t)
+
+	testutil.InitTest(slog.LevelInfo)
+
+	testutil.AddCommit("first", "")
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+
+	testutil.AddCommit("second", "")
+
+	testutil.AddCommit("third", "")
+	allCommits := templates.GetNewCommits("HEAD")
+
+	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
+	commitsOnNewBranch := templates.GetNewCommits("HEAD")
+	assert.Equal(1, len(commitsOnNewBranch))
+	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
+}
 
 func TestSdNew_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.InitTest(slog.LevelInfo)
+	testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
 	testParseArguments("new")
 
@@ -32,9 +92,9 @@ func TestSdNew_CreatesPr(t *testing.T) {
 func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
 	testExecutor.SetResponse(
 		// There has to be at least 4 checks, each with 3 values: status, conclusion, and state.
@@ -60,12 +120,12 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.InitTest(slog.LevelInfo)
+	testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
-	testinginit.AddCommit("second", "")
-	testinginit.AddCommit("third", "")
-	testinginit.AddCommit("fourth", "")
+	testutil.AddCommit("first", "")
+	testutil.AddCommit("second", "")
+	testutil.AddCommit("third", "")
+	testutil.AddCommit("fourth", "")
 
 	allCommits := sd.GetAllCommits()
 
@@ -77,9 +137,9 @@ func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
 	draftNotSupported := "pull request create failed: GraphQL: Draft pull requests are not supported in this repository. (createPullRequest)"
 	testExecutor.SetResponseFunc(draftNotSupported, errors.New("sss"), func(programName string, args ...string) bool {
@@ -95,10 +155,10 @@ func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.InitTest(slog.LevelInfo)
+	testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
-	testinginit.AddCommit("second", "")
+	testutil.AddCommit("first", "")
+	testutil.AddCommit("second", "")
 
 	testParseArguments("new", "2")
 	testParseArguments("new")
@@ -109,11 +169,11 @@ func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 	firstCommits := sd.GetAllCommits()
 	assert.Equal(2, len(firstCommits))
 	assert.Equal(mainCommits[1].Subject, firstCommits[0].Subject)
-	assert.Equal(testinginit.InitialCommitSubject, firstCommits[1].Subject)
+	assert.Equal(testutil.InitialCommitSubject, firstCommits[1].Subject)
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", mainCommits[0].Branch)
 	secondCommits := sd.GetAllCommits()
 	assert.Equal(2, len(secondCommits))
 	assert.Equal(mainCommits[0].Subject, secondCommits[0].Subject)
-	assert.Equal(testinginit.InitialCommitSubject, firstCommits[1].Subject)
+	assert.Equal(testutil.InitialCommitSubject, firstCommits[1].Subject)
 }

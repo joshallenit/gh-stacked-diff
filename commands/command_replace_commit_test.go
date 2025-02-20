@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
-	"stackeddiff/testinginit"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
 	"github.com/joshallenit/stacked-diff/util"
@@ -16,22 +15,22 @@ import (
 
 func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.InitTest(slog.LevelInfo)
+	testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "1")
+	testutil.AddCommit("first", "1")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
-	testinginit.AddCommit("second", "will-be-replaced")
+	testutil.AddCommit("second", "will-be-replaced")
 	testParseArguments("new")
-	testinginit.AddCommit("fifth", "5")
+	testutil.AddCommit("fifth", "5")
 
 	allCommits := sd.GetAllCommits()
 
 	testParseArguments("checkout", allCommits[1].Commit)
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
-	testinginit.AddCommit("on-second-branch-only", "2")
-	testinginit.AddCommit("on-second-branch-only", "3")
-	testinginit.AddCommit("on-second-branch-only", "4")
+	testutil.AddCommit("on-second-branch-only", "2")
+	testutil.AddCommit("on-second-branch-only", "3")
+	testutil.AddCommit("on-second-branch-only", "4")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", util.GetMainBranchOrDie())
 
@@ -43,7 +42,7 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 	assert.Equal("fifth", allCommits[0].Subject)
 	assert.Equal("second", allCommits[1].Subject)
 	assert.Equal("first", allCommits[2].Subject)
-	assert.Equal(testinginit.InitialCommitSubject, allCommits[3].Subject)
+	assert.Equal(testutil.InitialCommitSubject, allCommits[3].Subject)
 
 	dirEntries, err := os.ReadDir(".")
 	if err != nil {
@@ -63,21 +62,21 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 		return
 	}
 	assert := assert.New(t)
-	testinginit.InitTest(slog.LevelInfo)
+	testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "1")
-	testinginit.AddCommit("second", "will-be-replaced")
+	testutil.AddCommit("first", "1")
+	testutil.AddCommit("second", "will-be-replaced")
 	testParseArguments("new")
-	testinginit.AddCommit("fifth", "5")
+	testutil.AddCommit("fifth", "5")
 
 	allCommits := sd.GetAllCommits()
 
 	testParseArguments("checkout", allCommits[1].Commit)
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
-	testinginit.AddCommit("on-second-branch-only", "2")
-	testinginit.AddCommit("on-second-branch-only", "3")
-	testinginit.AddCommit("on-second-branch-only", "4")
+	testutil.AddCommit("on-second-branch-only", "2")
+	testutil.AddCommit("on-second-branch-only", "3")
+	testutil.AddCommit("on-second-branch-only", "4")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", allCommits[1].Branch)
 

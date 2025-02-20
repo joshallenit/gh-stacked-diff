@@ -34,4 +34,4 @@ export PLATFORM=mac; make release
 
 ## How to Debug Unit Tests
 
-If one of the command*_test fails you can pass "--log-level=debug" to `parseArguments` for more detailed logging. For more detailed logging up until the `parseArguments` call use `testinginit.InitTest(slog.LevelDebug)`
+If one of the command*_test fails you can pass "--log-level=debug" to `parseArguments` for more detailed logging. For more detailed logging up until the `parseArguments` call use `testutil.InitTest(slog.LevelDebug)`

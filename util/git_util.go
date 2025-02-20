@@ -90,7 +90,7 @@ func getUsername() string {
 }
 
 // Returns most recent commit of the given branch that is on origin/main.
-func firstOriginMainCommit(branchName string) string {
+func FirstOriginMainCommit(branchName string) string {
 	if !getLocalHasBranchOrDie(branchName) {
 		panic("Branch does not exist " + branchName)
 	}
@@ -131,7 +131,7 @@ func GetCurrentBranchName() string {
 	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD"))
 }
 
-func stash(forName string) bool {
+func Stash(forName string) bool {
 	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName))
 	if strings.HasPrefix(stashResult, "Saved working") {
 		slog.Info(stashResult)
@@ -140,7 +140,7 @@ func stash(forName string) bool {
 	return false
 }
 
-func popStash(popStash bool) {
+func PopStash(popStash bool) {
 	if popStash {
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "pop")
 		slog.Info("Popped stash back")

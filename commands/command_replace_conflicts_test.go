@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
-	"stackeddiff/testinginit"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
 	"github.com/joshallenit/stacked-diff/util"
@@ -16,14 +15,14 @@ import (
 
 func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.InitTest(slog.LevelInfo)
+	testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "file-with-conflicts")
-	testinginit.CommitFileChange("second", "file-with-conflicts", "1")
+	testutil.AddCommit("first", "file-with-conflicts")
+	testutil.CommitFileChange("second", "file-with-conflicts", "1")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 	allCommits := sd.GetAllCommits()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
-	testinginit.CommitFileChange("third", "file-with-conflicts", "2")
+	testutil.CommitFileChange("third", "file-with-conflicts", "2")
 
 	testParseArguments("new")
 
@@ -52,7 +51,7 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 	assert.Equal("third", allCommits[0].Subject)
 	assert.Equal("second", allCommits[1].Subject)
 	assert.Equal("first", allCommits[2].Subject)
-	assert.Equal(testinginit.InitialCommitSubject, allCommits[3].Subject)
+	assert.Equal(testutil.InitialCommitSubject, allCommits[3].Subject)
 
 	dirEntries, err := os.ReadDir(".")
 	if err != nil {

@@ -7,15 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
-	"stackeddiff/testinginit"
 )
 
 func TestSdBranchName_OutputsBranchName(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.InitTest(slog.LevelInfo)
+	testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
 	allCommits := sd.GetAllCommits()
 

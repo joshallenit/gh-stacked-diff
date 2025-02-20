@@ -31,7 +31,7 @@ func GetAllCommits() []GitLog {
 	return newGitLogs(logsRaw)
 }
 
-func getNewCommits(to string) []GitLog {
+func GetNewCommits(to string) []GitLog {
 	compareFromRemoteBranch := util.GetMainBranchOrDie()
 	gitArgs := []string{"--no-pager", "log", newGitLogsFormat, "--abbrev-commit"}
 	if util.RemoteHasBranch(compareFromRemoteBranch) {
@@ -57,11 +57,11 @@ func newGitLogs(logsRaw string) []GitLog {
 	return logs
 }
 
-func requireCommitOnMain(commit string) {
+func RequireCommitOnMain(commit string) {
 	if commit == util.GetMainBranchOrDie() {
 		return
 	}
-	newCommits := getNewCommits("HEAD")
+	newCommits := GetNewCommits("HEAD")
 	if !slices.ContainsFunc(newCommits, func(gitLog GitLog) bool {
 		return gitLog.Commit == commit
 	}) {

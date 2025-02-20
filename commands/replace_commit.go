@@ -6,30 +6,32 @@ import (
 	"strings"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 // Replaces a commit on main branch with its associated branch.
 func ReplaceCommit(commitIndicator string, indicatorType IndicatorType) {
 	util.RequireMainBranch()
-	branchInfo := GetBranchInfo(commitIndicator, indicatorType)
-	requireCommitOnMain(branchInfo.CommitHash)
-	shouldPopStash := stash("replace-commit " + commitIndicator)
+	branchInfo := templates.GetBranchInfo(commitIndicator, indicatorType)
+	requireCommitOnMain(gitLog.Commit)
+	shouldPopStash := util.Stash("replace-commit " + commitIndicator)
 	replaceCommitOfBranchInfo(branchInfo)
-	popStash(shouldPopStash)
+	util.PopStash(shouldPopStash)
 }
 
-// Replaces commit `branchInfo.CommitHash“ with the contents of branch `branchInfo.BranchName`
+// Replaces commit `gitLog.Commit“ with the contents of branch `gitLog.Branch`
 func replaceCommitOfBranchInfo(branchInfo BranchInfo) {
-	commitsAfter := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", branchInfo.CommitHash+"..HEAD", "--pretty=format:%h")))
+	commitsAfter := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", gitLog.Commit+"..HEAD", "--pretty=format:%h")))
 	reverseArrayInPlace(commitsAfter)
-	commitToDiffFrom := firstOriginMainCommit(branchInfo.BranchName)
-	slog.Info("Resetting to " + branchInfo.CommitHash + "~1")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", branchInfo.CommitHash+"~1")
-	slog.Info("Adding diff from commits " + branchInfo.BranchName)
-	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", commitToDiffFrom, branchInfo.BranchName)
+	commitToDiffFrom := util.FirstOriginMainCommit(gitLog.Branch)
+	slog.Info("Resetting to " + gitLog.Commit + "~1")
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", gitLog.Commit+"~1")
+	slog.Info("Adding diff from commits " + gitLog.Branch)
+	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", commitToDiffFrom, gitLog.Branch)
 	ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff}, "git", "apply")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
-	commitSummary := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", branchInfo.CommitHash)
+	commitSummary := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", gitLog.Commit)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", strings.TrimSpace(commitSummary))
 	if len(commitsAfter) != 0 {
 		slog.Info(fmt.Sprint("Cherry picking commits back on top ", commitsAfter))

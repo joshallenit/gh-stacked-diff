@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
-	"stackeddiff/testinginit"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
 	"github.com/joshallenit/stacked-diff/util"
@@ -16,10 +15,10 @@ import (
 
 func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
-	testinginit.AddCommit("second", "rebase-will-keep-this-file")
+	testutil.AddCommit("first", "")
+	testutil.AddCommit("second", "rebase-will-keep-this-file")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
@@ -27,7 +26,7 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
 
-	testinginit.AddCommit("second", "rebase-will-drop-this-file")
+	testutil.AddCommit("second", "rebase-will-drop-this-file")
 
 	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
@@ -46,11 +45,11 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommitss(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "1")
-	testinginit.AddCommit("second", "2")
-	testinginit.AddCommit("third", "3")
+	testutil.AddCommit("first", "1")
+	testutil.AddCommit("second", "2")
+	testutil.AddCommit("third", "3")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
@@ -58,9 +57,9 @@ func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommitss(t *testing.T) {
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[2].Commit)
 
-	testinginit.AddCommit("second", "2-rebase-will-drop-this-file")
-	testinginit.AddCommit("third", "3-rebase-will-drop-this-file")
-	testinginit.AddCommit("fourth", "4")
+	testutil.AddCommit("second", "2-rebase-will-drop-this-file")
+	testutil.AddCommit("third", "3-rebase-will-drop-this-file")
+	testutil.AddCommit("fourth", "4")
 
 	testExecutor.SetResponse(
 		allOriginalCommits[0].Branch+" fakeMergeCommit\n"+allOriginalCommits[1].Branch+" fakeMergeCommit",
@@ -82,11 +81,11 @@ func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommitss(t *testing.T) {
 
 func TestSdRebaseMain_WithDuplicateBranches_Panics(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "1")
-	testinginit.AddCommit("second", "2.1")
-	testinginit.AddCommit("second", "2.2")
+	testutil.AddCommit("first", "1")
+	testutil.AddCommit("second", "2.1")
+	testutil.AddCommit("second", "2.2")
 
 	allOriginalCommits := sd.GetAllCommits()
 
@@ -104,18 +103,18 @@ func TestSdRebaseMain_WithDuplicateBranches_Panics(t *testing.T) {
 
 func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "file-with-conflicts")
-	testinginit.AddCommit("second", "")
-	testinginit.CommitFileChange("third", "file-with-conflicts", "1")
+	testutil.AddCommit("first", "file-with-conflicts")
+	testutil.AddCommit("second", "")
+	testutil.CommitFileChange("third", "file-with-conflicts", "1")
 	testParseArguments("new", "2")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	allCommits := sd.GetAllCommits()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
-	testinginit.AddCommit("second", "")
-	testinginit.CommitFileChange("third", "file-with-conflicts", "2")
+	testutil.AddCommit("second", "")
+	testutil.CommitFileChange("third", "file-with-conflicts", "2")
 
 	testExecutor.SetResponse(allCommits[1].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
@@ -132,17 +131,17 @@ func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 
 func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
-	testinginit.AddCommit("second", "second-1")
-	testinginit.AddCommit("third", "")
+	testutil.AddCommit("first", "")
+	testutil.AddCommit("second", "second-1")
+	testutil.AddCommit("third", "")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 	allCommits := sd.GetAllCommits()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 
-	testinginit.AddCommit("second", "second-2")
+	testutil.AddCommit("second", "second-2")
 	testParseArguments("new")
 
 	// Use the commit of the first "second" commit as the branch

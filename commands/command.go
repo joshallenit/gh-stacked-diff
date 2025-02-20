@@ -1,3 +1,6 @@
+/*
+Commands of the the Stacked Diff Workflow Command Line Interface.
+*/
 package commands
 
 import (

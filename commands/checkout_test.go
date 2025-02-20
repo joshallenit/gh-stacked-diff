@@ -4,18 +4,18 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/joshallenit/stacked-diff/util"
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
-	"stackeddiff/testinginit"
 )
 
 func TestSdCheckout_ChecksOutBranch(t *testing.T) {
 	assert := assert.New(t)
 
-	testinginit.InitTest(slog.LevelInfo)
+	testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
 	allCommits := sd.GetAllCommits()
 
@@ -23,5 +23,5 @@ func TestSdCheckout_ChecksOutBranch(t *testing.T) {
 
 	testParseArguments("checkout", allCommits[0].Commit)
 
-	assert.Equal(allCommits[0].Branch, sd.GetCurrentBranchName())
+	assert.Equal(allCommits[0].Branch, util.GetCurrentBranchName())
 }

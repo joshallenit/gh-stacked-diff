@@ -2,10 +2,11 @@ package commands
 
 import (
 	"log/slog"
-	"stackeddiff/testinginit"
 	"testing"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/testutil"
 	"github.com/joshallenit/stacked-diff/util"
 
 	"github.com/stretchr/testify/assert"
@@ -13,16 +14,16 @@ import (
 
 func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.InitTest(slog.LevelInfo)
-	testinginit.AddCommit("first", "")
+	testutil.InitTest(slog.LevelInfo)
+	testutil.AddCommit("first", "")
 
-	CreateNewPr(true, "", util.GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", IndicatorTypeGuess))
 
-	testinginit.AddCommit("second", "")
+	testutil.AddCommit("second", "")
 
 	commitsOnMain := GetAllCommits()
 
-	UpdatePr(GetBranchInfo(commitsOnMain[1].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit)
+	UpdatePr(templates.GetBranchInfo(commitsOnMain[1].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit)
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[1].Branch)
 
@@ -33,22 +34,22 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 
 func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testinginit.InitTest(slog.LevelInfo)
+	testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
-	testinginit.AddCommit("second", "")
+	testutil.AddCommit("second", "")
 
-	CreateNewPr(true, "", util.GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", IndicatorTypeGuess))
 
-	testinginit.AddCommit("third", "")
+	testutil.AddCommit("third", "")
 
-	testinginit.AddCommit("fourth", "")
+	testutil.AddCommit("fourth", "")
 
 	commitsOnMain := GetAllCommits()
 
-	UpdatePr(GetBranchInfo(commitsOnMain[2].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit)
+	UpdatePr(templates.GetBranchInfo(commitsOnMain[2].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit)
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[2].Branch)
 
@@ -58,9 +59,9 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 	assert.Equal("fourth", allCommitsOnBranch[0].Subject)
 	assert.Equal("second", allCommitsOnBranch[1].Subject)
 	assert.Equal("first", allCommitsOnBranch[2].Subject)
-	assert.Equal(testinginit.InitialCommitSubject, allCommitsOnBranch[3].Subject)
+	assert.Equal(testutil.InitialCommitSubject, allCommitsOnBranch[3].Subject)
 
-	newCommitsOnBranch := getNewCommits("HEAD")
+	newCommitsOnBranch := templates.GetNewCommits("HEAD")
 
 	assert.Equal(2, len(newCommitsOnBranch))
 	assert.Equal(newCommitsOnBranch[0].Subject, "fourth")

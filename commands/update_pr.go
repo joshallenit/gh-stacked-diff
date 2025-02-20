@@ -7,7 +7,9 @@ import (
 
 	"fmt"
 
+	"github.com/fatih/color"
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
 	"github.com/joshallenit/stacked-diff/util"
 )
 
@@ -19,7 +21,7 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	if len(otherCommits) > 0 {
 		if indicatorType == IndicatorTypeGuess || indicatorType == IndicatorTypeList {
 			commitsToCherryPick = util.MapSlice(otherCommits, func(commit string) string {
-				return GetBranchInfo(commit, indicatorType).CommitHash
+				return templates.GetBranchInfo(commit, indicatorType).CommitHash
 			})
 		} else {
 			commitsToCherryPick = otherCommits
@@ -56,25 +58,25 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	if cherryPickError != nil {
 		slog.Info("First attempt at cherry-pick failed")
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-		rebaseCommit := firstOriginMainCommit(util.GetMainBranchOrDie())
+		rebaseCommit := util.FirstOriginMainCommit(util.GetMainBranchOrDie())
 		slog.Info(fmt.Sprint("Rebasing with the base commit on "+util.GetMainBranchOrDie()+" branch, ", rebaseCommit,
 			", in case the local "+util.GetMainBranchOrDie()+" was rebased with origin/"+util.GetMainBranchOrDie()))
 		rebaseOutput, rebaseError := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", rebaseCommit)
 		if rebaseError != nil {
-			slog.Info(fmt.Sprint(ex.Red+"Could not rebase, aborting... "+ex.Reset, rebaseOutput))
+			slog.Info(fmt.Sprint(color.RedString("Could not rebase, aborting... "), rebaseOutput))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rebase", "--abort")
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
-			popStash(shouldPopStash)
+			util.PopStash(shouldPopStash)
 			os.Exit(1)
 		}
 		slog.Info(fmt.Sprint("Cherry picking again ", commitsToCherryPick))
 		var cherryPickOutput string
 		cherryPickOutput, cherryPickError = ex.Execute(ex.ExecuteOptions{}, "git", cherryPickArgs...)
 		if cherryPickError != nil {
-			slog.Info(fmt.Sprint(ex.Red+"Could not cherry-pick, aborting... "+ex.Reset, cherryPickArgs, " ", cherryPickOutput, " ", cherryPickError))
+			slog.Info(fmt.Sprint(color.RedString("Could not cherry-pick, aborting... "), cherryPickArgs, " ", cherryPickOutput, " ", cherryPickError))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
-			popStash(shouldPopStash)
+			util.PopStash(shouldPopStash)
 			os.Exit(1)
 		}
 		forcePush = true
@@ -105,5 +107,5 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	} else {
 		ex.ExecuteOrDie(options, "git", "rebase", "-i", destCommit.CommitHash+"^")
 	}
-	popStash(shouldPopStash)
+	util.PopStash(shouldPopStash)
 }

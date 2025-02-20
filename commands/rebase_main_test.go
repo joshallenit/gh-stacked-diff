@@ -3,7 +3,6 @@ package commands
 import (
 	"log/slog"
 	"os"
-	"stackeddiff/testinginit"
 	"testing"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
@@ -14,11 +13,11 @@ import (
 
 func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testinginit.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
 
-	testinginit.AddCommit("first", "")
+	testutil.AddCommit("first", "")
 
-	testinginit.AddCommit("second", "rebase-will-keep-this-file")
+	testutil.AddCommit("second", "rebase-will-keep-this-file")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
@@ -26,7 +25,7 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
 
-	testinginit.AddCommit("second", "rebase-will-drop-this-file")
+	testutil.AddCommit("second", "rebase-will-drop-this-file")
 
 	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
