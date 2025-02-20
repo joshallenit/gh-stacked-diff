@@ -10,24 +10,21 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
-//go:embed config/branch-name.template
+//go:embed config/branch_name.template
 var branchNameTemplateText string
 
-//go:embed config/pr-title.template
+//go:embed config/pr_title.template
 var prTitleTemplateText string
 
-//go:embed config/pr-description.template
+//go:embed config/pr_description.template
 var prDescriptionTemplateText string
 
-// Commit and associated branch.
-type BranchInfo struct {
-	// Git commit hash, might be abbreviated.
-	CommitHash string
-	// Name of associated branch, might exist or not.
-	BranchName string
-}
+// Replace with GitLog
 
 type pullRequestText struct {
 	Title       string
@@ -74,12 +71,12 @@ func (indicator IndicatorType) IsValid() bool {
 }
 
 // Returns BranchInfo for commitIndicator and indicatorType.
-func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchInfo {
+func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) GitLog {
 	if !indicatorType.IsValid() {
 		panic("Invalid IndicatorType " + string(indicatorType))
 	}
 	if commitIndicator == "" {
-		commitIndicator = GetMainBranchOrDie()
+		commitIndicator = util.GetMainBranchOrDie()
 		indicatorType = IndicatorTypeCommit
 	}
 	if indicatorType == IndicatorTypeGuess {
@@ -98,7 +95,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) BranchIn
 		summary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", prCommit))
 		thisBranchCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h"))
 		if thisBranchCommit == "" {
-			panic(fmt.Sprint("Could not find associated commit for PR (\"", summary, "\") in "+GetMainBranchOrDie()))
+			panic(fmt.Sprint("Could not find associated commit for PR (\"", summary, "\") in "+util.GetMainBranchOrDie()))
 		}
 		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
 		slog.Info("Using pull request " + commitIndicator + ", commit " + info.CommitHash + ", branch " + info.BranchName)

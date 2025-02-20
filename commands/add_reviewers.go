@@ -2,10 +2,15 @@ package commands
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log/slog"
 	"os"
-	ex "stackeddiff/execute"
+
+	"github.com/fatih/color"
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
+
 	"strings"
 	"sync"
 	"time"
@@ -21,8 +26,43 @@ type pullRequestChecksStatus struct {
 	Total   int
 }
 
+func createAddReviewersCommand() Command {
+	flagSet := flag.NewFlagSet("add-reviewers", flag.ContinueOnError)
+	var indicatorTypeString *string = addIndicatorFlag(flagSet)
+
+	var whenChecksPass *bool = flagSet.Bool("when-checks-pass", true, "Poll until all checks pass before adding reviewers")
+	var defaultPollFrequency time.Duration = 30 * time.Second
+	var pollFrequency *time.Duration = flagSet.Duration("poll-frequency", defaultPollFrequency,
+		"Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration")
+	reviewers, silent, minChecks := addReviewersFlags(flagSet, "Falls back to "+color.HiWhiteString("PR_REVIEWERS")+" environment variable.")
+
+	return Command{
+		FlagSet: flagSet,
+		Summary: "Add reviewers to Pull Request on Github once its checks have passed",
+		Description: "Add reviewers to Pull Request on Github once its checks have passed.\n" +
+			"\n" +
+			"If PR is marked as a Draft, it is first marked as \"Ready for Review\".",
+		Usage: "sd " + flagSet.Name() + " [flags] [commitIndicator [commitIndicator]...]",
+		OnSelected: func(command Command) {
+			commitIndicators := flagSet.Args()
+			if len(commitIndicators) == 0 {
+				slog.Debug("Using main branch because commitIndicators is empty")
+				commitIndicators = []string{util.GetMainBranchOrDie()}
+				*indicatorTypeString = string(templates.IndicatorTypeCommit)
+			}
+			if *reviewers == "" {
+				*reviewers = os.Getenv("PR_REVIEWERS")
+				if *reviewers == "" {
+					commandError(flagSet, "reviewers not specified. Use reviewers flag or set PR_REVIEWERS environment variable", command.Usage)
+				}
+			}
+			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
+			addReviewersToPr(commitIndicators, indicatorType, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
+		}}
+}
+
 // Adds reviewers to a PR once checks have passed via Github CLI.
-func AddReviewersToPr(commitIndicators []string, indicatorType IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+func addReviewersToPr(commitIndicators []string, indicatorType templates.IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
 	if reviewers == "" {
 		panic("Reviewers cannot be empty")
 	}
@@ -34,8 +74,8 @@ func AddReviewersToPr(commitIndicators []string, indicatorType IndicatorType, wh
 	wg.Wait()
 }
 
-func checkBranch(wg *sync.WaitGroup, commitIndicator string, indicatorType IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
-	branchName := templates.GetBranchInfo(commitIndicator, indicatorType).BranchName
+func checkBranch(wg *sync.WaitGroup, commitIndicator string, indicatorType templates.IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+	branchName := templates.GetBranchInfo(commitIndicator, indicatorType).Branch
 	if whenChecksPass {
 		for {
 			summary := getChecksStatus(branchName)
@@ -62,13 +102,13 @@ func checkBranch(wg *sync.WaitGroup, commitIndicator string, indicatorType Indic
 			} else {
 				slog.Info(fmt.Sprint("Checks pending for ", commitIndicator, ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%"))
 			}
-			ex.Sleep(pollFrequency)
+			util.Sleep(pollFrequency)
 		}
 	}
 	slog.Info("Marking PR as ready for review")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "ready", branchName)
 	slog.Info("Waiting 10 seconds for any automatically assigned reviewers to be added...")
-	ex.Sleep(10 * time.Second)
+	util.Sleep(10 * time.Second)
 	prUrl := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "edit", branchName, "--add-reviewer", reviewers))
 	slog.Info(fmt.Sprint("Added reviewers ", reviewers, " to ", prUrl))
 	wg.Done()

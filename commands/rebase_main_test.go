@@ -3,9 +3,11 @@ package commands
 import (
 	"log/slog"
 	"os"
-	ex "stackeddiff/execute"
 	"stackeddiff/testinginit"
 	"testing"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,7 +20,7 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 	testinginit.AddCommit("second", "rebase-will-keep-this-file")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	allOriginalCommits := GetAllCommits()
 

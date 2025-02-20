@@ -2,9 +2,11 @@ package commands
 
 import (
 	"log/slog"
-	ex "stackeddiff/execute"
 	"strings"
 	"time"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 // Waits for a pull request to be merged.
@@ -12,7 +14,7 @@ func WaitForMerge(commitIndicator string, indicatorType IndicatorType, silent bo
 	branchName := GetBranchInfo(commitIndicator, indicatorType).BranchName
 	for getMergedAt(branchName) == "" {
 		slog.Info("Not merged yet...")
-		ex.Sleep(30 * time.Second)
+		util.Sleep(30 * time.Second)
 	}
 	slog.Info("Merged!")
 	if !silent {

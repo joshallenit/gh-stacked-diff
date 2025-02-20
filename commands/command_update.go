@@ -4,6 +4,8 @@ import (
 	"flag"
 	sd "stackeddiff"
 	"time"
+
+	"github.com/joshallenit/stacked-diff/templates"
 )
 
 func createUpdateCommand() Command {
@@ -29,7 +31,7 @@ func createUpdateCommand() Command {
 			destCommit := sd.GetBranchInfo(flagSet.Arg(0), indicatorType)
 			sd.UpdatePr(destCommit, otherCommits, indicatorType)
 			if *reviewers != "" {
-				sd.AddReviewersToPr([]string{destCommit.CommitHash}, sd.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
+				sd.AddReviewersToPr([]string{destCommit.CommitHash}, templates.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
 		}}
 }

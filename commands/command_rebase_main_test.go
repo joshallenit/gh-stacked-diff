@@ -8,8 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
-	ex "stackeddiff/execute"
 	"stackeddiff/testinginit"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
@@ -19,7 +21,7 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	testinginit.AddCommit("first", "")
 	testinginit.AddCommit("second", "rebase-will-keep-this-file")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	allOriginalCommits := sd.GetAllCommits()
 
@@ -50,7 +52,7 @@ func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommitss(t *testing.T) {
 	testinginit.AddCommit("second", "2")
 	testinginit.AddCommit("third", "3")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	allOriginalCommits := sd.GetAllCommits()
 
@@ -108,7 +110,7 @@ func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 	testinginit.AddCommit("second", "")
 	testinginit.CommitFileChange("third", "file-with-conflicts", "1")
 	testParseArguments("new", "2")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	allCommits := sd.GetAllCommits()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
@@ -136,7 +138,7 @@ func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 	testinginit.AddCommit("second", "second-1")
 	testinginit.AddCommit("third", "")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 	allCommits := sd.GetAllCommits()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 

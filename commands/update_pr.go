@@ -6,18 +6,19 @@ import (
 	"strings"
 
 	"fmt"
-	ex "stackeddiff/execute"
-	"stackeddiff/sliceutil"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 // Add commits from main to an existing PR.
 func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType IndicatorType) {
-	requireMainBranch()
+	util.RequireMainBranch()
 	requireCommitOnMain(destCommit.CommitHash)
 	var commitsToCherryPick []string
 	if len(otherCommits) > 0 {
 		if indicatorType == IndicatorTypeGuess || indicatorType == IndicatorTypeList {
-			commitsToCherryPick = sliceutil.MapSlice(otherCommits, func(commit string) string {
+			commitsToCherryPick = util.MapSlice(otherCommits, func(commit string) string {
 				return GetBranchInfo(commit, indicatorType).CommitHash
 			})
 		} else {
@@ -55,14 +56,14 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	if cherryPickError != nil {
 		slog.Info("First attempt at cherry-pick failed")
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-		rebaseCommit := firstOriginMainCommit(GetMainBranchOrDie())
-		slog.Info(fmt.Sprint("Rebasing with the base commit on "+GetMainBranchOrDie()+" branch, ", rebaseCommit,
-			", in case the local "+GetMainBranchOrDie()+" was rebased with origin/"+GetMainBranchOrDie()))
+		rebaseCommit := firstOriginMainCommit(util.GetMainBranchOrDie())
+		slog.Info(fmt.Sprint("Rebasing with the base commit on "+util.GetMainBranchOrDie()+" branch, ", rebaseCommit,
+			", in case the local "+util.GetMainBranchOrDie()+" was rebased with origin/"+util.GetMainBranchOrDie()))
 		rebaseOutput, rebaseError := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", rebaseCommit)
 		if rebaseError != nil {
 			slog.Info(fmt.Sprint(ex.Red+"Could not rebase, aborting... "+ex.Reset, rebaseOutput))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rebase", "--abort")
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
 			popStash(shouldPopStash)
 			os.Exit(1)
 		}
@@ -72,7 +73,7 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 		if cherryPickError != nil {
 			slog.Info(fmt.Sprint(ex.Red+"Could not cherry-pick, aborting... "+ex.Reset, cherryPickArgs, " ", cherryPickOutput, " ", cherryPickError))
 			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
 			popStash(shouldPopStash)
 			os.Exit(1)
 		}
@@ -87,8 +88,8 @@ func UpdatePr(destCommit BranchInfo, otherCommits []string, indicatorType Indica
 	} else {
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", destCommit.BranchName)
 	}
-	slog.Info("Switching back to " + GetMainBranchOrDie())
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", GetMainBranchOrDie())
+	slog.Info("Switching back to " + util.GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
 	slog.Info(fmt.Sprint("Rebasing, marking as fixup ", commitsToCherryPick, " for target ", destCommit.CommitHash))
 	environmentVariables := []string{
 		"GIT_SEQUENCE_EDITOR=sequence_editor_mark_as_fixup " +

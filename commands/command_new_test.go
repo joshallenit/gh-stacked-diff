@@ -9,9 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"errors"
-	ex "stackeddiff/execute"
-	"stackeddiff/sliceutil"
 	"stackeddiff/testinginit"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 func TestSdNew_CreatesPr(t *testing.T) {
@@ -51,7 +52,7 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
 		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
 	})
-	assert.True(contains, sliceutil.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+	assert.True(contains, util.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		return next.ProgramName == "gh"
 	}))
 }

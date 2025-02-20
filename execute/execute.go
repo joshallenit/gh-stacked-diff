@@ -1,7 +1,7 @@
 /*
 Provides a simple way to execute shell commands.
 */
-package util
+package execute
 
 import (
 	"errors"
@@ -11,6 +11,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 // Options for [ExecuteWithOptions].
@@ -82,7 +84,7 @@ func Execute(options ExecuteOptions, programName string, args ...string) (string
 func ExecuteOrDie(options ExecuteOptions, programName string, args ...string) string {
 	out, err := Execute(options, programName, args...)
 	if err != nil {
-		panic(fmt.Sprint(Red + "Failed executing " + Reset + getLogMessage(programName, args, out, err)))
+		panic(fmt.Sprint(color.RedString("Failed executing ") + getLogMessage(programName, args, out, err)))
 	}
 	return out
 }

@@ -8,8 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
-	ex "stackeddiff/execute"
 	"stackeddiff/testinginit"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing.T) {
@@ -17,7 +19,7 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "1")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 	testinginit.AddCommit("second", "will-be-replaced")
 	testParseArguments("new")
 	testinginit.AddCommit("fifth", "5")
@@ -31,7 +33,7 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 	testinginit.AddCommit("on-second-branch-only", "3")
 	testinginit.AddCommit("on-second-branch-only", "4")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", sd.GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", util.GetMainBranchOrDie())
 
 	testParseArguments("replace-commit", allCommits[1].Commit)
 
@@ -79,7 +81,7 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", allCommits[1].Branch)
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", sd.GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", util.GetMainBranchOrDie())
 
 	testParseArguments("replace-commit", allCommits[1].Commit)
 

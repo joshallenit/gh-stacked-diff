@@ -6,8 +6,9 @@ import (
 	"io"
 	"os"
 	"runtime"
-	sd "stackeddiff"
-	ex "stackeddiff/execute"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
 )
 
 func addIndicatorFlag(flagSet *flag.FlagSet) *string {
@@ -20,11 +21,11 @@ func addIndicatorFlag(flagSet *flag.FlagSet) *string {
 		"      Number between 0 and 99:       list\n" +
 		"      Number between 100 and 999999: pr\n" +
 		"      Otherwise:                     commit\n"
-	return flagSet.String("indicator", string(sd.IndicatorTypeGuess), usage)
+	return flagSet.String("indicator", string(templates.IndicatorTypeGuess), usage)
 }
 
-func checkIndicatorFlag(command Command, indicatorTypeString *string) sd.IndicatorType {
-	indicatorType := sd.IndicatorType(*indicatorTypeString)
+func checkIndicatorFlag(command Command, indicatorTypeString *string) templates.IndicatorType {
+	indicatorType := templates.IndicatorType(*indicatorTypeString)
 	if !indicatorType.IsValid() {
 		commandError(command.FlagSet, "Invalid indicator type: "+*indicatorTypeString, command.Usage)
 	}

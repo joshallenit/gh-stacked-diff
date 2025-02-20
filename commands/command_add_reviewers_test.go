@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
-	ex "stackeddiff/execute"
 	"stackeddiff/testinginit"
 
-	"github.com/src/go/stackeddiff/sliceutil"
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 func TestSdAddReviewers_AddReviewers(t *testing.T) {
@@ -38,7 +38,7 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
 		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
 	})
-	assert.True(contains, sliceutil.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+	assert.True(contains, util.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		return next.ProgramName == "gh"
 	}))
 }
@@ -67,7 +67,7 @@ func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
 		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
 	})
-	assert.True(contains, sliceutil.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+	assert.True(contains, util.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		return next.ProgramName == "gh"
 	}))
 }
@@ -96,7 +96,7 @@ func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
 		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
 	})
-	assert.True(contains, sliceutil.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+	assert.True(contains, util.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		return next.ProgramName == "gh"
 	}))
 }

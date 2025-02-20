@@ -3,13 +3,14 @@ package commands
 import (
 	"fmt"
 	"log/slog"
-	ex "stackeddiff/execute"
 	"strings"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
 )
 
 // Replaces a commit on main branch with its associated branch.
 func ReplaceCommit(commitIndicator string, indicatorType IndicatorType) {
-	requireMainBranch()
+	util.RequireMainBranch()
 	branchInfo := GetBranchInfo(commitIndicator, indicatorType)
 	requireCommitOnMain(branchInfo.CommitHash)
 	shouldPopStash := stash("replace-commit " + commitIndicator)

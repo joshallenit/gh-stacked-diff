@@ -8,8 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sd "stackeddiff"
-	ex "stackeddiff/execute"
 	"stackeddiff/testinginit"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T) {
@@ -18,7 +20,7 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 
 	testinginit.AddCommit("first", "file-with-conflicts")
 	testinginit.CommitFileChange("second", "file-with-conflicts", "1")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", sd.GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 	allCommits := sd.GetAllCommits()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 	testinginit.CommitFileChange("third", "file-with-conflicts", "2")
@@ -27,7 +29,7 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 
 	testParseArguments("checkout", "1")
 
-	_, mergeErr := ex.Execute(ex.ExecuteOptions{}, "git", "merge", "origin/"+sd.GetMainBranchOrDie())
+	_, mergeErr := ex.Execute(ex.ExecuteOptions{}, "git", "merge", "origin/"+util.GetMainBranchOrDie())
 	assert.NotNil(mergeErr)
 
 	if writeErr := os.WriteFile("file-with-conflicts", []byte("1\n2"), 0); writeErr != nil {
@@ -37,9 +39,9 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 
 	continueOptions := ex.ExecuteOptions{EnvironmentVariables: []string{"GIT_EDITOR=true"}}
 	ex.ExecuteOrDie(continueOptions, "git", "merge", "--continue")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", sd.GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
 
-	_, rebaseErr := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", "origin/"+sd.GetMainBranchOrDie())
+	_, rebaseErr := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", "origin/"+util.GetMainBranchOrDie())
 	assert.NotNil(rebaseErr)
 
 	testParseArguments("replace-conflicts", "--confirm=true")

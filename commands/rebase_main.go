@@ -6,13 +6,13 @@ import (
 	"slices"
 	"strings"
 
-	ex "stackeddiff/execute"
-	"stackeddiff/sliceutil"
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 // Bring local main branch up to date with remote
 func RebaseMain() {
-	requireMainBranch()
+	util.RequireMainBranch()
 	shouldPopStash := stash("rebase-main")
 
 	slog.Info("Fetching...")
@@ -26,21 +26,21 @@ func RebaseMain() {
 	if len(dropCommits) > 0 {
 		environmentVariables := []string{
 			"GIT_SEQUENCE_EDITOR=sequence_editor_drop_already_merged " +
-				strings.Join(sliceutil.MapSlice(dropCommits, func(gitLog GitLog) string {
+				strings.Join(util.MapSlice(dropCommits, func(gitLog GitLog) string {
 					return gitLog.Commit
 				}), " ")}
 		options := ex.ExecuteOptions{
 			EnvironmentVariables: environmentVariables,
 			Output:               ex.NewStandardOutput(),
 		}
-		_, rebaseError = ex.Execute(options, "git", "rebase", "-i", "origin/"+GetMainBranchOrDie())
+		_, rebaseError = ex.Execute(options, "git", "rebase", "-i", "origin/"+util.GetMainBranchOrDie())
 		slog.Info("Deleting merged branches...")
 		dropBranches(dropCommits)
 	} else {
 		options := ex.ExecuteOptions{
 			Output: ex.NewStandardOutput(),
 		}
-		_, rebaseError = ex.Execute(options, "git", "rebase", "origin/"+GetMainBranchOrDie())
+		_, rebaseError = ex.Execute(options, "git", "rebase", "origin/"+util.GetMainBranchOrDie())
 	}
 	if rebaseError != nil {
 		slog.Warn("Rebase failed, check output ^^ for details. Continue rebase manually.")
@@ -51,7 +51,7 @@ func RebaseMain() {
 
 func getMergedBranches() []string {
 	mergedBranchesRaw := ex.ExecuteOrDie(ex.ExecuteOptions{},
-		"gh", "pr", "list", "--author", "@me", "--state", "merged", "--base", GetMainBranchOrDie(),
+		"gh", "pr", "list", "--author", "@me", "--state", "merged", "--base", util.GetMainBranchOrDie(),
 		"--json", "headRefName,mergeCommit", "--jq", ".[ ] | .headRefName + \" \" +  .mergeCommit.oid")
 	mergedBranchesRawLines := strings.Split(strings.TrimSpace(mergedBranchesRaw), "\n")
 	mergedBranches := make([]string, 0, len(mergedBranchesRawLines))

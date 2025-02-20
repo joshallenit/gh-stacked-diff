@@ -7,14 +7,15 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 // Prints changes in the current branch compared to the main branch to out.
 func PrintGitLog(out io.Writer) {
-	if GetCurrentBranchName() != GetMainBranchOrDie() {
+	if GetCurrentBranchName() != util.GetMainBranchOrDie() {
 		gitArgs := []string{"--no-pager", "log", "--pretty=oneline", "--abbrev-commit"}
-		if RemoteHasBranch(GetMainBranchOrDie()) {
-			gitArgs = append(gitArgs, "origin/"+GetMainBranchOrDie()+"..HEAD")
+		if util.RemoteHasBranch(util.GetMainBranchOrDie()) {
+			gitArgs = append(gitArgs, "origin/"+util.GetMainBranchOrDie()+"..HEAD")
 		}
 		gitArgs = append(gitArgs, "--color=always")
 		ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: out, Stderr: out}}, "git", gitArgs...)

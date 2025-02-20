@@ -3,7 +3,8 @@ package commands
 import (
 	"flag"
 	sd "stackeddiff"
-	ex "stackeddiff/execute"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
 )
 
 func createCheckoutCommand() Command {

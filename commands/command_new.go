@@ -3,8 +3,10 @@ package commands
 import (
 	"flag"
 	sd "stackeddiff"
-	ex "stackeddiff/execute"
 	"time"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
 )
 
 func createNewCommand() Command {
@@ -74,7 +76,7 @@ func createNewCommand() Command {
 			branchInfo := sd.GetBranchInfo(flagSet.Arg(0), indicatorType)
 			sd.CreateNewPr(*draft, *featureFlag, *baseBranch, branchInfo)
 			if *reviewers != "" {
-				sd.AddReviewersToPr([]string{branchInfo.CommitHash}, sd.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
+				sd.AddReviewersToPr([]string{branchInfo.CommitHash}, templates.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
 		}}
 }

@@ -2,9 +2,11 @@ package commands
 
 import (
 	"log/slog"
-	ex "stackeddiff/execute"
 	"strings"
 	"testing"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 
 	"github.com/src/go/stackeddiff/testinginit"
 
@@ -16,7 +18,7 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", util.GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	// Check that the PR was created
 	outWriter := testinginit.NewWriteRecorder()
@@ -34,12 +36,12 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	testinginit.AddCommit("second", "")
 	allCommits := getNewCommits("HEAD")
 
-	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", util.GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := getNewCommits("HEAD")
@@ -53,14 +55,14 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	testinginit.AddCommit("second", "")
 
 	testinginit.AddCommit("third", "")
 	allCommits := getNewCommits("HEAD")
 
-	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", util.GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := getNewCommits("HEAD")

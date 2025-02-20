@@ -6,8 +6,10 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	ex "stackeddiff/execute"
 	"strings"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 // For failed rebase: replace changes with its associated branch.
@@ -17,7 +19,7 @@ func ReplaceConflicts(stdOut io.Writer, confirmed bool) {
 	checkConfirmed(stdOut, confirmed)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
 	slog.Info(fmt.Sprint("Replacing changes (merge conflicts) for failed rebase of commit ", commitWithConflicts, ", with changes from associated branch, ", branchInfo.BranchName))
-	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", "origin/"+GetMainBranchOrDie(), branchInfo.BranchName)
+	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", "origin/"+util.GetMainBranchOrDie(), branchInfo.BranchName)
 	ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff}, "git", "apply")
 	slog.Info("Adding changes and continuing rebase")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")

@@ -2,9 +2,11 @@ package commands
 
 import (
 	"log/slog"
-	ex "stackeddiff/execute"
 	"stackeddiff/testinginit"
 	"testing"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +16,7 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 	testinginit.InitTest(slog.LevelInfo)
 	testinginit.AddCommit("first", "")
 
-	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", util.GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	testinginit.AddCommit("second", "")
 
@@ -34,11 +36,11 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 	testinginit.InitTest(slog.LevelInfo)
 
 	testinginit.AddCommit("first", "")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	testinginit.AddCommit("second", "")
 
-	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", util.GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	testinginit.AddCommit("third", "")
 

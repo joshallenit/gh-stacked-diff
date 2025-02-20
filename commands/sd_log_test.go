@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/joshallenit/stacked-diff/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,7 +30,7 @@ func Test_PrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	testinginit.AddCommit("second", "")
 
@@ -50,7 +51,7 @@ func TestPrintGitLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t 
 
 	testinginit.AddCommit("first", "")
 
-	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", util.GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	outWriter := testinginit.NewWriteRecorder()
 	PrintGitLog(outWriter)
@@ -68,7 +69,7 @@ func TestPrintGitLog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 
 	testinginit.AddCommit("first", "")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", GetMainBranchOrDie())
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", "-b", "my-branch")
 
@@ -88,7 +89,7 @@ func TestPrintGitLog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) 
 
 	testinginit.AddCommit("first", "")
 
-	CreateNewPr(true, "", GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
+	CreateNewPr(true, "", util.GetMainBranchOrDie(), GetBranchInfo("", IndicatorTypeGuess))
 
 	testinginit.AddCommit("second", "")
 
