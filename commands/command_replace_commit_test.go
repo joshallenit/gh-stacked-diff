@@ -7,10 +7,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ex "github.com/joshallenit/stacked-diff/execute"
-	"github.com/joshallenit/stacked-diff/templates"
-	"github.com/joshallenit/stacked-diff/testutil"
-	"github.com/joshallenit/stacked-diff/util"
+	ex "github.com/joshallenit/stacked-diff/v2/execute"
+	"github.com/joshallenit/stacked-diff/v2/templates"
+	"github.com/joshallenit/stacked-diff/v2/testutil"
+	"github.com/joshallenit/stacked-diff/v2/util"
 )
 
 func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing.T) {

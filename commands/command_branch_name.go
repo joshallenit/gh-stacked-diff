@@ -6,7 +6,7 @@ import (
 	"io"
 	"log/slog"
 
-	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/v2/templates"
 )
 
 func createBranchNameCommand(stdOut io.Writer) Command {

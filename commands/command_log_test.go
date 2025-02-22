@@ -7,12 +7,12 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/joshallenit/stacked-diff/templates"
-	"github.com/joshallenit/stacked-diff/testutil"
+	"github.com/joshallenit/stacked-diff/v2/templates"
+	"github.com/joshallenit/stacked-diff/v2/testutil"
 
-	ex "github.com/joshallenit/stacked-diff/execute"
+	ex "github.com/joshallenit/stacked-diff/v2/execute"
 
-	"github.com/joshallenit/stacked-diff/util"
+	"github.com/joshallenit/stacked-diff/v2/util"
 	"github.com/stretchr/testify/assert"
 )
 

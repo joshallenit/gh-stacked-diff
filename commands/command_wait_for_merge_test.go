@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ex "github.com/joshallenit/stacked-diff/execute"
-	"github.com/joshallenit/stacked-diff/templates"
-	"github.com/joshallenit/stacked-diff/testutil"
+	ex "github.com/joshallenit/stacked-diff/v2/execute"
+	"github.com/joshallenit/stacked-diff/v2/templates"
+	"github.com/joshallenit/stacked-diff/v2/testutil"
 )
 
 func TestSdWaitForMerge_WaitsForMerge(t *testing.T) {

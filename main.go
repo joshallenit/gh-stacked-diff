@@ -41,7 +41,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/joshallenit/stacked-diff/commands"
+	"github.com/joshallenit/stacked-diff/v2/commands"
 )
 
 func main() {

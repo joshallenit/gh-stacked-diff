@@ -11,8 +11,8 @@ import (
 	"strings"
 	"text/template"
 
-	ex "github.com/joshallenit/stacked-diff/execute"
-	"github.com/joshallenit/stacked-diff/util"
+	ex "github.com/joshallenit/stacked-diff/v2/execute"
+	"github.com/joshallenit/stacked-diff/v2/util"
 )
 
 //go:embed config/branch_name.template

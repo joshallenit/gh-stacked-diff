@@ -7,7 +7,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/v2/templates"
 )
 
 func addIndicatorFlag(flagSet *flag.FlagSet) *string {

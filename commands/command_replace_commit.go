@@ -6,10 +6,10 @@ import (
 	"log/slog"
 	"strings"
 
-	ex "github.com/joshallenit/stacked-diff/execute"
-	"github.com/joshallenit/stacked-diff/templates"
+	ex "github.com/joshallenit/stacked-diff/v2/execute"
+	"github.com/joshallenit/stacked-diff/v2/templates"
 
-	"github.com/joshallenit/stacked-diff/util"
+	"github.com/joshallenit/stacked-diff/v2/util"
 )
 
 func createReplaceCommitCommand() Command {

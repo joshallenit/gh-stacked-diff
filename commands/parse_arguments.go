@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/joshallenit/stacked-diff/util"
+	"github.com/joshallenit/stacked-diff/v2/util"
 )
 
 func ParseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSet, commandLineArgs []string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
