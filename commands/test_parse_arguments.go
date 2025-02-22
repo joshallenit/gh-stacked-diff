@@ -13,6 +13,6 @@ func testParseArguments(commandLineArgs ...string) string {
 		panic(err)
 	}
 	out := testutil.NewWriteRecorder()
-	ParseArguments(out, out, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, panicOnExit)
+	parseArguments(out, out, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, panicOnExit)
 	return out.String()
 }

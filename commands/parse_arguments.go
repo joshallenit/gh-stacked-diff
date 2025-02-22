@@ -5,13 +5,33 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"os"
 	"slices"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/joshallenit/stacked-diff/v2/util"
 )
 
-func ParseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSet, commandLineArgs []string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
+func ExecuteCommand(stdOut io.Writer, stdErr io.Writer, commandLineArgs []string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
+	// Unset any color in case a previous terminal command set colors and then was
+	// terminated before it could reset the colors.
+	color.Unset()
+
+	parseArguments(stdOut, stdErr, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, exit)
+}
+
+func DefaultExit(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any) {
+	// Show panic stack trace during debug log level.
+	if logLevelVar.Level() <= slog.LevelDebug {
+		panic(err)
+	} else {
+		fmt.Fprintln(stdErr, fmt.Sprint("error: ", err))
+		os.Exit(1)
+	}
+}
+
+func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSet, commandLineArgs []string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
 	if commandLine.ErrorHandling() != flag.ContinueOnError {
 		// Use ContinueOnError so that a description of the command can be included before usage
 		// for help.

@@ -34,34 +34,11 @@ flags:
 package main
 
 import (
-	"flag"
-	"fmt"
-	"io"
-	"log/slog"
 	"os"
 
-	"github.com/fatih/color"
 	"github.com/joshallenit/stacked-diff/v2/commands"
 )
 
 func main() {
-	ExecuteCommand(os.Stdout, os.Stderr, os.Args[1:], DefaultExit)
-}
-
-func ExecuteCommand(stdOut io.Writer, stdErr io.Writer, commandLineArgs []string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
-	// Unset any color in case a previous terminal command set colors and then was
-	// terminated before it could reset the colors.
-	color.Unset()
-
-	commands.ParseArguments(stdOut, stdErr, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, exit)
-}
-
-func DefaultExit(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any) {
-	// Show panic stack trace during debug log level.
-	if logLevelVar.Level() <= slog.LevelDebug {
-		panic(err)
-	} else {
-		fmt.Fprintln(stdErr, fmt.Sprint("error: ", err))
-		os.Exit(1)
-	}
+	commands.ExecuteCommand(os.Stdout, os.Stderr, os.Args[1:], commands.DefaultExit)
 }
