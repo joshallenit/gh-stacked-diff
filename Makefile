@@ -9,7 +9,8 @@ format:
 build: format
 	rm -rf bin; \
 	mkdir -p bin; \
-	go build -o bin ./...  
+	go build -o bin ./...; \
+	mv bin/stacked-diff* bin/sd  
 
 test: build
 	go test ./...

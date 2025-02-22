@@ -4,8 +4,6 @@
 
 The Stacked Diff Workflow CLI (also known as, the `sd` command) is written in golang. 
 
-*Note: There are some legacy scripts written in `bash` for building on Android but these will be removed from the project as they are unrelated to Stacked Diff Workflow.*
-
 1. Install [golang](https://go.dev/dl/).
 2. Install make. This is already installed on Mac, but instructions for windows are [here](https://leangaurav.medium.com/how-to-setup-install-gnu-make-on-windows-324480f1da69).
 
@@ -15,11 +13,11 @@ Then run:
 make build
 ```
 
-Binaries are created in `./bin`.
+Binaries are created in `./bin`. The [stacked-diff] executable is renamed to [sd] in [Makefile].
 
 ## Code Organization
 
-The main entry point to the Stacked Diff Workflow CLI ("sd") is [src/go/sd/sd_main.go].
+The main entry point to the Stacked Diff Workflow CLI ("sd") is [main.go]. The commands are implemented under [commands].
 
 ## How to Make a Release
 
