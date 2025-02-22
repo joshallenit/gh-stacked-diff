@@ -4,7 +4,6 @@ import (
 	"flag"
 	"io"
 	"log/slog"
-	sd "stackeddiff"
 
 	"fmt"
 	"slices"
@@ -40,12 +39,12 @@ func createLogCommand(stdOut io.Writer) Command {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			sd.PrintGitLog(stdOut)
+			printGitLog(stdOut)
 		}}
 }
 
 // Prints changes in the current branch compared to the main branch to out.
-func PrintGitLog(out io.Writer) {
+func printGitLog(out io.Writer) {
 	if util.GetCurrentBranchName() != util.GetMainBranchOrDie() {
 		gitArgs := []string{"--no-pager", "log", "--pretty=oneline", "--abbrev-commit"}
 		if util.RemoteHasBranch(util.GetMainBranchOrDie()) {

@@ -6,8 +6,9 @@ import (
 
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/joshallenit/stacked-diff/templates"
-	testutil "github.com/joshallenit/stacked-diff/test_util"
+	"github.com/joshallenit/stacked-diff/testutil"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
 
@@ -22,7 +23,7 @@ func TestPrintGitLog_OnEmptyRemote_PrintsLog(t *testing.T) {
 	testutil.AddCommit("first", "")
 
 	outWriter := testutil.NewWriteRecorder()
-	PrintGitLog(outWriter)
+	printGitLog(outWriter)
 	out := outWriter.String()
 
 	if !strings.Contains(out, "first") {
@@ -30,7 +31,7 @@ func TestPrintGitLog_OnEmptyRemote_PrintsLog(t *testing.T) {
 	}
 }
 
-func Test_PrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
+func TestPrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 	testutil.InitTest(slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
@@ -40,7 +41,7 @@ func Test_PrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 	testutil.AddCommit("second", "")
 
 	outWriter := testutil.NewWriteRecorder()
-	PrintGitLog(outWriter)
+	printGitLog(outWriter)
 	out := outWriter.String()
 
 	if strings.Contains(out, "first") {
@@ -56,10 +57,10 @@ func TestPrintGitLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t 
 
 	testutil.AddCommit("first", "")
 
-	CreateNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", IndicatorTypeGuess))
+	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
 
 	outWriter := testutil.NewWriteRecorder()
-	PrintGitLog(outWriter)
+	printGitLog(outWriter)
 	out := outWriter.String()
 
 	if !strings.Contains(out, "✅") {
@@ -81,7 +82,7 @@ func TestPrintGitLog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 	testutil.AddCommit("second", "")
 
 	outWriter := testutil.NewWriteRecorder()
-	PrintGitLog(outWriter)
+	printGitLog(outWriter)
 	out := outWriter.String()
 
 	assert.NotContains(out, "first")
@@ -94,20 +95,20 @@ func TestPrintGitLog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) 
 
 	testutil.AddCommit("first", "")
 
-	CreateNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", IndicatorTypeGuess))
+	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
 
 	testutil.AddCommit("second", "")
 
-	allCommits := GetAllCommits()
+	allCommits := templates.GetAllCommits()
 
-	UpdatePr(templates.GetBranchInfo(allCommits[1].Commit, IndicatorTypeCommit), []string{}, IndicatorTypeCommit)
+	updatePr(templates.GetBranchInfo(allCommits[1].Commit, templates.IndicatorTypeCommit), []string{}, templates.IndicatorTypeCommit)
 
 	outWriter := testutil.NewWriteRecorder()
-	PrintGitLog(outWriter)
+	printGitLog(outWriter)
 	out := outWriter.String()
 
-	allCommits = GetAllCommits()
-	assert.Equal("1. ✅ "+ex.Yellow+allCommits[0].Commit+ex.Reset+" first\n"+
+	allCommits = templates.GetAllCommits()
+	assert.Equal("1. ✅ "+color.YellowString(allCommits[0].Commit)+" first\n"+
 		"      - second\n"+
 		"      - first\n",
 		out)
@@ -125,7 +126,7 @@ func TestSdLog_LogsOutput(t *testing.T) {
 	assert.Contains(out, "first")
 }
 
-func TestGitlog_WhenManyCommits_PadsFirstCommits(t *testing.T) {
+func TestSdLog_WhenManyCommits_PadsFirstCommits(t *testing.T) {
 	assert := assert.New(t)
 
 	testutil.InitTest(slog.LevelInfo)

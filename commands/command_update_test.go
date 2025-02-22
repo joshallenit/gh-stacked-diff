@@ -2,7 +2,7 @@ package commands
 
 import (
 	"log/slog"
-	sd "stackeddiff"
+
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,8 +10,66 @@ import (
 	"slices"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/testutil"
 	"github.com/joshallenit/stacked-diff/util"
 )
+
+func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
+	assert := assert.New(t)
+	testutil.InitTest(slog.LevelInfo)
+	testutil.AddCommit("first", "")
+
+	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+
+	testutil.AddCommit("second", "")
+
+	commitsOnMain := templates.GetAllCommits()
+
+	updatePr(templates.GetBranchInfo(commitsOnMain[1].Commit, templates.IndicatorTypeCommit), []string{}, templates.IndicatorTypeCommit)
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[1].Branch)
+
+	commitsOnBranch := templates.GetAllCommits()
+
+	assert.Equal(3, len(commitsOnBranch))
+}
+
+func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
+	assert := assert.New(t)
+	testutil.InitTest(slog.LevelInfo)
+
+	testutil.AddCommit("first", "")
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+
+	testutil.AddCommit("second", "")
+
+	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+
+	testutil.AddCommit("third", "")
+
+	testutil.AddCommit("fourth", "")
+
+	commitsOnMain := templates.GetAllCommits()
+
+	updatePr(templates.GetBranchInfo(commitsOnMain[2].Commit, templates.IndicatorTypeCommit), []string{}, templates.IndicatorTypeCommit)
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[2].Branch)
+
+	allCommitsOnBranch := templates.GetAllCommits()
+
+	assert.Equal(4, len(allCommitsOnBranch))
+	assert.Equal("fourth", allCommitsOnBranch[0].Subject)
+	assert.Equal("second", allCommitsOnBranch[1].Subject)
+	assert.Equal("first", allCommitsOnBranch[2].Subject)
+	assert.Equal(testutil.InitialCommitSubject, allCommitsOnBranch[3].Subject)
+
+	newCommitsOnBranch := templates.GetNewCommits("HEAD")
+
+	assert.Equal(2, len(newCommitsOnBranch))
+	assert.Equal(newCommitsOnBranch[0].Subject, "fourth")
+	assert.Equal(newCommitsOnBranch[1].Subject, "second")
+}
 
 func TestSdUpdate_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
@@ -24,11 +82,11 @@ func TestSdUpdate_UpdatesPr(t *testing.T) {
 
 	testutil.AddCommit("second", "")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 
 	testParseArguments("update", allCommits[1].Commit)
 
-	allCommits = sd.GetAllCommits()
+	allCommits = templates.GetAllCommits()
 
 	assert.Equal(2, len(allCommits))
 	assert.Equal("first", allCommits[0].Subject)
@@ -49,14 +107,14 @@ func TestSdUpdate_WithListIndicators_UpdatesPr(t *testing.T) {
 
 	testParseArguments("update", "3", "2", "1")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 
 	assert.Equal(2, len(allCommits))
 	assert.Equal("first", allCommits[0].Subject)
 	assert.Equal(testutil.InitialCommitSubject, allCommits[1].Subject)
 
-	ex.Execute(ex.ExecuteOptions{}, "sd", "checkout", "1")
-	allCommits = sd.GetAllCommits()
+	testParseArguments("checkout", "1")
+	allCommits = templates.GetAllCommits()
 
 	assert.Equal(4, len(allCommits))
 	assert.Equal("third", allCommits[0].Subject)
@@ -76,7 +134,7 @@ func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 
 	testutil.AddCommit("second", "")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 
 	testExecutor.SetResponse(
 		// There has to be at least 4 checks, each with 3 values: status, conclusion, and state.

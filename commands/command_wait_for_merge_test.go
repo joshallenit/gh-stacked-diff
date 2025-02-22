@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	sd "stackeddiff"
-
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/testutil"
 )
 
 func TestSdWaitForMerge_WaitsForMerge(t *testing.T) {
@@ -17,7 +17,7 @@ func TestSdWaitForMerge_WaitsForMerge(t *testing.T) {
 	testExecutor := testutil.InitTest(slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 	testExecutor.SetResponse("2025-01-01", nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
 	out := testParseArguments("wait-for-merge", allCommits[0].Commit)

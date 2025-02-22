@@ -1,5 +1,5 @@
 /*
-Stacked Diff Workflow
+Stacked Diff Workflow Command Line Interface
 
 usage: sd [top-level-flags] <command> [<args>]
 
@@ -40,14 +40,16 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/joshallenit/stacked-diff/util"
+	"github.com/fatih/color"
+	"github.com/joshallenit/stacked-diff/commands"
 )
 
-/*
-sd - stacked diff -
-*/
 func main() {
-	parseArguments(os.Stdout, os.Stderr, flag.NewFlagSet("sd", flag.ContinueOnError), os.Args[1:], defaultExit)
+	// Unset any color in case a previous terminal command set colors and then was
+	// terminated before it could reset the colors.
+	color.Unset()
+
+	commands.ParseArguments(os.Stdout, os.Stderr, flag.NewFlagSet("sd", flag.ContinueOnError), os.Args[1:], defaultExit)
 }
 
 func defaultExit(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any) {
@@ -55,7 +57,7 @@ func defaultExit(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, er
 	if logLevelVar.Level() <= slog.LevelDebug {
 		panic(err)
 	} else {
-		fmt.Fprintln(stdErr, fmt.Sprint(util.Reset, "error: ", err))
+		fmt.Fprintln(stdErr, fmt.Sprint("error: ", err))
 		os.Exit(1)
 	}
 }

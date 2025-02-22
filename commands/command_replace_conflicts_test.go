@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	sd "stackeddiff"
-
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/testutil"
 	"github.com/joshallenit/stacked-diff/util"
 )
 
@@ -20,7 +20,7 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 	testutil.AddCommit("first", "file-with-conflicts")
 	testutil.CommitFileChange("second", "file-with-conflicts", "1")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 	testutil.CommitFileChange("third", "file-with-conflicts", "2")
 
@@ -45,7 +45,7 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 
 	testParseArguments("replace-conflicts", "--confirm=true")
 
-	allCommits = sd.GetAllCommits()
+	allCommits = templates.GetAllCommits()
 
 	assert.Equal(4, len(allCommits))
 	assert.Equal("third", allCommits[0].Subject)

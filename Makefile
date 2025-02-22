@@ -4,18 +4,14 @@
 # TODO: support release on windows (zip not on windows)
 
 format:
-	cd src/go; gofmt -w .
+	gofmt -w .
 
 build: format
 	rm -rf bin; \
 	mkdir -p bin; \
-	cd src/go; \
-	go build -o ../../bin ./...  
-	cp src/bash/* bin
+	go build -o bin ./...  
 
 test: build
-	export PATH=${PATH}:; \
-	cd src/go; \
 	go test ./...
 
 release: test

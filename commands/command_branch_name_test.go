@@ -4,9 +4,9 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/testutil"
 	"github.com/stretchr/testify/assert"
-
-	sd "stackeddiff"
 )
 
 func TestSdBranchName_OutputsBranchName(t *testing.T) {
@@ -16,7 +16,7 @@ func TestSdBranchName_OutputsBranchName(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 
 	out := testParseArguments("branch-name", allCommits[0].Commit)
 

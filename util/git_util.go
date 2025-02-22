@@ -81,7 +81,7 @@ func trySetRemoteHead() {
 	}
 }
 
-func getUsername() string {
+func GetUsername() string {
 	if userEmail == "" {
 		userEmailRaw := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email"))
 		userEmail = userEmailRaw[0:strings.Index(userEmailRaw, "@")]

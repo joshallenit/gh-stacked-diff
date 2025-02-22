@@ -11,6 +11,9 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 const InitialCommitSubject = "Initial empty commit"
@@ -28,24 +31,24 @@ func init() {
 	if err != nil {
 		panic("Cannot find UserCacheDir: " + err.Error())
 	}
-	TestWorkingDir = path.Join(userCacheDir, "stacked-diff-workflow-unit-tests")
+	TestWorkingDir = path.Join(userCacheDir, "stacked-diff-tests")
 }
 
 // CD into repository directory and set any global DI variables (slog, sleep, and executor).
 func InitTest(logLevel slog.Level) *ex.TestExecutor {
-	opts := ex.PrettyHandlerOptions{
+	opts := util.PrettyHandlerOptions{
 		SlogOpts: slog.HandlerOptions{
 			Level: logLevel,
 		},
 	}
-	handler := ex.NewPrettyHandler(os.Stdout, opts)
+	handler := util.NewPrettyHandler(os.Stdout, opts)
 	slog.SetDefault(slog.New(handler))
 	cdTestRepo()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "--allow-empty", "-m", InitialCommitSubject)
 	defaultBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch"))
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", defaultBranch)
 
-	ex.SetDefaultSleep(func(d time.Duration) {
+	util.SetDefaultSleep(func(d time.Duration) {
 		slog.Debug(fmt.Sprint("Skipping sleep in tests ", d))
 	})
 	return setTestExecutor()
@@ -81,6 +84,9 @@ func cdTestDir() {
 	if functionName == "" {
 		panic("Could not find caller outside of " + thisFile)
 	}
+	// Reduce the length of the function name as otherwise on windows the OS max can be exceeded.
+	functionParts := strings.Split(functionName, "/")
+	functionName = functionParts[len(functionParts)-1]
 	individualTestDir := path.Join(TestWorkingDir, functionName)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "rm", "-rf", individualTestDir)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "mkdir", "-p", individualTestDir)

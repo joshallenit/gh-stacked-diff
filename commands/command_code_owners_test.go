@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/testutil"
 	"github.com/joshallenit/stacked-diff/util"
 )
 

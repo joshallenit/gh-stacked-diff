@@ -2,7 +2,13 @@ package commands
 
 import (
 	"flag"
-	sd "stackeddiff"
+	"log/slog"
+	"strings"
+	"time"
+
+	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/util"
 )
 
 func createWaitForMergeCommand() Command {
@@ -23,6 +29,23 @@ func createWaitForMergeCommand() Command {
 				commandError(flagSet, "missing commitIndicator", command.Usage)
 			}
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
-			sd.WaitForMerge(flagSet.Arg(0), indicatorType, *silent)
+			waitForMerge(flagSet.Arg(0), indicatorType, *silent)
 		}}
+}
+
+// Waits for a pull request to be merged.
+func waitForMerge(commitIndicator string, indicatorType templates.IndicatorType, silent bool) {
+	branchName := templates.GetBranchInfo(commitIndicator, indicatorType).Branch
+	for getMergedAt(branchName) == "" {
+		slog.Info("Not merged yet...")
+		util.Sleep(30 * time.Second)
+	}
+	slog.Info("Merged!")
+	if !silent {
+		ex.ExecuteOrDie(ex.ExecuteOptions{}, "say", "P R has been merged")
+	}
+}
+
+func getMergedAt(branchName string) string {
+	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "mergedAt", "--jq", ".mergedAt"))
 }

@@ -7,7 +7,6 @@ import (
 	"os"
 	"runtime"
 
-	ex "github.com/joshallenit/stacked-diff/execute"
 	"github.com/joshallenit/stacked-diff/templates"
 )
 
@@ -64,7 +63,7 @@ func commandHelp(flagSet *flag.FlagSet, description string, usage string, isErro
 	} else {
 		out = os.Stdout
 	}
-	fmt.Fprintln(out, ex.Reset+description)
+	fmt.Fprintln(out, description)
 	printUsage(flagSet, usage, out)
 	if isError {
 		os.Exit(1)
@@ -74,7 +73,7 @@ func commandHelp(flagSet *flag.FlagSet, description string, usage string, isErro
 }
 
 func commandError(flagSet *flag.FlagSet, errMessage string, usage string) {
-	fmt.Fprintln(os.Stderr, ex.Reset+"error: "+errMessage)
+	fmt.Fprintln(os.Stderr, "error: "+errMessage)
 	printUsage(flagSet, usage, os.Stderr)
 	os.Exit(1)
 }

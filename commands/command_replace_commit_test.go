@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	sd "stackeddiff"
-
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/testutil"
 	"github.com/joshallenit/stacked-diff/util"
 )
 
@@ -23,7 +23,7 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 	testParseArguments("new")
 	testutil.AddCommit("fifth", "5")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 
 	testParseArguments("checkout", allCommits[1].Commit)
 
@@ -36,7 +36,7 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 
 	testParseArguments("replace-commit", allCommits[1].Commit)
 
-	allCommits = sd.GetAllCommits()
+	allCommits = templates.GetAllCommits()
 
 	assert.Equal(4, len(allCommits))
 	assert.Equal("fifth", allCommits[0].Subject)
@@ -69,7 +69,7 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 	testParseArguments("new")
 	testutil.AddCommit("fifth", "5")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 
 	testParseArguments("checkout", allCommits[1].Commit)
 
@@ -84,7 +84,7 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 
 	testParseArguments("replace-commit", allCommits[1].Commit)
 
-	allCommits = sd.GetAllCommits()
+	allCommits = templates.GetAllCommits()
 
 	assert.Equal(3, len(allCommits))
 	assert.Equal("fifth", allCommits[0].Subject)

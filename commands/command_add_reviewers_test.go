@@ -7,9 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	sd "stackeddiff"
-
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
 	"github.com/joshallenit/stacked-diff/testutil"
 	"github.com/joshallenit/stacked-diff/util"
 )
@@ -23,7 +22,7 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 
 	testParseArguments("new")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 	testExecutor.SetResponse(
 		// There has to be at least 4 checks, each with 3 values: status, conclusion, and state.
 		"SUCCESS\nSUCCESS\nSUCCESS\n"+
@@ -52,7 +51,7 @@ func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 
 	testParseArguments("new")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 	testExecutor.SetResponse(
 		// There has to be at least 4 checks, each with 3 values: status, conclusion, and state.
 		"SUCCESS\nSUCCESS\nSUCCESS\n"+
@@ -81,7 +80,7 @@ func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
 
 	testParseArguments("new")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 	testExecutor.SetResponse(
 		// There has to be at least 4 checks, each with 3 values: status, conclusion, and state.
 		"SUCCESS\nSUCCESS\nSUCCESS\n"+

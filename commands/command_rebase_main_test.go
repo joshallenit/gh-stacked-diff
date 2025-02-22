@@ -7,11 +7,42 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	sd "stackeddiff"
-
 	ex "github.com/joshallenit/stacked-diff/execute"
+	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/testutil"
 	"github.com/joshallenit/stacked-diff/util"
 )
+
+func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
+	assert := assert.New(t)
+	testExecutor := testutil.InitTest(slog.LevelInfo)
+
+	testutil.AddCommit("first", "")
+
+	testutil.AddCommit("second", "rebase-will-keep-this-file")
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+
+	allOriginalCommits := templates.GetAllCommits()
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
+
+	testutil.AddCommit("second", "rebase-will-drop-this-file")
+
+	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
+		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+
+	rebaseMain()
+
+	dirEntries, err := os.ReadDir(".")
+	if err != nil {
+		panic("Could not read dir: " + err.Error())
+	}
+	assert.Equal(3, len(dirEntries))
+	assert.Equal(".git", dirEntries[0].Name())
+	assert.Equal("first", dirEntries[1].Name())
+	assert.Equal("rebase-will-keep-this-file", dirEntries[2].Name())
+}
 
 func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
@@ -22,7 +53,7 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
-	allOriginalCommits := sd.GetAllCommits()
+	allOriginalCommits := templates.GetAllCommits()
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
 
@@ -53,7 +84,7 @@ func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommitss(t *testing.T) {
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
-	allOriginalCommits := sd.GetAllCommits()
+	allOriginalCommits := templates.GetAllCommits()
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[2].Commit)
 
@@ -87,7 +118,7 @@ func TestSdRebaseMain_WithDuplicateBranches_Panics(t *testing.T) {
 	testutil.AddCommit("second", "2.1")
 	testutil.AddCommit("second", "2.2")
 
-	allOriginalCommits := sd.GetAllCommits()
+	allOriginalCommits := templates.GetAllCommits()
 
 	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
@@ -111,7 +142,7 @@ func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 	testParseArguments("new", "2")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
 	testutil.AddCommit("second", "")
 	testutil.CommitFileChange("third", "file-with-conflicts", "2")
@@ -138,7 +169,7 @@ func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 	testutil.AddCommit("third", "")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 
 	testutil.AddCommit("second", "second-2")

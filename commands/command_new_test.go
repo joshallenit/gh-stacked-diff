@@ -3,7 +3,7 @@ package commands
 import (
 	"log/slog"
 	"slices"
-	sd "stackeddiff"
+
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,7 +27,7 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 
 	// Check that the PR was created
 	outWriter := testutil.NewWriteRecorder()
-	PrintGitLog(outWriter)
+	printGitLog(outWriter)
 	out := outWriter.String()
 
 	if !strings.Contains(out, "✅") {
@@ -106,7 +106,7 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 
 	testParseArguments("new", "--reviewers=mybestie")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
@@ -127,11 +127,11 @@ func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 	testutil.AddCommit("third", "")
 	testutil.AddCommit("fourth", "")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 
 	testParseArguments("new", "2")
 
-	assert.Equal(true, sd.RemoteHasBranch(allCommits[1].Branch))
+	assert.Equal(true, util.RemoteHasBranch(allCommits[1].Branch))
 }
 
 func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
@@ -163,16 +163,16 @@ func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 	testParseArguments("new", "2")
 	testParseArguments("new")
 
-	mainCommits := sd.GetAllCommits()
+	mainCommits := templates.GetAllCommits()
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", mainCommits[1].Branch)
-	firstCommits := sd.GetAllCommits()
+	firstCommits := templates.GetAllCommits()
 	assert.Equal(2, len(firstCommits))
 	assert.Equal(mainCommits[1].Subject, firstCommits[0].Subject)
 	assert.Equal(testutil.InitialCommitSubject, firstCommits[1].Subject)
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", mainCommits[0].Branch)
-	secondCommits := sd.GetAllCommits()
+	secondCommits := templates.GetAllCommits()
 	assert.Equal(2, len(secondCommits))
 	assert.Equal(mainCommits[0].Subject, secondCommits[0].Subject)
 	assert.Equal(testutil.InitialCommitSubject, firstCommits[1].Subject)

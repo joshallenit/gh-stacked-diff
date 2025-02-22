@@ -27,7 +27,7 @@ func createBranchNameCommand(stdOut io.Writer) Command {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
-			branchName := templates.GetBranchInfo(flagSet.Arg(0), indicatorType).BranchName
+			branchName := templates.GetBranchInfo(flagSet.Arg(0), indicatorType).Branch
 			fmt.Fprint(stdOut, branchName)
 		}}
 }

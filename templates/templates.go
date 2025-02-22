@@ -83,7 +83,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) GitLog {
 		indicatorType = guessIndicatorType(commitIndicator)
 	}
 
-	var info BranchInfo
+	var info GitLog
 	switch indicatorType {
 	case IndicatorTypePr:
 		slog.Debug("Using commitIndicator as a pull request number " + commitIndicator)
@@ -91,22 +91,25 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) GitLog {
 		branchName := ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitIndicator, "--json", "headRefName", "-q", ".headRefName")
 		// Fetch the branch in case the lastest commit is only on GitHub.
 		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "fetch", "origin", branchName)
+		// Get the first commit of the branch on Github.
 		prCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitIndicator, "--json", "commits", "-q", "[.commits[].oid] | first"))
-		summary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%s", prCommit))
-		thisBranchCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--grep", "^"+regexp.QuoteMeta(summary)+"$", "--format=%h"))
-		if thisBranchCommit == "" {
-			panic(fmt.Sprint("Could not find associated commit for PR (\"", summary, "\") in "+util.GetMainBranchOrDie()))
+		gitLogs := newGitLogs(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", newGitLogsFormat, "--abbrev-commit", prCommit))
+		if len(gitLogs) == 0 {
+			panic(fmt.Sprint("Could not find first commit (", prCommit, ") of PR ", commitIndicator))
 		}
-		info = BranchInfo{CommitHash: thisBranchCommit, BranchName: branchName}
-		slog.Info("Using pull request " + commitIndicator + ", commit " + info.CommitHash + ", branch " + info.BranchName)
+		info = gitLogs[0]
+		slog.Info("Using pull request " + commitIndicator + ", commit " + info.Commit + ", branch " + info.Branch)
 	case IndicatorTypeCommit:
 		slog.Debug("Using commitIndicator as a commit hash " + commitIndicator)
-
-		info = BranchInfo{CommitHash: commitIndicator, BranchName: getBranchForCommit(commitIndicator)}
-		slog.Info("Using commit " + info.CommitHash + ", branch " + info.BranchName)
+		gitLogs := newGitLogs(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", newGitLogsFormat, "--abbrev-commit", commitIndicator))
+		if len(gitLogs) == 0 {
+			panic(fmt.Sprint("Could not find commit ", commitIndicator))
+		}
+		info = gitLogs[0]
+		slog.Info("Using commit " + info.Commit + ", branch " + info.Branch)
 	case IndicatorTypeList:
 		slog.Debug("Using commitIndicator as a list index " + commitIndicator)
-		newCommits := getNewCommits(GetCurrentBranchName())
+		newCommits := GetNewCommits(util.GetCurrentBranchName())
 		listIndex, err := strconv.Atoi(commitIndicator)
 		if err != nil {
 			panic("When indicator type is " + string(IndicatorTypeList) + " commit indicator must be a number, given " + commitIndicator)
@@ -120,7 +123,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) GitLog {
 				fmt.Sprint(len(newCommits)))
 		}
 		slog.Info("Using list index " + commitIndicator + ", commit " + newCommits[listIndex].Commit + " " + newCommits[listIndex].Subject)
-		info = BranchInfo{CommitHash: newCommits[listIndex].Commit, BranchName: newCommits[listIndex].Branch}
+		info = newCommits[listIndex]
 	default:
 		panic("Impossible: guessIndicatorType only returns known values, " + fmt.Sprint(indicatorType))
 	}
@@ -139,11 +142,6 @@ func guessIndicatorType(commitIndicator string) IndicatorType {
 	return IndicatorTypeCommit
 }
 
-func getBranchForCommit(commit string) string {
-	sanitizedSubject := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commit))
-	return getBranchForSantizedSubject(sanitizedSubject)
-}
-
 func getBranchForSantizedSubject(sanitizedSubject string) string {
 	name := runTemplate("branch-name.template", branchNameTemplateText, getBranchTemplateData(sanitizedSubject))
 	// Branch names that are too long cause problems with Github.
@@ -160,11 +158,11 @@ func truncateString(str string, maxBytes int) string {
 	return str
 }
 
-func GetPullRequestText(commitHash string, featureFlag string) pullRequestText {
+func GetPullRequestText(commitHash string, featureFlag string) PullRequestText {
 	data := getPullRequestTemplateData(commitHash, featureFlag)
 	title := runTemplate("pr-title.template", prTitleTemplateText, data)
 	description := runTemplate("pr-description.template", prDescriptionTemplateText, data)
-	return pullRequestText{Description: description, Title: title}
+	return PullRequestText{Description: description, Title: title}
 }
 
 func runTemplate(configFilename string, defaultTemplateText string, data any) string {
@@ -194,7 +192,7 @@ func getPullRequestTemplateData(commitHash string, featureFlag string) templateD
 	expression := regexp.MustCompile("^(\\S+-[[:digit:]]+ )?(.*)")
 	summaryMatches := expression.FindStringSubmatch(commitSummary)
 	return templateData{
-		Username:                   getUsername(),
+		Username:                   util.GetUsername(),
 		TicketNumber:               strings.TrimSpace(summaryMatches[1]),
 		CommitBody:                 commitBody,
 		CommitSummary:              commitSummary,
@@ -206,7 +204,7 @@ func getPullRequestTemplateData(commitHash string, featureFlag string) templateD
 
 func getBranchTemplateData(sanitizedSummary string) branchTemplateData {
 	// Dots are not allowed in branch names of some Github configurations.
-	username := strings.ReplaceAll(getUsername(), ".", "-")
+	username := strings.ReplaceAll(util.GetUsername(), ".", "-")
 	return branchTemplateData{
 		UsernameCleaned:      username,
 		CommitSummaryCleaned: sanitizedSummary,

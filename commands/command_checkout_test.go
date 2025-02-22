@@ -4,10 +4,10 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/joshallenit/stacked-diff/templates"
+	"github.com/joshallenit/stacked-diff/testutil"
 	"github.com/joshallenit/stacked-diff/util"
 	"github.com/stretchr/testify/assert"
-
-	sd "stackeddiff"
 )
 
 func TestSdCheckout_ChecksOutBranch(t *testing.T) {
@@ -17,7 +17,7 @@ func TestSdCheckout_ChecksOutBranch(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	allCommits := sd.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 
 	testParseArguments("new")
 
