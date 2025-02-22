@@ -42,8 +42,8 @@ Follow the steps in golang docs [Publishing a module](https://go.dev/doc/modules
 ```bash
 go mod tidy
 make test
-# Make sure all changes merged into main and rebased, sd log should be empty.
-sd log
+# Make sure all changes merged into main, git status and sd log should be empty.
+git status && sd log
 export RELEASE_VERSION=`grep "releaseVersion" "project.properties" | cut -d '=' -f2`;\
 git tag v$RELEASE_VERSION
 git push origin v$RELEASE_VERSION
