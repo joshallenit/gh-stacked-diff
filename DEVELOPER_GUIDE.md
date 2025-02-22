@@ -40,6 +40,7 @@ If one of the command*_test fails you can pass "--log-level=debug" to `parseArgu
 Follow the steps in golang docs [Publishing a module](https://go.dev/doc/modules/publishing):
 
 ```bash
+# Update version number in project.properties, merge changes, update local, and then:
 go mod tidy
 make test
 # Make sure all changes merged into main, git status and sd log should be empty.
