@@ -468,6 +468,12 @@ git add . && git rebase --continue
 # and the merge conflicts only had to be fixed once
 ```
 
+## Usage as a golang Library
+
+```
+go get github.com/joshallenit/stacked-diff/v2@v2.0.4
+```
+
 ## Building Source and Contributing
 
 See the [Contributing Developer Guide](DEVELOPER_GUIDE.md), which includes instructions on how to build the source, as well as an overview of the code.

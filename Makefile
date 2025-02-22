@@ -4,7 +4,9 @@
 # TODO: support release on windows (zip not on windows)
 
 format:
-	gofmt -w .
+	gofmt -w .;\
+	export RELEASE_VERSION=`grep "releaseVersion" "project.properties" | cut -d '=' -f2`; \
+	sed -i 's/\/stacked-diff\/v2\@v2\.\d+\.\d+/\/stacked-diff\/v2\@v${RELEASE_VERSION}/g' README.md
 
 build: format
 	rm -rf bin; \
