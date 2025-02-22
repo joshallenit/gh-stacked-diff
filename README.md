@@ -24,7 +24,7 @@ gh auth login
 # Add the /bin directory to your PATH. 
 # Replace the directory below to wherever you cloned the repository or unzipped the release.
 # For example if using zsh and installed in your home directory:
-echo "export PATH=\$PATH:\$HOME/stacked-diff-workflow/bin" >> ~/.zshrc
+echo "export PATH=\$PATH:\$HOME/stacked-diff/bin" >> ~/.zshrc
 source ~/.zshrc
 ```
 
@@ -38,7 +38,7 @@ source ~/.zshrc
       # Add the /bin directory to your PATH. 
       # Replace the directory below to wherever you cloned the repository or unzipped the release.
       # For example if using bash and installed in your home directory:
-      echo "export PATH=\$PATH:\$HOME/stacked-diff-workflow/bin" >> ~/.bashrc
+      echo "export PATH=\$PATH:\$HOME/stacked-diff/bin" >> ~/.bashrc
       source ~/.bashrc
       ```
 
@@ -124,12 +124,12 @@ created from golang templates.
 
 The default templates are:
 
-   branch-name.template:      src/go/config/branch-name.template
-   pr-description.template:   src/go/config/pr-description.template
-   pr-title.template:         src/go/config/pr-title.template
+   branch-name.template:      templates/config/branch-name.template
+   pr-description.template:   templates/config/pr-description.template
+   pr-title.template:         templates/config/pr-title.template
 
-To change a template, copy the default from src/go/config/ into
-~/.stacked-diff-workflow/ and modify contents.
+To change a template, copy the default from templates/config/ into
+~/.stacked-diff/ and modify contents.
 
 The possible values for the templates are:
 
@@ -478,7 +478,7 @@ Note: these scripts do *not* facilitate Stacked *Pull Requests*. Github does som
 
 ## Contact
 
-Join the discussion in [#devel-stacked-diff-workflow](https://slack-pde.slack.com/archives/C03V94N2A84)
+Join the discussion in [#devel-stacked-diff](https://slack-pde.slack.com/archives/C03V94N2A84)
 
 ## Acknowledgments
 
