@@ -20,8 +20,8 @@ ifndef PLATFORM
 	$(error PLATFORM is not set)
 endif
 	rm -rf build/zip
-	mkdir -p build/zip/stacked-diff-workflow
-	cp bin/* build/zip/stacked-diff-workflow
+	mkdir -p build/zip/stacked-diff
+	cp bin/* build/zip/stacked-diff
 	export RELEASE_VERSION=`grep "releaseVersion" "project.properties" | cut -d '=' -f2`; \
 	cd build/zip; \
-	zip -vr stacked-diff-workflow-${PLATFORM}-$(RELEASE_VERSION).zip stacked-diff-workflow/ -x "*.DS_Store"
+	zip -vr stacked-diff-${PLATFORM}-$(RELEASE_VERSION).zip stacked-diff/ -x "*.DS_Store"

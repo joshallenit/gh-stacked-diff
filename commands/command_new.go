@@ -55,12 +55,12 @@ func createNewCommand() Command {
 			"\n" +
 			"The default templates are:\n" +
 			"\n" +
-			"   branch-name.template:      src/go/config/branch-name.template\n" +
-			"   pr-description.template:   src/go/config/pr-description.template\n" +
-			"   pr-title.template:         src/go/config/pr-title.template\n" +
+			"   branch-name.template:      templates/config/branch-name.template\n" +
+			"   pr-description.template:   templates/config/pr-description.template\n" +
+			"   pr-title.template:         templates/config/pr-title.template\n" +
 			"\n" +
-			"To change a template, copy the default from src/go/config/ into\n" +
-			"~/.stacked-diff-workflow/ and modify contents.\n" +
+			"To change a template, copy the default from templates/config/ into\n" +
+			"~/.stacked-diff/ and modify contents.\n" +
 			"\n" +
 			"The possible values for the templates are:\n" +
 			"\n" +

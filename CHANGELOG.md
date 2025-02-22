@@ -2,14 +2,15 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.1](https://github.com/joshallenit/stacked-diff-workflow/compare/v2.0.0...v2.0.1) - 2025-02-21
+## [2.0.4](https://github.com/joshallenit/stacked-diff/compare/v2.0.0...v2.0.4) - 2025-02-21
 
 ### Changes
 
-- Reorganized code so that project can be used as a library.
+- Reorganized code so that project can be used as a go library. It will be used in a Github CLI plugin.
 - Removed scripts under /src/bash that were deprecated.
+- Renamed repository from stacked-diff-workflow to stacked-diff.
 
-## [2.0.0](https://github.com/joshallenit/stacked-diff-workflow/compare/v1.3.0...v2.0.0) - 2025-02-16
+## [2.0.0](https://github.com/joshallenit/stacked-diff/compare/v1.3.0...v2.0.0) - 2025-02-16
 
 ### Added
 
