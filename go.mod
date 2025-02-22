@@ -1,4 +1,4 @@
-module github.com/joshallenit/stacked-diff
+module github.com/joshallenit/stacked-diff/v2
 
 go 1.23.4
 
