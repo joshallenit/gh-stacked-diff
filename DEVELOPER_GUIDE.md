@@ -33,3 +33,21 @@ export PLATFORM=mac; make release
 ## How to Debug Unit Tests
 
 If one of the command*_test fails you can pass "--log-level=debug" to `parseArguments` for more detailed logging. For more detailed logging up until the `parseArguments` call use `testutil.InitTest(slog.LevelDebug)`
+
+
+## Making a Release
+
+Follow the steps in golang docs [Publishing a module](https://go.dev/doc/modules/publishing):
+
+```bash
+go mod tidy
+make test
+# Make sure all changes merged into main, git status and sd log should be empty.
+git status && sd log
+export RELEASE_VERSION=`grep "releaseVersion" "project.properties" | cut -d '=' -f2`;\
+git tag v$RELEASE_VERSION
+git push origin v$RELEASE_VERSION
+GOPROXY=proxy.golang.org go list -m github.com/joshallenit/stacked-diff/v2@v$RELEASE_VERSION
+```
+
+
