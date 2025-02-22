@@ -5,7 +5,7 @@ import (
 	"io"
 	"log/slog"
 
-	"github.com/joshallenit/stacked-diff/testutil"
+	"github.com/joshallenit/stacked-diff/v2/testutil"
 )
 
 func testParseArguments(commandLineArgs ...string) string {

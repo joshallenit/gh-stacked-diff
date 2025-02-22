@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ex "github.com/joshallenit/stacked-diff/execute"
-	"github.com/joshallenit/stacked-diff/testutil"
-	"github.com/joshallenit/stacked-diff/util"
+	ex "github.com/joshallenit/stacked-diff/v2/execute"
+	"github.com/joshallenit/stacked-diff/v2/testutil"
+	"github.com/joshallenit/stacked-diff/v2/util"
 )
 
 func TestSdCodeOwners_OutputsOwnersOfChangedFiles(t *testing.T) {

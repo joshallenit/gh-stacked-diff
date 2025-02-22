@@ -5,7 +5,7 @@ import (
 	"io"
 	"log/slog"
 
-	ex "github.com/joshallenit/stacked-diff/execute"
+	ex "github.com/joshallenit/stacked-diff/v2/execute"
 )
 
 func createPrsCommand(stdOut io.Writer) Command {

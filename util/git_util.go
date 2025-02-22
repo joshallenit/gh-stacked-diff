@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"strings"
 
-	ex "github.com/joshallenit/stacked-diff/execute"
+	ex "github.com/joshallenit/stacked-diff/v2/execute"
 )
 
 // Cached value of main branch name.
