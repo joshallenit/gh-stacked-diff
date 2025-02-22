@@ -470,13 +470,19 @@ git add . && git rebase --continue
 
 ## Usage as a golang Library
 
+The CLI can also be used as a go library within your own go application. See the [Developer Guide](DEVELOPER_GUIDE.md) for more info.
+
+```bash
+go get github.com/joshallenit/stacked-diff/v2@v2.0.5
 ```
-go get github.com/joshallenit/stacked-diff/v2@v2.0.4
+
+```golang
+import "github.com/joshallenit/stacked-diff/v2"
 ```
 
 ## Building Source and Contributing
 
-See the [Contributing Developer Guide](DEVELOPER_GUIDE.md), which includes instructions on how to build the source, as well as an overview of the code.
+See the [Developer Guide](DEVELOPER_GUIDE.md), which includes instructions on how to build the source, as well as an overview of the code.
 
 ## Stacked Pull Requests?
 

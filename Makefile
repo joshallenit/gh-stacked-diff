@@ -5,8 +5,8 @@
 
 format:
 	gofmt -w .;\
-	export RELEASE_VERSION=`grep "releaseVersion" "project.properties" | cut -d '=' -f2`; \
-	sed -i 's/\/stacked-diff\/v2\@v2\.\d+\.\d+/\/stacked-diff\/v2\@v${RELEASE_VERSION}/g' README.md
+	export RELEASE_VERSION=`grep "releaseVersion" "project.properties" | cut -d '=' -f2`;\
+	sed -i 's/stacked-diff\/v2\/@v2.\d+\.\d+/stacked-diff\/v2\@v'${RELEASE_VERSION}'/' README.md
 
 build: format
 	rm -rf bin; \

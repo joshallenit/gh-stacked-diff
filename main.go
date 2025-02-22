@@ -45,14 +45,18 @@ import (
 )
 
 func main() {
+	ExecuteCommand(os.Stdout, os.Stderr, os.Args[1:], DefaultExit)
+}
+
+func ExecuteCommand(stdOut io.Writer, stdErr io.Writer, commandLineArgs []string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
 	// Unset any color in case a previous terminal command set colors and then was
 	// terminated before it could reset the colors.
 	color.Unset()
 
-	commands.ParseArguments(os.Stdout, os.Stderr, flag.NewFlagSet("sd", flag.ContinueOnError), os.Args[1:], defaultExit)
+	commands.ParseArguments(stdOut, stdErr, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, exit)
 }
 
-func defaultExit(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any) {
+func DefaultExit(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any) {
 	// Show panic stack trace during debug log level.
 	if logLevelVar.Level() <= slog.LevelDebug {
 		panic(err)

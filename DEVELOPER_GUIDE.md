@@ -1,4 +1,4 @@
-# Contributing Developer Guide
+# Developer Guide
 
 ## How To Build
 
