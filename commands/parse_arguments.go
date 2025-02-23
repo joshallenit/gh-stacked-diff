@@ -126,6 +126,9 @@ func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSe
 			exit(stdErr, 1, logLevelVar, r)
 		}
 	}()
+	// Note: call GetMainBranchOrDie early as it has useful error messages.
+	slog.Debug(fmt.Sprint("Using main branch " + util.GetMainBranchOrDie()))
+
 	commands[selectedIndex].OnSelected(commands[selectedIndex])
 }
 

@@ -16,11 +16,11 @@ import (
 func TestSdAddReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelDebug)
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("--log-level=DEBUG", "new")
 
 	allCommits := templates.GetAllCommits()
 	testExecutor.SetResponse(
@@ -31,7 +31,7 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	testParseArguments("add-reviewers", "--reviewers=mybestie", allCommits[0].Commit)
+	testParseArguments("--log-level=DEBUG", "add-reviewers", "--reviewers=mybestie", allCommits[0].Commit)
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}

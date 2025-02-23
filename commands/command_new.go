@@ -21,7 +21,7 @@ func createNewCommand() Command {
 
 	draft := flagSet.Bool("draft", true, "Whether to create the PR as draft")
 	featureFlag := flagSet.String("feature-flag", "", "Value for FEATURE_FLAG in PR description")
-	baseBranch := flagSet.String("base", util.GetMainBranchForHelp(), "Base branch for Pull Request")
+	baseBranch := flagSet.String("base", util.GetMainBranchOrDie(), "Base branch for Pull Request")
 
 	reviewers, silent, minChecks := addReviewersFlags(flagSet, "")
 
