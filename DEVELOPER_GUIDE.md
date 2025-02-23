@@ -45,7 +45,7 @@ go mod tidy
 make test
 # Make sure all changes merged into main, git status and sd log should be empty.
 git status && sd log
-export RELEASE_VERSION=`grep "releaseVersion" "project.properties" | cut -d '=' -f2`;\
+export RELEASE_VERSION=`grep "latestVersion" "project.properties" | cut -d '=' -f2`;\
 git tag v$RELEASE_VERSION
 git push origin v$RELEASE_VERSION
 GOPROXY=proxy.golang.org go list -m github.com/joshallenit/stacked-diff/v2@v$RELEASE_VERSION

@@ -8,11 +8,13 @@
 
 # rebase-main isn't going to work because the sequence_editor scripts are not on path
 
-RELEASE_VERSION := $(shell grep "releaseVersion" "project.properties" | cut -d '=' -f2)
+
+LATEST_VERSION := $(shell grep "latestVersion" "project.properties" | cut -d '=' -f2)
+STABLE_VERSION := $(shell grep "stableVersion" "project.properties" | cut -d '=' -f2)
 
 format:
 	gofmt -w .
-	sed -i 's/v2@v2.[0-9]*.[0-9]*/v2@v'${RELEASE_VERSION}'/' README.md
+	sed -i 's/v2@v2.[0-9]*.[0-9]*/v2@v'${STABLE_VERSION}'/' README.md
 
 build: format
 	rm -rf bin; \
@@ -31,4 +33,4 @@ endif
 	mkdir -p build/zip/stacked-diff
 	cp bin/* build/zip/stacked-diff
 	cd build/zip; \
-	zip -vr stacked-diff-${PLATFORM}-$(RELEASE_VERSION).zip stacked-diff/ -x "*.DS_Store"
+	zip -vr stacked-diff-${PLATFORM}-$(LATEST_VERSION).zip stacked-diff/ -x "*.DS_Store"

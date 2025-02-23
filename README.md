@@ -473,7 +473,7 @@ git add . && git rebase --continue
 The CLI can also be used as a go library within your own go application. See the [Developer Guide](DEVELOPER_GUIDE.md) for more info.
 
 ```bash
-go get github.com/joshallenit/stacked-diff/v2@v2.0.8
+go get github.com/joshallenit/stacked-diff/v2@v2.0.7
 ```
 
 ```golang
