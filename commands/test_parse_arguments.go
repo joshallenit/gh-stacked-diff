@@ -13,6 +13,7 @@ func testParseArguments(commandLineArgs ...string) string {
 		panic(err)
 	}
 	out := testutil.NewWriteRecorder()
-	parseArguments(out, out, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, panicOnExit)
+	// bin directory must be on PATH for tests to pass.
+	parseArguments(out, out, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, "sd ", panicOnExit)
 	return out.String()
 }

@@ -22,4 +22,6 @@ type Command struct {
 	Description string
 	// Usage to print out during help and if wrong arguments to command
 	Usage string
+	// Whether to include in help messages.
+	Hidden bool
 }

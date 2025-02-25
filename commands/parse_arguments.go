@@ -13,12 +13,12 @@ import (
 	"github.com/joshallenit/stacked-diff/v2/util"
 )
 
-func ExecuteCommand(stdOut io.Writer, stdErr io.Writer, commandLineArgs []string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
+func ExecuteCommand(stdOut io.Writer, stdErr io.Writer, commandLineArgs []string, sequenceEditorPrefix string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
 	// Unset any color in case a previous terminal command set colors and then was
 	// terminated before it could reset the colors.
 	color.Unset()
 
-	parseArguments(stdOut, stdErr, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, exit)
+	parseArguments(stdOut, stdErr, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, sequenceEditorPrefix, exit)
 }
 
 func DefaultExit(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any) {
@@ -31,7 +31,7 @@ func DefaultExit(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, er
 	}
 }
 
-func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSet, commandLineArgs []string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
+func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSet, commandLineArgs []string, sequenceEditorPrefix string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
 	if commandLine.ErrorHandling() != flag.ContinueOnError {
 		// Use ContinueOnError so that a description of the command can be included before usage
 		// for help.
@@ -66,13 +66,15 @@ func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSe
 		createAddReviewersCommand(),
 		createBranchNameCommand(stdOut),
 		createCodeOwnersCommand(stdOut),
+		createDropAlreadyMergedCommand(),
 		createLogCommand(stdOut),
+		createMarkAsFixupCommand(),
 		createNewCommand(),
 		createPrsCommand(stdOut),
-		createRebaseMainCommand(),
+		createRebaseMainCommand(sequenceEditorPrefix),
 		createReplaceCommitCommand(),
 		createReplaceConflictsCommand(stdOut),
-		createUpdateCommand(),
+		createUpdateCommand(sequenceEditorPrefix),
 		createCheckoutCommand(),
 		createWaitForMergeCommand(),
 	}
@@ -133,14 +135,17 @@ func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSe
 }
 
 func getCommandSummaries(commands []Command) []string {
+	publicCommands := util.FilterSlice(commands, func(command Command) bool {
+		return !command.Hidden
+	})
 	maxCommandLen := 0
-	for _, command := range commands {
+	for _, command := range publicCommands {
 		if len(command.FlagSet.Name()) > maxCommandLen {
 			maxCommandLen = len(command.FlagSet.Name())
 		}
 	}
 	summaries := make([]string, 0, len(commands))
-	for _, command := range commands {
+	for _, command := range publicCommands {
 		summary := command.FlagSet.Name() + "   " + strings.Repeat(" ", maxCommandLen-len(command.FlagSet.Name())) + command.Summary
 		summaries = append(summaries, summary)
 	}

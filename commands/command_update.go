@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func createUpdateCommand() Command {
+func createUpdateCommand(sequenceEditorPrefix string) Command {
 	flagSet := flag.NewFlagSet("update", flag.ContinueOnError)
 	indicatorTypeString := addIndicatorFlag(flagSet)
 	reviewers, silent, minChecks := addReviewersFlags(flagSet, "")
@@ -37,7 +37,7 @@ func createUpdateCommand() Command {
 				otherCommits = flagSet.Args()[1:]
 			}
 			destCommit := templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
-			updatePr(destCommit, otherCommits, indicatorType)
+			updatePr(destCommit, otherCommits, indicatorType, sequenceEditorPrefix)
 			if *reviewers != "" {
 				addReviewersToPr([]string{destCommit.Commit}, templates.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
@@ -45,7 +45,7 @@ func createUpdateCommand() Command {
 }
 
 // Add commits from main to an existing PR.
-func updatePr(destCommit templates.GitLog, otherCommits []string, indicatorType templates.IndicatorType) {
+func updatePr(destCommit templates.GitLog, otherCommits []string, indicatorType templates.IndicatorType, sequenceEditorPrefix string) {
 	util.RequireMainBranch()
 	templates.RequireCommitOnMain(destCommit.Commit)
 	var commitsToCherryPick []string
@@ -125,7 +125,7 @@ func updatePr(destCommit templates.GitLog, otherCommits []string, indicatorType 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
 	slog.Info(fmt.Sprint("Rebasing, marking as fixup ", commitsToCherryPick, " for target ", destCommit.Commit))
 	environmentVariables := []string{
-		"GIT_SEQUENCE_EDITOR=sequence_editor_mark_as_fixup " +
+		"GIT_SEQUENCE_EDITOR=" + sequenceEditorPrefix + "sequence-editor-mark-as-fixup " +
 			destCommit.Commit + " " +
 			strings.Join(commitsToCherryPick, " "),
 	}

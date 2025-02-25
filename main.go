@@ -34,11 +34,17 @@ flags:
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/joshallenit/stacked-diff/v2/commands"
 )
 
 func main() {
-	commands.ExecuteCommand(os.Stdout, os.Stderr, os.Args[1:], commands.DefaultExit)
+	thisExecutable, err := os.Executable()
+	if err != nil {
+		panic(fmt.Sprint("Cannot determine executable ", err))
+	}
+	println("Using " + thisExecutable)
+	commands.ExecuteCommand(os.Stdout, os.Stderr, os.Args[1:], thisExecutable+" ", commands.DefaultExit)
 }

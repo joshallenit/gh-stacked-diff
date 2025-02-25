@@ -4,33 +4,43 @@ Drop any commits specified in the input parameters, keep the others.
 
 usage: sequence_editor_drop_already_merged dropCommit1 [dropCommit2...] rebaseFilename
 */
-package main
+package commands
 
 import (
+	"flag"
 	"fmt"
-	"log/slog"
 	"os"
 	"strings"
 )
 
-func main() {
-	slog.Debug(fmt.Sprint("Got args ", os.Args))
-	if len(os.Args) < 2 {
-		fmt.Printf("usage: sequence_editor_drop_already_merged dropCommit1 [dropCommit2...] rebaseFilename")
-		os.Exit(1)
-	}
-	dropCommits := os.Args[1 : len(os.Args)-1]
-	rebaseFilename := os.Args[len(os.Args)-1]
+func createDropAlreadyMergedCommand() Command {
+	flagSet := flag.NewFlagSet("sequence-editor-drop-already-merged", flag.ContinueOnError)
+	return Command{
+		FlagSet:     flagSet,
+		Summary:     "Sequence editor for git rebase used by rebase-main",
+		Description: "Drops any commits passed as arguments.",
+		Usage:       "sd " + flagSet.Name() + " dropCommit1 [dropCommit2...] rebaseFilename",
+		Hidden:      true,
+		OnSelected: func(command Command) {
+			if flagSet.NArg() < 2 {
+				commandError(flagSet, "not enough arguments", command.Usage)
+			}
+			dropCommits := flagSet.Args()[1 : len(flagSet.Args())-1]
+			rebaseFilename := flagSet.Args()[len(flagSet.Args())-1]
 
+			dropAlreadyMerged(dropCommits, rebaseFilename)
+		}}
+}
+
+func dropAlreadyMerged(dropCommits []string, rebaseFilename string) {
 	data, err := os.ReadFile(rebaseFilename)
-
 	if err != nil {
 		panic(fmt.Sprint("Could not open ", rebaseFilename, err))
 	}
 
 	originalText := string(data)
 	var newText strings.Builder
-
+	// yeah the only way I can do that is via a bash script?
 	i := 0
 	lines := strings.Split(strings.TrimSuffix(originalText, "\n"), "\n")
 	for _, line := range lines {
@@ -56,7 +66,7 @@ func isDropLine(line string, dropCommits []string) bool {
 		return false
 	}
 	for _, commit := range dropCommits {
-		if strings.Index(line, commit) != -1 {
+		if strings.Contains(line, commit) {
 			return true
 		}
 	}
