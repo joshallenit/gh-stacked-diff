@@ -21,7 +21,7 @@ func createNewCommand() Command {
 
 	draft := flagSet.Bool("draft", true, "Whether to create the PR as draft")
 	featureFlag := flagSet.String("feature-flag", "", "Value for FEATURE_FLAG in PR description")
-	baseBranch := flagSet.String("base", util.GetMainBranchOrDie(), "Base branch for Pull Request")
+	baseBranch := flagSet.String("base", "", "Base branch for Pull Request. Default is "+util.GetMainBranchForHelp())
 
 	reviewers, silent, minChecks := addReviewersFlags(flagSet, "")
 
@@ -81,6 +81,9 @@ func createNewCommand() Command {
 
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			gitLog := templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
+			if *baseBranch == util.GetMainBranchForHelp() {
+				*baseBranch = util.GetMainBranchOrDie()
+			}
 			createNewPr(*draft, *featureFlag, *baseBranch, gitLog)
 			if *reviewers != "" {
 				addReviewersToPr([]string{gitLog.Commit}, templates.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)

@@ -45,6 +45,5 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprint("Cannot determine executable ", err))
 	}
-	println("Using " + thisExecutable)
 	commands.ExecuteCommand(os.Stdout, os.Stderr, os.Args[1:], thisExecutable+" ", commands.DefaultExit)
 }

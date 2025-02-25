@@ -23,7 +23,7 @@ func GetMainBranchOrDie() string {
 	}
 	out, err = ex.Execute(ex.ExecuteOptions{}, "git", "rev-parse")
 	if err != nil {
-		panic("Not in a git repository. Must be run from a git repository.\n" + out)
+		panic("Not in a git repository. Must be run from a git repository.\n" + out + ": " + err.Error())
 	}
 
 	out, err = ex.Execute(ex.ExecuteOptions{}, "git", "rev-list", "--max-parents=0", "HEAD")
@@ -32,13 +32,13 @@ func GetMainBranchOrDie() string {
 			"Push an initial inconsequential commit to origin/main and try again. \n" +
 			"Using a repository without an initial remote commit is not recommended because git \n" +
 			"requires special handling for the root commit, and you might accidentially \n" +
-			"create more than one root commit.\n" + out)
+			"create more than one root commit.\n" + out + ": " + err.Error())
 	}
 
 	setRemoteHead()
 	out, err = getMainBranchFromGitLog()
 	if err != nil {
-		panic("Remote repository not setup.\n" + out)
+		panic("Remote repository not setup.\n" + out + ": " + err.Error())
 	}
 	return out
 }
