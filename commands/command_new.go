@@ -81,7 +81,8 @@ func createNewCommand() Command {
 
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			gitLog := templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
-			if *baseBranch == util.GetMainBranchForHelp() {
+			// Note: set the default here rather than via flags to avoid GetMainBranchOrDie being called before OnSelected.
+			if *baseBranch == "" {
 				*baseBranch = util.GetMainBranchOrDie()
 			}
 			createNewPr(*draft, *featureFlag, *baseBranch, gitLog)

@@ -26,7 +26,7 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 
 	commitsOnMain := templates.GetAllCommits()
 
-	updatePr(templates.GetBranchInfo(commitsOnMain[1].Commit, templates.IndicatorTypeCommit), []string{}, templates.IndicatorTypeCommit)
+	testParseArguments("update", "2")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[1].Branch)
 
@@ -52,7 +52,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	commitsOnMain := templates.GetAllCommits()
 
-	updatePr(templates.GetBranchInfo(commitsOnMain[2].Commit, templates.IndicatorTypeCommit), []string{}, templates.IndicatorTypeCommit)
+	testParseArguments("update", "3")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[2].Branch)
 

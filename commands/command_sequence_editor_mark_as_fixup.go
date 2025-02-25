@@ -3,6 +3,7 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 )
@@ -20,9 +21,9 @@ func createMarkAsFixupCommand() Command {
 				commandError(flagSet, "not enough arguments", command.Usage)
 			}
 
-			targetCommit := os.Args[1]
-			fixupCommits := os.Args[2 : len(os.Args)-1]
-			rebaseFilename := os.Args[len(os.Args)-1]
+			targetCommit := flagSet.Arg(0)
+			fixupCommits := flagSet.Args()[1 : len(flagSet.Args())-1]
+			rebaseFilename := flagSet.Arg(len(flagSet.Args()) - 1)
 
 			markAsFixup(targetCommit, fixupCommits, rebaseFilename)
 		}}
@@ -31,6 +32,7 @@ func createMarkAsFixupCommand() Command {
 func markAsFixup(targetCommit string, fixupCommits []string, rebaseFilename string) {
 	data, err := os.ReadFile(rebaseFilename)
 
+	slog.Debug(fmt.Sprint("Got targetCommit ", targetCommit, " fixupCommits ", fixupCommits, " rebaseFilename ", rebaseFilename))
 	if err != nil {
 		panic(fmt.Sprint("Could not open ", rebaseFilename, err))
 	}

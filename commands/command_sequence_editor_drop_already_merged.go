@@ -9,6 +9,7 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 )
@@ -25,7 +26,7 @@ func createDropAlreadyMergedCommand() Command {
 			if flagSet.NArg() < 2 {
 				commandError(flagSet, "not enough arguments", command.Usage)
 			}
-			dropCommits := flagSet.Args()[1 : len(flagSet.Args())-1]
+			dropCommits := flagSet.Args()[0 : len(flagSet.Args())-1]
 			rebaseFilename := flagSet.Args()[len(flagSet.Args())-1]
 
 			dropAlreadyMerged(dropCommits, rebaseFilename)
@@ -33,6 +34,8 @@ func createDropAlreadyMergedCommand() Command {
 }
 
 func dropAlreadyMerged(dropCommits []string, rebaseFilename string) {
+	slog.Debug(fmt.Sprint("Got dropCommits ", dropCommits, " rebaseFilename ", rebaseFilename))
+
 	data, err := os.ReadFile(rebaseFilename)
 	if err != nil {
 		panic(fmt.Sprint("Could not open ", rebaseFilename, err))

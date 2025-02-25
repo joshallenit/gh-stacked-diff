@@ -32,7 +32,7 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
 
-	rebaseMain()
+	testParseArguments("rebase-main")
 
 	dirEntries, err := os.ReadDir(".")
 	if err != nil {
@@ -74,7 +74,7 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	assert.Equal("rebase-will-keep-this-file", dirEntries[2].Name())
 }
 
-func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommitss(t *testing.T) {
+func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
 	testExecutor := testutil.InitTest(slog.LevelInfo)
 
@@ -93,7 +93,8 @@ func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommitss(t *testing.T) {
 	testutil.AddCommit("fourth", "4")
 
 	testExecutor.SetResponse(
-		allOriginalCommits[0].Branch+" fakeMergeCommit\n"+allOriginalCommits[1].Branch+" fakeMergeCommit",
+		allOriginalCommits[0].Branch+" fakeMergeCommit\n"+
+			allOriginalCommits[1].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
 
 	testParseArguments("rebase-main")
