@@ -14,7 +14,8 @@ func testParseArguments(commandLineArgs ...string) string {
 		panic(err)
 	}
 	out := testutil.NewWriteRecorder()
-	// bin directory must be on PATH for tests to pass so that sequenceEditorPrefix will execute.
-	parseArguments(out, out, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, "sd --log-level=INFO ", panicOnExit)
+	// Executable must be on PATH for tests to pass so that sequenceEditorPrefix will execute.
+	// PATH is set in ../Makefile
+	parseArguments(out, out, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, "stacked-diff --log-level=INFO ", panicOnExit)
 	return out.String()
 }
