@@ -1,4 +1,4 @@
-# Stacked Diff Workflow CLI
+# Stacked Diff Workflow Github CLI Plugin
 
 Using a [stacked diff workflow](https://newsletter.pragmaticengineer.com/p/stacked-diffs) allows you to break down a pull request into several smaller PRs. It also allows you to work on separate streams of work without the overhead of changing branches. Once you experience the efficiency of stacked diffs you can't imagine going back to your old workflow.
 
@@ -8,7 +8,10 @@ This project is a Command Line Interface that manages git commits and branches t
 
 ### Installation as Github CLI 
 
-Recommendation is to 
+So what can we do.
+
+```
+```
 
 ### Installation From a Release
 

@@ -5,11 +5,11 @@ STABLE_VERSION := $(shell grep "stableVersion" "project.properties" | cut -d '='
 ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 ifeq ($(OS),Windows_NT)
-    PATH_SEPARATOR:=;
+	PATH_SEPARATOR:=;
 else
 	PATH_SEPARATOR:=:
 endif
-# Add executable to PATH as it is required as the sequence editor for unit tests.
+# Add executable to PATH as it is required as the git sequence editor for unit tests.
 export PATH := ${PATH}${PATH_SEPARATOR}${ROOT_DIR}
 
 # Note: Using * instead of + in regex so it works on both Windows and Mac. See
@@ -26,3 +26,13 @@ build: format
 
 test: build
 	go test ./...
+
+release: test
+ifneq (${LATEST_VERSION}, ${STABLE_VERSION})
+$(error stableVersion ${STABLE_VERSION} must be upgraded to latestVersion ${LATEST_VERSION} in project.properties)
+endif
+	go mod tidy
+PORCELAIN := $(shell git status --porcelain)
+ifneq (${PORCELAIN}, "")
+$(error Changes not committed: ${PORCELAIN})
+endif
