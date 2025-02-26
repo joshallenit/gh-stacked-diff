@@ -15,6 +15,44 @@ make build
 
 Binaries are created in `./bin`. The [stacked-diff] executable is renamed to [sd] in [Makefile].
 
+
+#### Mac
+
+*Optional: As this is a CLI, do yourself a favor and install [iTerm](https://iterm2.com/) and [zsh](https://ohmyz.sh/), as they make working from the command line more pleasant.*
+
+Instructions:
+
+```bash
+# Install Github CLI. 
+brew install gh 
+# Setup login for Github CLI
+gh auth login 
+# Add the /bin directory to your PATH. 
+# Replace the directory below to wherever you cloned the repository or unzipped the release.
+# For example if using zsh and installed in your home directory:
+echo "export PATH=\$PATH:\$HOME/stacked-diff/bin" >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### Windows
+
+1. Install [Git and Git Bash](https://gitforwindows.org/)
+2. Install [Github CLI](https://cli.github.com/). Winget is possible: `winget install --id GitHub.cli`
+3. Authenticate gh and add bin to path:
+      ```bash
+      gh auth login 
+      # Add the /bin directory to your PATH. 
+      # Replace the directory below to wherever you cloned the repository or unzipped the release.
+      # For example if using bash and installed in your home directory:
+      echo "export PATH=\$PATH:\$HOME/stacked-diff/bin" >> ~/.bashrc
+      source ~/.bashrc
+      ```
+
+### Installation From Source
+
+Clone the repository, [then build](DEVELOPER_GUIDE.md#how-to-build), and then follow the [install instructions](#installation-from-a-release) for your platform.
+
+
 ## Code Organization
 
 The main entry point to the Stacked Diff Workflow CLI ("sd") is [main.go]. The commands are implemented under [commands].
@@ -51,4 +89,6 @@ git push origin v$RELEASE_VERSION
 GOPROXY=proxy.golang.org go list -m github.com/joshallenit/stacked-diff/v2@v$RELEASE_VERSION
 ```
 
+## Usage as a golang Library
 
+Look at [main.go] for example usage.

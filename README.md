@@ -1,16 +1,22 @@
-# Developer Scripts for Stacked Diff Workflow
+# Stacked Diff Workflow CLI
 
 Using a [stacked diff workflow](https://newsletter.pragmaticengineer.com/p/stacked-diffs) allows you to break down a pull request into several smaller PRs. It also allows you to work on separate streams of work without the overhead of changing branches. Once you experience the efficiency of stacked diffs you can't imagine going back to your old workflow.
 
 This project is a Command Line Interface that manages git commits and branches to allow you to quickly use a stacked diff workflow. It uses the Github CLI to create pull requests and add reviewers once PR checks have passed.
 
-## Installation From a Release
+## Installation
+
+### Installation as Github CLI 
+
+Recommendation is to 
+
+### Installation From a Release
 
 Download the latest release.
 
 *Note: no pre-built releases are provided yet, see [Installation from Source](#installation-from-source)*
 
-### Mac
+#### Mac
 
 *Optional: As this is a CLI, do yourself a favor and install [iTerm](https://iterm2.com/) and [zsh](https://ohmyz.sh/), as they make working from the command line more pleasant.*
 
@@ -28,7 +34,7 @@ echo "export PATH=\$PATH:\$HOME/stacked-diff/bin" >> ~/.zshrc
 source ~/.zshrc
 ```
 
-### Windows
+#### Windows
 
 1. Install [Git and Git Bash](https://gitforwindows.org/)
 2. Install [Github CLI](https://cli.github.com/). Winget is possible: `winget install --id GitHub.cli`
@@ -42,11 +48,19 @@ source ~/.zshrc
       source ~/.bashrc
       ```
 
-## Installation From Source
+### Installation From Source
 
 Clone the repository, [then build](DEVELOPER_GUIDE.md#how-to-build), and then follow the [install instructions](#installation-from-a-release) for your platform.
 
-## Stacked Diff Workflow CLI
+### Usage as a golang Library
+
+The code can also be used as a go library within your own go application. See the [Developer Guide](DEVELOPER_GUIDE.md#usage-as-a-golang-library) for more info.
+
+```bash
+go get github.com/joshallenit/stacked-diff/v2@v2.0.7
+```
+
+## Command Line Interface
 
 ```bash
 usage: sd [top-level-flags] <command> [<args>]`
@@ -466,18 +480,6 @@ replace-head <commitIndicator>
 git add . && git rebase --continue
 # All done... now both the feature branch and your local main are rebased with main, 
 # and the merge conflicts only had to be fixed once
-```
-
-## Usage as a golang Library
-
-The CLI can also be used as a go library within your own go application. See the [Developer Guide](DEVELOPER_GUIDE.md) for more info.
-
-```bash
-go get github.com/joshallenit/stacked-diff/v2@v2.0.7
-```
-
-```golang
-import "github.com/joshallenit/stacked-diff/v2"
 ```
 
 ## Building Source and Contributing
