@@ -9,11 +9,10 @@ ifeq ($(OS),Windows_NT)
 else
 	PATH_SEPARATOR:=:
 endif
-# Add executable to PATH as it is required as the git sequence editor for unit tests.
+# Add executable to PATH so it can be used as the git sequence editor for unit tests.
 export PATH := ${PATH}${PATH_SEPARATOR}${ROOT_DIR}
 
-# Note: Using * instead of + in regex so it works on both Windows and Mac. See
-# https://stackoverflow.com/questions/2019989/how-to-assign-the-output-of-a-command-to-a-makefile-variable
+# Note: Using * instead of + in regex so it works on both Windows and Mac.
 
 format:
 	gofmt -w .

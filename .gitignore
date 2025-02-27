@@ -1,5 +1,5 @@
 .DS_Store
 build
 # Executables (Mac or Windows). Must be at the root of the project to be installed as a Github CLI Plugin. 
-gh-stacked-diff
-gh-stacked-diff.exe
+stacked-diff
+stacked-diff.exe

@@ -1,4 +1,4 @@
-# Stacked Diff Workflow Github CLI Plugin
+# Stacked Diff Workflow
 
 Using a [stacked diff workflow](https://newsletter.pragmaticengineer.com/p/stacked-diffs) allows you to break down a pull request into several smaller PRs. It also allows you to work on separate streams of work without the overhead of changing branches. Once you experience the efficiency of stacked diffs you can't imagine going back to your old workflow.
 
@@ -6,50 +6,39 @@ This project is a Command Line Interface that manages git commits and branches t
 
 ## Installation
 
-### Installation as Github CLI 
-
-So what can we do.
-
-```
-```
-
-### Installation From a Release
-
-Download the latest release.
-
-*Note: no pre-built releases are provided yet, see [Installation from Source](#installation-from-source)*
+### Installation as Github CLI Plugin
 
 #### Mac
 
 *Optional: As this is a CLI, do yourself a favor and install [iTerm](https://iterm2.com/) and [zsh](https://ohmyz.sh/), as they make working from the command line more pleasant.*
 
-Instructions:
-
 ```bash
 # Install Github CLI. 
 brew install gh 
 # Setup login for Github CLI
-gh auth login 
-# Add the /bin directory to your PATH. 
-# Replace the directory below to wherever you cloned the repository or unzipped the release.
-# For example if using zsh and installed in your home directory:
-echo "export PATH=\$PATH:\$HOME/stacked-diff/bin" >> ~/.zshrc
+gh auth login
+# Install plugin
+gh install testsd3 
+# Add a shell alias to make it faster to use. 
+# For example if using zsh:
+echo "alias sd='gh testsd3'" >> ~/.zshrc
 source ~/.zshrc
 ```
 
 #### Windows
 
-1. Install [Git and Git Bash](https://gitforwindows.org/)
-2. Install [Github CLI](https://cli.github.com/). Winget is possible: `winget install --id GitHub.cli`
-3. Authenticate gh and add bin to path:
-      ```bash
-      gh auth login 
-      # Add the /bin directory to your PATH. 
-      # Replace the directory below to wherever you cloned the repository or unzipped the release.
-      # For example if using bash and installed in your home directory:
-      echo "export PATH=\$PATH:\$HOME/stacked-diff/bin" >> ~/.bashrc
-      source ~/.bashrc
-      ```
+```bash
+# Install Github CLI. 
+brew install gh 
+# Setup login for Github CLI
+gh auth login
+# Install plugin
+gh install testsd3 
+# Add a shell alias to make it faster to use. 
+# For example if using Git Bash:
+echo "alias sd='gh testsd3'" >> ~/.bashrc
+source ~/.bashrc
+```
 
 ### Installation From Source
 
