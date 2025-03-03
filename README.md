@@ -27,18 +27,18 @@ source ~/.zshrc
 
 #### Windows
 
-```bash
-# Install Github CLI. 
-brew install gh 
-# Setup login for Github CLI
-gh auth login
-# Install plugin
-gh extensions install joshallenit/gh-stacked-diff 
-# Add a shell alias to make it faster to use. 
-# For example if using Git Bash:
-echo "alias sd='gh stacked-diff'" >> ~/.bashrc
-source ~/.bashrc
-```
+1. Install [Git and Git Bash](https://gitforwindows.org/)
+2. Install [Github CLI](https://cli.github.com/). Winget is possible: `winget install --id GitHub.cli`
+3. Authenticate gh and install plugin:
+      ```bash
+      gh auth login 
+      # Install plugin
+      gh extensions install joshallenit/gh-stacked-diff 
+      # Add a shell alias to make it faster to use. 
+      # For example if using Git Bash:
+      echo "alias sd='gh stacked-diff'" >> ~/.bashrc
+      source ~/.bashrc
+      ```
 
 ### Usage as a golang Library
 
