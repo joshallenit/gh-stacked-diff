@@ -85,7 +85,7 @@ func getMergedBranches() []string {
 	for _, mergedBranchRawLine := range mergedBranchesRawLines {
 		fields := strings.Fields(mergedBranchRawLine)
 		if len(fields) != 2 {
-			panic(fmt.Sprint("Unexpected output from gh pr list: ", mergedBranchRawLine))
+			break
 		}
 		// Checking for ancestor is more reliable than filtering on merge date via "gh pr list --search".
 		_, mergeBaseErr := ex.Execute(ex.ExecuteOptions{}, "git", "merge-base", "--is-ancestor", fields[1], "HEAD")
