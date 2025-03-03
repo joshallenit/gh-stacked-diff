@@ -1,19 +1,19 @@
 package commands
 
 import (
+	"io"
 	"time"
 
 	"flag"
 	"fmt"
 	"log/slog"
-	"os"
 	"strings"
 
 	"github.com/fatih/color"
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
+	ex "github.com/joshallenit/gh-testsd3/v2/execute"
+	"github.com/joshallenit/gh-testsd3/v2/templates"
 
-	"github.com/joshallenit/stacked-diff/v2/util"
+	"github.com/joshallenit/gh-testsd3/v2/util"
 )
 
 func createNewCommand() Command {
@@ -60,7 +60,7 @@ func createNewCommand() Command {
 			"   pr-title.template:         templates/config/pr-title.template\n" +
 			"\n" +
 			"To change a template, copy the default from templates/config/ into\n" +
-			"~/.stacked-diff/ and modify contents.\n" +
+			"~/.gh-testsd3/ and modify contents.\n" +
 			"\n" +
 			"The possible values for the templates are:\n" +
 			"\n" +
@@ -74,7 +74,13 @@ func createNewCommand() Command {
 			"   TicketNumber                 Jira ticket as parsed from the commit summary\n" +
 			"   Username                     Name as parsed from git config email.\n" +
 			"   UsernameCleaned              Username with dots (.) converted to dashes (-).\n",
-		OnSelected: func(command Command) {
+		OnSelected: func(
+			command Command,
+			stdOut io.Writer,
+			stdErr io.Writer,
+			sequenceEditorPrefix string,
+			exit func(err any),
+		) {
 			if flagSet.NArg() > 1 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
@@ -85,7 +91,7 @@ func createNewCommand() Command {
 			if *baseBranch == "" {
 				*baseBranch = util.GetMainBranchOrDie()
 			}
-			createNewPr(*draft, *featureFlag, *baseBranch, gitLog)
+			createNewPr(*draft, *featureFlag, *baseBranch, gitLog, exit)
 			if *reviewers != "" {
 				addReviewersToPr([]string{gitLog.Commit}, templates.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
@@ -93,12 +99,23 @@ func createNewCommand() Command {
 }
 
 // Creates a new pull request via Github CLI.
-func createNewPr(draft bool, featureFlag string, baseBranch string, gitLog templates.GitLog) {
+func createNewPr(draft bool, featureFlag string, baseBranch string, gitLog templates.GitLog, exit func(err any)) {
 	util.RequireMainBranch()
 	templates.RequireCommitOnMain(gitLog.Commit)
-
-	var commitToBranchFrom string
 	shouldPopStash := util.Stash("sd new " + flag.Arg(0))
+	rollbackManager := &util.GitRollbackManager{}
+	rollbackManager.SaveState()
+	defer func() {
+		r := recover()
+		if r != nil {
+			rollbackManager.Restore(r)
+		}
+		util.PopStash(shouldPopStash)
+		if r != nil {
+			panic(r)
+		}
+	}()
+	var commitToBranchFrom string
 	if baseBranch == util.GetMainBranchOrDie() {
 		commitToBranchFrom = util.FirstOriginMainCommit(util.GetMainBranchOrDie())
 		slog.Info(fmt.Sprint("Switching to branch ", gitLog.Branch, " based off commit ", commitToBranchFrom))
@@ -107,48 +124,23 @@ func createNewPr(draft bool, featureFlag string, baseBranch string, gitLog templ
 		slog.Info(fmt.Sprint("Switching to branch ", gitLog.Branch, " based off branch ", baseBranch))
 	}
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "--no-track", gitLog.Branch, commitToBranchFrom)
+	rollbackManager.CreatedBranch(gitLog.Branch)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", gitLog.Branch)
 	slog.Info(fmt.Sprint("Cherry picking ", gitLog.Commit))
-	cherryPickOutput, cherryPickError := ex.Execute(ex.ExecuteOptions{}, "git", "cherry-pick", gitLog.Commit)
-	if cherryPickError != nil {
-		slog.Info(fmt.Sprint(color.RedString("Could not cherry-pick, aborting... "), cherryPickOutput, " ", cherryPickError))
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
-		slog.Info(fmt.Sprint("Deleting created branch ", gitLog.Branch))
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", gitLog.Branch)
-		util.PopStash(shouldPopStash)
-		os.Exit(1)
-	}
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", gitLog.Commit)
 	slog.Info("Pushing to remote")
 	// -u is required because in newer versions of Github CLI the upstream must be set.
-	pushOutput, pushErr := ex.Execute(ex.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f", "-u")
-	if pushErr != nil {
-		slog.Info(fmt.Sprint(color.RedString("Could not push: "), " ", pushOutput))
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
-		slog.Info(fmt.Sprint("Deleting created branch ", gitLog.Branch))
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", gitLog.Branch)
-		util.PopStash(shouldPopStash)
-		os.Exit(1)
-	}
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f", "-u")
 	prText := templates.GetPullRequestText(gitLog.Commit, featureFlag)
 	slog.Info("Creating PR via gh")
-	createPrOutput, createPrErr := createPr(prText, baseBranch, draft)
-	if createPrErr != nil {
-		slog.Info(fmt.Sprint(color.RedString("Could not create PR: "), createPrOutput, " ", createPrErr))
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
-		slog.Info(fmt.Sprint("Deleting created branch ", gitLog.Branch))
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", gitLog.Branch)
-		util.PopStash(shouldPopStash)
-		os.Exit(1)
-	} else {
-		slog.Info(fmt.Sprint("Created PR ", createPrOutput))
-	}
-	if prViewOutput, prViewErr := ex.Execute(ex.ExecuteOptions{}, "gh", "pr", "view", "--web"); prViewErr != nil {
-		slog.Info(fmt.Sprint(color.RedString("Could not open browser to PR: "), prViewOutput, " ", prViewErr))
-	}
+	createPrOutput := createPr(prText, baseBranch, draft)
+	slog.Info(fmt.Sprint("Created PR ", createPrOutput))
+	rollbackManager.Clear()
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", "--web")
 	slog.Info(fmt.Sprint("Switching back to " + util.GetMainBranchOrDie()))
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
-	util.PopStash(shouldPopStash)
+
 	/*
 	   This avoids this hint when using `git fetch && git-rebase origin/main` which is not appropriate for stacked diff workflow:
 	   > hint: use --reapply-cherry-picks to include skipped commits
@@ -157,16 +149,21 @@ func createNewPr(draft bool, featureFlag string, baseBranch string, gitLog templ
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "advice.skippedCherryPicks", "false")
 }
 
-func createPr(prText templates.PullRequestText, baseBranch string, draft bool) (string, error) {
+func createPr(prText templates.PullRequestText, baseBranch string, draft bool) string {
 	createPrArgsNoDraft := []string{"pr", "create", "--title", prText.Title, "--body", prText.Description, "--fill", "--base", baseBranch}
 	createPrArgs := createPrArgsNoDraft
 	if draft {
 		createPrArgs = append(createPrArgs, "--draft")
 	}
 	createPrOutput, createPrErr := ex.Execute(ex.ExecuteOptions{}, "gh", createPrArgs...)
-	if createPrErr != nil && draft && strings.Contains(createPrOutput, "Draft pull requests are not supported") {
-		slog.Warn("Draft PRs not supported, trying again without draft.\nUse \"--draft=false\" to avoid this warning.")
-		createPrOutput, createPrErr = ex.Execute(ex.ExecuteOptions{}, "gh", createPrArgsNoDraft...)
+	if createPrErr != nil {
+		if draft && strings.Contains(createPrOutput, "Draft pull requests are not supported") {
+			slog.Warn("Draft PRs not supported, trying again without draft.\nUse \"--draft=false\" to avoid this warning.")
+			return ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", createPrArgsNoDraft...)
+		} else {
+			panic("Could not create PR: " + createPrOutput + ", " + createPrErr.Error())
+		}
+	} else {
+		return createPrOutput
 	}
-	return createPrOutput, createPrErr
 }

@@ -5,20 +5,23 @@ import (
 	"io"
 	"log/slog"
 
-	"github.com/joshallenit/stacked-diff/v2/testutil"
+	"github.com/joshallenit/gh-testsd3/v2/testutil"
 )
 
 // Program name
-const programName string = "stacked-diff"
+const programName string = "gh-testsd3"
 
 // Calls [parseArguments] for unit tests.
 func testParseArguments(commandLineArgs ...string) string {
-	panicOnExit := func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any) {
-		panic(err)
+	createPanicOnExit := func(stdErr io.Writer, logLevelVar *slog.LevelVar) func(err any) {
+		return func(err any) {
+			panic(err)
+		}
 	}
 	out := testutil.NewWriteRecorder()
 	// Executable must be on PATH for tests to pass so that sequenceEditorPrefix will execute.
 	// PATH is set in ../Makefile
-	parseArguments(out, out, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, programName+" --log-level=INFO ", panicOnExit)
+	sequenceEditorPrefix := programName + " --log-level=INFO "
+	parseArguments(out, out, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, sequenceEditorPrefix, createPanicOnExit)
 	return out.String()
 }

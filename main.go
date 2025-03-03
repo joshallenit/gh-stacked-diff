@@ -36,8 +36,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
-	"github.com/joshallenit/stacked-diff/v2/commands"
+	"github.com/joshallenit/gh-testsd3/v2/commands"
 )
 
 func main() {
@@ -45,5 +46,9 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprint("Cannot determine executable ", err))
 	}
-	commands.ExecuteCommand(os.Stdout, os.Stderr, os.Args[1:], thisExecutable+" ", commands.DefaultExit)
+	// Escape back slashes so the exectuable works from GitBash on Windows
+	thisExecutable = strings.ReplaceAll(thisExecutable, "\\", "\\\\")
+	// Quote in case the path has a space.
+	thisExecutable = "\"" + thisExecutable + "\""
+	commands.ExecuteCommand(os.Stdout, os.Stderr, os.Args[1:], thisExecutable+" ", commands.CreateDefaultExit)
 }

@@ -2,18 +2,19 @@ package commands
 
 import (
 	"flag"
+	"io"
 
 	"fmt"
 	"log/slog"
 	"slices"
 	"strings"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-testsd3/v2/execute"
+	"github.com/joshallenit/gh-testsd3/v2/templates"
+	"github.com/joshallenit/gh-testsd3/v2/util"
 )
 
-func createRebaseMainCommand(sequenceEditorPrefix string) Command {
+func createRebaseMainCommand() Command {
 	flagSet := flag.NewFlagSet("rebase-main", flag.ContinueOnError)
 
 	return Command{
@@ -27,7 +28,7 @@ func createRebaseMainCommand(sequenceEditorPrefix string) Command {
 			"but has slight variation with local main because, for example, a\n" +
 			"change was made with the Github Web UI.",
 		Usage: "sd " + flagSet.Name(),
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
@@ -44,6 +45,7 @@ func rebaseMain(sequenceEditorPrefix string) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "fetch")
 	slog.Info("Getting merged branches from Github...")
 	mergedBranches := getMergedBranches()
+	slog.Debug(fmt.Sprint("mergedBranches ", mergedBranches))
 	localLogs := templates.GetNewCommits("HEAD")
 	dropCommits := getDropCommits(localLogs, mergedBranches)
 	slog.Info("Rebasing...")

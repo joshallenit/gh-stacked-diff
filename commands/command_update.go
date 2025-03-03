@@ -2,21 +2,20 @@ package commands
 
 import (
 	"flag"
+	"io"
 	"log/slog"
-	"os"
 	"strings"
 
 	"fmt"
 
-	"github.com/fatih/color"
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-testsd3/v2/execute"
+	"github.com/joshallenit/gh-testsd3/v2/templates"
+	"github.com/joshallenit/gh-testsd3/v2/util"
 
 	"time"
 )
 
-func createUpdateCommand(sequenceEditorPrefix string) Command {
+func createUpdateCommand() Command {
 	flagSet := flag.NewFlagSet("update", flag.ContinueOnError)
 	indicatorTypeString := addIndicatorFlag(flagSet)
 	reviewers, silent, minChecks := addReviewersFlags(flagSet, "")
@@ -27,7 +26,7 @@ func createUpdateCommand(sequenceEditorPrefix string) Command {
 			"\n" +
 			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
 		Usage: "sd " + flagSet.Name() + " [flags] <PR commitIndicator> [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]",
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() == 0 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)
 			}
@@ -48,33 +47,28 @@ func createUpdateCommand(sequenceEditorPrefix string) Command {
 func updatePr(destCommit templates.GitLog, otherCommits []string, indicatorType templates.IndicatorType, sequenceEditorPrefix string) {
 	util.RequireMainBranch()
 	templates.RequireCommitOnMain(destCommit.Commit)
-	var commitsToCherryPick []string
-	if len(otherCommits) > 0 {
-		if indicatorType == templates.IndicatorTypeGuess || indicatorType == templates.IndicatorTypeList {
-			commitsToCherryPick = util.MapSlice(otherCommits, func(commit string) string {
-				return templates.GetBranchInfo(commit, indicatorType).Commit
-			})
-		} else {
-			commitsToCherryPick = otherCommits
-		}
-	} else {
-		commitsToCherryPick = make([]string, 1)
-		commitsToCherryPick[0] = strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--short", "HEAD"))
-	}
-	shouldPopStash := false
-	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before update-pr "+destCommit.Commit))
-	if strings.HasPrefix(stashResult, "Saved working") {
-		slog.Info(stashResult)
-		shouldPopStash = true
-	}
-	slog.Info(fmt.Sprint("Switching to branch ", destCommit.Branch))
+	var commitsToCherryPick []string = getCommitsToCherryPick(otherCommits, indicatorType)
+	shouldPopStash := util.Stash("before update-pr " + destCommit.Commit)
+	rollbackManager := &util.GitRollbackManager{}
+	rollbackManager.SaveState()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", destCommit.Branch)
+	rollbackManager.SaveState() // Save state again for associated branch.
+	defer func() {
+		r := recover()
+		if r != nil {
+			rollbackManager.Restore(r)
+		}
+		util.PopStash(shouldPopStash)
+		if r != nil {
+			panic(r)
+		}
+	}()
 	slog.Info("Fast forwarding in case there were any commits made via github web interface")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "fetch", "origin", destCommit.Branch)
 	forcePush := false
-	if _, err := ex.Execute(ex.ExecuteOptions{}, "git", "merge", "--ff-only", "origin/"+destCommit.Branch); err != nil {
+	if _, err := ex.Execute(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "merge", "--ff-only", "origin/"+destCommit.Branch); err != nil {
 		slog.Info(fmt.Sprint("Could not fast forward to match origin. Rebasing instead. ", err))
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rebase", "origin", destCommit.Branch)
+		ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "rebase", "origin", destCommit.Branch)
 		// As we rebased, a force push may be required.
 		forcePush = true
 	}
@@ -92,24 +86,9 @@ func updatePr(destCommit templates.GitLog, otherCommits []string, indicatorType 
 		rebaseCommit := util.FirstOriginMainCommit(util.GetMainBranchOrDie())
 		slog.Info(fmt.Sprint("Rebasing with the base commit on "+util.GetMainBranchOrDie()+" branch, ", rebaseCommit,
 			", in case the local "+util.GetMainBranchOrDie()+" was rebased with origin/"+util.GetMainBranchOrDie()))
-		rebaseOutput, rebaseError := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", rebaseCommit)
-		if rebaseError != nil {
-			slog.Info(fmt.Sprint(color.RedString("Could not rebase, aborting... "), rebaseOutput))
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rebase", "--abort")
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
-			util.PopStash(shouldPopStash)
-			os.Exit(1)
-		}
+		ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "rebase", rebaseCommit)
 		slog.Info(fmt.Sprint("Cherry picking again ", commitsToCherryPick))
-		var cherryPickOutput string
-		cherryPickOutput, cherryPickError = ex.Execute(ex.ExecuteOptions{}, "git", cherryPickArgs...)
-		if cherryPickError != nil {
-			slog.Info(fmt.Sprint(color.RedString("Could not cherry-pick, aborting... "), cherryPickArgs, " ", cherryPickOutput, " ", cherryPickError))
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
-			util.PopStash(shouldPopStash)
-			os.Exit(1)
-		}
+		ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", cherryPickArgs...)
 		forcePush = true
 	}
 	slog.Info("Pushing to remote")
@@ -131,12 +110,23 @@ func updatePr(destCommit templates.GitLog, otherCommits []string, indicatorType 
 	}
 	slog.Debug(fmt.Sprint("Using sequence editor ", environmentVariables))
 	options := ex.ExecuteOptions{EnvironmentVariables: environmentVariables, Output: ex.NewStandardOutput()}
-	rootCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "--max-parents=0", "--format=%h", "HEAD"))
-	if rootCommit == destCommit.Commit {
-		slog.Info("Rebasing root commit")
-		ex.ExecuteOrDie(options, "git", "rebase", "-i", "--root")
+	ex.ExecuteOrDie(options, "git", "rebase", "-i", destCommit.Commit+"^")
+	rollbackManager.Clear()
+}
+
+func getCommitsToCherryPick(otherCommits []string, indicatorType templates.IndicatorType) []string {
+	var commitsToCherryPick []string
+	if len(otherCommits) > 0 {
+		if indicatorType == templates.IndicatorTypeGuess || indicatorType == templates.IndicatorTypeList {
+			commitsToCherryPick = util.MapSlice(otherCommits, func(commit string) string {
+				return templates.GetBranchInfo(commit, indicatorType).Commit
+			})
+		} else {
+			commitsToCherryPick = otherCommits
+		}
 	} else {
-		ex.ExecuteOrDie(options, "git", "rebase", "-i", destCommit.Commit+"^")
+		commitsToCherryPick = make([]string, 1)
+		commitsToCherryPick[0] = strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--short", "HEAD"))
 	}
-	util.PopStash(shouldPopStash)
+	return commitsToCherryPick
 }

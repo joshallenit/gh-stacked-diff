@@ -2,10 +2,11 @@ package commands
 
 import (
 	"flag"
+	"io"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-testsd3/v2/execute"
+	"github.com/joshallenit/gh-testsd3/v2/templates"
+	"github.com/joshallenit/gh-testsd3/v2/util"
 )
 
 func createCheckoutCommand() Command {
@@ -22,7 +23,7 @@ func createCheckoutCommand() Command {
 			"\n" +
 			"After modifying the branch you can use \"sd replace-commit\" to sync local " + util.GetMainBranchForHelp() + ".",
 		Usage: "sd " + flagSet.Name() + " [flags] <commitIndicator>",
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() == 0 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)
 			}

@@ -1,5 +1,18 @@
+/bin
+
+# VS Code
+.vscode
+
+# IntelliJ
+.idea
+
+# macOS
 .DS_Store
-build
-# Executables (Mac or Windows). Must be at the root of the project to be installed as a Github CLI Plugin. 
-stacked-diff
-stacked-diff.exe
+
+# vim
+*.swp
+
+# Emacs
+*~
+
+vendor/

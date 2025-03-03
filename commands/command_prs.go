@@ -5,10 +5,10 @@ import (
 	"io"
 	"log/slog"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
+	ex "github.com/joshallenit/gh-testsd3/v2/execute"
 )
 
-func createPrsCommand(stdOut io.Writer) Command {
+func createPrsCommand() Command {
 	flagSet := flag.NewFlagSet("prs", flag.ContinueOnError)
 
 	return Command{
@@ -19,11 +19,11 @@ func createPrsCommand(stdOut io.Writer) Command {
 			"You must be logged-in, via \"gh auth login\"",
 		Usage:           "sd " + flagSet.Name(),
 		DefaultLogLevel: slog.LevelError,
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: stdOut, Stderr: stdOut}},
+			ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: stdOut, Stderr: stdErr}},
 				"gh", "pr", "list", "--author", "@me")
 		}}
 }

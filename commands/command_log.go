@@ -11,12 +11,12 @@ import (
 
 	"github.com/fatih/color"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-testsd3/v2/execute"
+	"github.com/joshallenit/gh-testsd3/v2/templates"
+	"github.com/joshallenit/gh-testsd3/v2/util"
 )
 
-func createLogCommand(stdOut io.Writer) Command {
+func createLogCommand() Command {
 	flagSet := flag.NewFlagSet("log", flag.ContinueOnError)
 
 	return Command{
@@ -35,7 +35,7 @@ func createLogCommand(stdOut io.Writer) Command {
 			"their associated commit summary).",
 		Usage:           "sd " + flagSet.Name(),
 		DefaultLogLevel: slog.LevelError,
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}

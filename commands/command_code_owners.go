@@ -9,13 +9,13 @@ import (
 	"slices"
 	"strings"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-testsd3/v2/execute"
+	"github.com/joshallenit/gh-testsd3/v2/util"
 
 	"github.com/hairyhenderson/go-codeowners"
 )
 
-func createCodeOwnersCommand(stdOut io.Writer) Command {
+func createCodeOwnersCommand() Command {
 	flagSet := flag.NewFlagSet("code-owners", flag.ContinueOnError)
 
 	return Command{
@@ -25,7 +25,7 @@ func createCodeOwnersCommand(stdOut io.Writer) Command {
 			"in the current local branch when compared to the remote main branch",
 		Usage:           "sd " + flagSet.Name(),
 		DefaultLogLevel: slog.LevelError,
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}

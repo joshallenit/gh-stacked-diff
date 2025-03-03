@@ -7,12 +7,12 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/testutil"
+	"github.com/joshallenit/gh-testsd3/v2/templates"
+	"github.com/joshallenit/gh-testsd3/v2/testutil"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
+	ex "github.com/joshallenit/gh-testsd3/v2/execute"
 
-	"github.com/joshallenit/stacked-diff/v2/util"
+	"github.com/joshallenit/gh-testsd3/v2/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -57,7 +57,7 @@ func TestPrintGitLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t 
 
 	testutil.AddCommit("first", "")
 
-	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+	testParseArguments("new")
 
 	outWriter := testutil.NewWriteRecorder()
 	printGitLog(outWriter)

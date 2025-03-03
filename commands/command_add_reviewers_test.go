@@ -7,10 +7,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/testutil"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-testsd3/v2/execute"
+	"github.com/joshallenit/gh-testsd3/v2/templates"
+	"github.com/joshallenit/gh-testsd3/v2/testutil"
+	"github.com/joshallenit/gh-testsd3/v2/util"
 )
 
 func TestSdAddReviewers_AddReviewers(t *testing.T) {
@@ -20,7 +20,7 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("--log-level=DEBUG", "new")
+	testParseArguments("new")
 
 	allCommits := templates.GetAllCommits()
 	testExecutor.SetResponse(
@@ -31,7 +31,7 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	testParseArguments("--log-level=DEBUG", "add-reviewers", "--reviewers=mybestie", allCommits[0].Commit)
+	testParseArguments("add-reviewers", "--reviewers=mybestie", allCommits[0].Commit)
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}

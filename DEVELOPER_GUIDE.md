@@ -13,40 +13,7 @@ Then run:
 make build
 ```
 
-Binaries are created in `./bin`. The [stacked-diff] executable is renamed to [sd] in [Makefile].
-
-
-#### Mac
-
-*Optional: As this is a CLI, do yourself a favor and install [iTerm](https://iterm2.com/) and [zsh](https://ohmyz.sh/), as they make working from the command line more pleasant.*
-
-Instructions:
-
-```bash
-# Install Github CLI. 
-brew install gh 
-# Setup login for Github CLI
-gh auth login 
-# Add the /bin directory to your PATH. 
-# Replace the directory below to wherever you cloned the repository or unzipped the release.
-# For example if using zsh and installed in your home directory:
-echo "export PATH=\$PATH:\$HOME/stacked-diff/bin" >> ~/.zshrc
-source ~/.zshrc
-```
-
-#### Windows
-
-1. Install [Git and Git Bash](https://gitforwindows.org/)
-2. Install [Github CLI](https://cli.github.com/). Winget is possible: `winget install --id GitHub.cli`
-3. Authenticate gh and add bin to path:
-      ```bash
-      gh auth login 
-      # Add the /bin directory to your PATH. 
-      # Replace the directory below to wherever you cloned the repository or unzipped the release.
-      # For example if using bash and installed in your home directory:
-      echo "export PATH=\$PATH:\$HOME/stacked-diff/bin" >> ~/.bashrc
-      source ~/.bashrc
-      ```
+Binaries are created in `./bin`.
 
 ### Installation From Source
 
@@ -82,12 +49,16 @@ Follow the steps in golang docs [Publishing a module](https://go.dev/doc/modules
 go mod tidy
 make test
 # Make sure all changes merged into main, git status and sd log should be empty.
+# Otherwise save your changes, "git reset --hard origin/main", create tag, then restore your changes
 git status && sd log
 export RELEASE_VERSION=`grep "latestVersion" "project.properties" | cut -d '=' -f2`;\
 git tag v$RELEASE_VERSION
 git push origin v$RELEASE_VERSION
-GOPROXY=proxy.golang.org go list -m github.com/joshallenit/stacked-diff/v2@v$RELEASE_VERSION
+GOPROXY=proxy.golang.org go list -m github.com/joshallenit/gh-testsd3/v2@v$RELEASE_VERSION
+# Then bump latest version in [project.properties]
 ```
+
+Once a tag is created [.github/workflows/release.yml] kicks off and creates the binaries for the release.
 
 ## Usage as a golang Library
 

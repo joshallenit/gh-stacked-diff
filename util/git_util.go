@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"strings"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
+	ex "github.com/joshallenit/gh-testsd3/v2/execute"
 )
 
 // Cached value of main branch name.
@@ -72,7 +72,13 @@ func getMainBranchFromGitLog() (string, error) {
 
 func setRemoteHead() {
 	currentBranch := GetCurrentBranchName()
-	defaultBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch"))
+	defaultBranch, err := ex.Execute(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch")
+	if err != nil {
+		// git config init.defaultBranch will fail if default branch is not setup.
+		defaultBranch = "master"
+	} else {
+		defaultBranch = strings.TrimSpace(defaultBranch)
+	}
 	if currentBranch == defaultBranch || currentBranch == "main" {
 		slog.Warn("Setting remote head to " + currentBranch + " because it is not set.")
 		out, err := ex.Execute(ex.ExecuteOptions{}, "git", "remote", "set-head", "origin", currentBranch)
@@ -135,9 +141,9 @@ func GetCurrentBranchName() string {
 }
 
 func Stash(forName string) bool {
-	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName))
-	if strings.HasPrefix(stashResult, "Saved working") {
-		slog.Info(stashResult)
+	stashResult := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName)), "\n")
+	if len(stashResult) > 0 && strings.HasPrefix(stashResult[len(stashResult)-1], "Saved working") {
+		slog.Info(stashResult[len(stashResult)-1])
 		return true
 	}
 	return false

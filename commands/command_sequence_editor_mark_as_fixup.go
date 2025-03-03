@@ -3,6 +3,7 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"strings"
@@ -16,7 +17,7 @@ func createMarkAsFixupCommand() Command {
 		Description: "For use as a sequence editor during an interactive git rebase. Marks commits as fixup commits.",
 		Usage:       "sd " + flagSet.Name() + " targetCommit fixupCommit1 [fixupCommit2...] rebaseFilename",
 		Hidden:      true,
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() < 3 {
 				commandError(flagSet, "not enough arguments", command.Usage)
 			}

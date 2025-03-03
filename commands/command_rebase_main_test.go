@@ -7,10 +7,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/testutil"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-testsd3/v2/execute"
+	"github.com/joshallenit/gh-testsd3/v2/templates"
+	"github.com/joshallenit/gh-testsd3/v2/testutil"
+	"github.com/joshallenit/gh-testsd3/v2/util"
 )
 
 func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
@@ -129,24 +129,24 @@ func TestSdRebaseMain_WithDuplicateBranches_Panics(t *testing.T) {
 
 	testParseArguments("rebase-main")
 
-	// Never reaches here if `OtherFunctionThatPanics` panics.
 	assert.Fail("did not panic with duplicate branches")
 }
 
 func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(slog.LevelDebug)
 
 	testutil.AddCommit("first", "file-with-conflicts")
-	testutil.AddCommit("second", "")
+	testutil.CommitFileChange("second", "change-value-to-avoid-same-hash", "1")
 	testutil.CommitFileChange("third", "file-with-conflicts", "1")
 	testParseArguments("new", "2")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	allCommits := templates.GetAllCommits()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
-	testutil.AddCommit("second", "")
-	testutil.CommitFileChange("third", "file-with-conflicts", "2")
+	// If this runs in the same second then it will generate the same commit hash, so change value.
+	testutil.CommitFileChange("second", "change-value-to-avoid-same-hash", "2")
+	testutil.CommitFileChange("fourth", "file-with-conflicts", "2")
 
 	testExecutor.SetResponse(allCommits[1].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
