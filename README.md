@@ -1,52 +1,54 @@
-# Developer Scripts for Stacked Diff Workflow
+# Stacked Diff Workflow
 
 Using a [stacked diff workflow](https://newsletter.pragmaticengineer.com/p/stacked-diffs) allows you to break down a pull request into several smaller PRs. It also allows you to work on separate streams of work without the overhead of changing branches. Once you experience the efficiency of stacked diffs you can't imagine going back to your old workflow.
 
 This project is a Command Line Interface that manages git commits and branches to allow you to quickly use a stacked diff workflow. It uses the Github CLI to create pull requests and add reviewers once PR checks have passed.
 
-## Installation From a Release
+## Installation
 
-Download the latest release.
+### Installation as Github CLI Plugin
 
-*Note: no pre-built releases are provided yet, see [Installation from Source](#installation-from-source)*
-
-### Mac
+#### Mac
 
 *Optional: As this is a CLI, do yourself a favor and install [iTerm](https://iterm2.com/) and [zsh](https://ohmyz.sh/), as they make working from the command line more pleasant.*
-
-Instructions:
 
 ```bash
 # Install Github CLI. 
 brew install gh 
 # Setup login for Github CLI
-gh auth login 
-# Add the /bin directory to your PATH. 
-# Replace the directory below to wherever you cloned the repository or unzipped the release.
-# For example if using zsh and installed in your home directory:
-echo "export PATH=\$PATH:\$HOME/stacked-diff/bin" >> ~/.zshrc
+gh auth login
+# Install plugin
+gh extensions install joshallenit/gh-stacked-diff 
+# Add a shell alias to make it faster to use. 
+# For example if using zsh:
+echo "alias sd='gh stacked-diff'" >> ~/.zshrc
 source ~/.zshrc
 ```
 
-### Windows
+#### Windows
 
-1. Install [Git and Git Bash](https://gitforwindows.org/)
-2. Install [Github CLI](https://cli.github.com/). Winget is possible: `winget install --id GitHub.cli`
-3. Authenticate gh and add bin to path:
-      ```bash
-      gh auth login 
-      # Add the /bin directory to your PATH. 
-      # Replace the directory below to wherever you cloned the repository or unzipped the release.
-      # For example if using bash and installed in your home directory:
-      echo "export PATH=\$PATH:\$HOME/stacked-diff/bin" >> ~/.bashrc
-      source ~/.bashrc
-      ```
+```bash
+# Install Github CLI. 
+brew install gh 
+# Setup login for Github CLI
+gh auth login
+# Install plugin
+gh extensions install joshallenit/gh-stacked-diff 
+# Add a shell alias to make it faster to use. 
+# For example if using Git Bash:
+echo "alias sd='gh stacked-diff'" >> ~/.bashrc
+source ~/.bashrc
+```
 
-## Installation From Source
+### Usage as a golang Library
 
-Clone the repository, [then build](DEVELOPER_GUIDE.md#how-to-build), and then follow the [install instructions](#installation-from-a-release) for your platform.
+The code can also be used as a go library within your own go application. See the [Developer Guide](DEVELOPER_GUIDE.md#usage-as-a-golang-library) for more info.
 
-## Stacked Diff Workflow CLI
+```bash
+go get github.com/joshallenit/gh-stacked-diff/v2@v2.0.9
+```
+
+## Command Line Interface
 
 ```bash
 usage: sd [top-level-flags] <command> [<args>]`
@@ -129,7 +131,7 @@ The default templates are:
    pr-title.template:         templates/config/pr-title.template
 
 To change a template, copy the default from templates/config/ into
-~/.stacked-diff/ and modify contents.
+~/.gh-stacked-diff/ and modify contents.
 
 The possible values for the templates are:
 
@@ -468,18 +470,6 @@ git add . && git rebase --continue
 # and the merge conflicts only had to be fixed once
 ```
 
-## Usage as a golang Library
-
-The CLI can also be used as a go library within your own go application. See the [Developer Guide](DEVELOPER_GUIDE.md) for more info.
-
-```bash
-go get github.com/joshallenit/stacked-diff/v2@v2.0.7
-```
-
-```golang
-import "github.com/joshallenit/stacked-diff/v2"
-```
-
 ## Building Source and Contributing
 
 See the [Developer Guide](DEVELOPER_GUIDE.md), which includes instructions on how to build the source, as well as an overview of the code.
@@ -487,10 +477,6 @@ See the [Developer Guide](DEVELOPER_GUIDE.md), which includes instructions on ho
 ## Stacked Pull Requests?
 
 Note: these scripts do *not* facilitate Stacked *Pull Requests*. Github does some things that add friction to using Stacked PR's, even with support from third party software. For example, after merging one of the PR's in the stack, the other PR's will require a re-review. Instead of Stacked PRs, it's recommended to organize your PR's, as much as reasonably possible, so that they can be all be rebased against main at the same time. When there are dependencies, wait for dependant PR to be merged before putting up the next one. You may find that often you are still working on the next commit while the other is being reviewed/merged.
-
-## Contact
-
-Join the discussion in [#devel-stacked-diff](https://slack-pde.slack.com/archives/C03V94N2A84)
 
 ## Acknowledgments
 
@@ -502,4 +488,4 @@ Join the discussion in [#devel-stacked-diff](https://slack-pde.slack.com/archive
 
 | Stacked Diff version | gh CLI versions tested | git versions tested |
 | -------------------- | ---------------------- | ------------------- |
-| [2.0.0](CHANGELOG.md#200---2025-02-28) | 2.66.1, 2.64.0 | 2.47.1 |
+| [2.0.0](CHANGELOG.md#200---2025-02-28) | 2.66.1, 2.64.0 | 2.47.1, 2.48.1 |

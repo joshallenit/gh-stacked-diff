@@ -4,9 +4,9 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/testutil"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 	"github.com/stretchr/testify/assert"
 )
 

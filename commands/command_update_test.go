@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"log/slog"
 
 	"testing"
@@ -9,10 +10,10 @@ import (
 
 	"slices"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/testutil"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
@@ -20,13 +21,13 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 	testutil.InitTest(slog.LevelInfo)
 	testutil.AddCommit("first", "")
 
-	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+	testParseArguments("new")
 
 	testutil.AddCommit("second", "")
 
 	commitsOnMain := templates.GetAllCommits()
 
-	updatePr(templates.GetBranchInfo(commitsOnMain[1].Commit, templates.IndicatorTypeCommit), []string{}, templates.IndicatorTypeCommit)
+	testParseArguments("update", "2")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[1].Branch)
 
@@ -44,7 +45,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	testutil.AddCommit("second", "")
 
-	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+	testParseArguments("new")
 
 	testutil.AddCommit("third", "")
 
@@ -52,7 +53,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	commitsOnMain := templates.GetAllCommits()
 
-	updatePr(templates.GetBranchInfo(commitsOnMain[2].Commit, templates.IndicatorTypeCommit), []string{}, templates.IndicatorTypeCommit)
+	testParseArguments("update", "3")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[2].Branch)
 
@@ -153,4 +154,61 @@ func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 	assert.True(contains, util.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		return next.ProgramName == "gh"
 	}))
+}
+
+func TestSdUpdate_WhenCherryPickFails_RestoresBranch(t *testing.T) {
+	assert := assert.New(t)
+
+	testutil.InitTest(slog.LevelInfo)
+
+	testutil.AddCommit("first", "")
+	testParseArguments("new")
+	testutil.CommitFileChange("second", "first", "made change")
+	testutil.CommitFileChange("third", "first", "another change")
+
+	allCommits := templates.GetAllCommits()
+	defer func() {
+		r := recover()
+		if r != nil {
+			assert.Equal(util.GetMainBranchOrDie(), util.GetCurrentBranchName())
+			assert.Equal(allCommits, templates.GetAllCommits())
+		}
+	}()
+
+	testParseArguments("update", "3")
+
+	assert.Fail("did not panic on cherry-pick")
+}
+
+func TestSdUpdate_WhenPushFails_RestoresBranches(t *testing.T) {
+	assert := assert.New(t)
+
+	testExecutor := testutil.InitTest(slog.LevelInfo)
+
+	testutil.AddCommit("first", "")
+	firstBranch := templates.GetAllCommits()[0].Branch
+
+	testParseArguments("new")
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", firstBranch)
+	firstCommits := templates.GetAllCommits()
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
+
+	testutil.AddCommit("second", "")
+
+	allCommits := templates.GetAllCommits()
+	testExecutor.SetResponse("", errors.New("Exit code 128"), "git", "push", ex.MatchAnyRemainingArgs)
+	defer func() {
+		r := recover()
+		if r != nil {
+			assert.Equal(util.GetMainBranchOrDie(), util.GetCurrentBranchName())
+			assert.Equal(allCommits, templates.GetAllCommits())
+
+			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", firstBranch)
+			assert.Equal(firstCommits, templates.GetAllCommits())
+		}
+	}()
+	testParseArguments("update", "2")
+
+	assert.Fail("did not panic on cherry-pick")
 }

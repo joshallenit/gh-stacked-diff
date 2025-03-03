@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/testutil"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func TestSdCodeOwners_OutputsOwnersOfChangedFiles(t *testing.T) {
@@ -30,7 +30,7 @@ func TestSdCodeOwners_OutputsOwnersOfChangedFiles(t *testing.T) {
 		"third-changed thirdOwners\n"
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "mkdir", "-p", ".github")
-	if writeErr := os.WriteFile(".github/CODEOWNERS", []byte(codeOwners), 0); writeErr != nil {
+	if writeErr := os.WriteFile(".github/CODEOWNERS", []byte(codeOwners), os.ModePerm); writeErr != nil {
 		panic(writeErr)
 	}
 	out := testParseArguments("code-owners")

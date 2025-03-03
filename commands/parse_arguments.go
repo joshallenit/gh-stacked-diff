@@ -10,28 +10,30 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-func ExecuteCommand(stdOut io.Writer, stdErr io.Writer, commandLineArgs []string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
+func ExecuteCommand(stdOut io.Writer, stdErr io.Writer, commandLineArgs []string, sequenceEditorPrefix string, createExit func(lstdErr io.Writer, logLevelVar *slog.LevelVar) func(err any)) {
 	// Unset any color in case a previous terminal command set colors and then was
 	// terminated before it could reset the colors.
 	color.Unset()
 
-	parseArguments(stdOut, stdErr, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, exit)
+	parseArguments(stdOut, stdErr, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, sequenceEditorPrefix, createExit)
 }
 
-func DefaultExit(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any) {
-	// Show panic stack trace during debug log level.
-	if logLevelVar.Level() <= slog.LevelDebug {
-		panic(err)
-	} else {
-		fmt.Fprintln(stdErr, fmt.Sprint("error: ", err))
-		os.Exit(1)
+func CreateDefaultExit(stdErr io.Writer, logLevelVar *slog.LevelVar) func(err any) {
+	return func(err any) {
+		// Show panic stack trace during debug log level.
+		if logLevelVar.Level() <= slog.LevelDebug {
+			panic(err)
+		} else {
+			fmt.Fprintln(stdErr, fmt.Sprint("error: ", err))
+			os.Exit(1)
+		}
 	}
 }
 
-func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSet, commandLineArgs []string, exit func(stdErr io.Writer, errorCode int, logLevelVar *slog.LevelVar, err any)) {
+func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSet, commandLineArgs []string, sequenceEditorPrefix string, createExit func(stdErr io.Writer, logLevelVar *slog.LevelVar) func(err any)) {
 	if commandLine.ErrorHandling() != flag.ContinueOnError {
 		// Use ContinueOnError so that a description of the command can be included before usage
 		// for help.
@@ -64,14 +66,16 @@ func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSe
 
 	commands := []Command{
 		createAddReviewersCommand(),
-		createBranchNameCommand(stdOut),
-		createCodeOwnersCommand(stdOut),
-		createLogCommand(stdOut),
+		createBranchNameCommand(),
+		createCodeOwnersCommand(),
+		createDropAlreadyMergedCommand(),
+		createLogCommand(),
+		createMarkAsFixupCommand(),
 		createNewCommand(),
-		createPrsCommand(stdOut),
+		createPrsCommand(),
 		createRebaseMainCommand(),
 		createReplaceCommitCommand(),
-		createReplaceConflictsCommand(stdOut),
+		createReplaceConflictsCommand(),
 		createUpdateCommand(),
 		createCheckoutCommand(),
 		createWaitForMergeCommand(),
@@ -120,24 +124,31 @@ func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSe
 	if *logLevelString == "" {
 		logLevelVar.Set(commands[selectedIndex].DefaultLogLevel)
 	}
+	exit := createExit(stdErr, logLevelVar)
 	defer func() {
 		r := recover()
 		if r != nil {
-			exit(stdErr, 1, logLevelVar, r)
+			exit(r)
 		}
 	}()
-	commands[selectedIndex].OnSelected(commands[selectedIndex])
+	// Note: call GetMainBranchOrDie early as it has useful error messages.
+	slog.Debug(fmt.Sprint("Using main branch " + util.GetMainBranchOrDie()))
+
+	commands[selectedIndex].OnSelected(commands[selectedIndex], stdOut, stdErr, sequenceEditorPrefix, exit)
 }
 
 func getCommandSummaries(commands []Command) []string {
+	publicCommands := util.FilterSlice(commands, func(command Command) bool {
+		return !command.Hidden
+	})
 	maxCommandLen := 0
-	for _, command := range commands {
+	for _, command := range publicCommands {
 		if len(command.FlagSet.Name()) > maxCommandLen {
 			maxCommandLen = len(command.FlagSet.Name())
 		}
 	}
 	summaries := make([]string, 0, len(commands))
-	for _, command := range commands {
+	for _, command := range publicCommands {
 		summary := command.FlagSet.Name() + "   " + strings.Repeat(" ", maxCommandLen-len(command.FlagSet.Name())) + command.Summary
 		summaries = append(summaries, summary)
 	}

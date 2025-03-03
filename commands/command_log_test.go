@@ -7,12 +7,12 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/testutil"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 
-	"github.com/joshallenit/stacked-diff/v2/util"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -57,7 +57,7 @@ func TestPrintGitLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t 
 
 	testutil.AddCommit("first", "")
 
-	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+	testParseArguments("new")
 
 	outWriter := testutil.NewWriteRecorder()
 	printGitLog(outWriter)
@@ -95,19 +95,17 @@ func TestPrintGitLog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) 
 
 	testutil.AddCommit("first", "")
 
-	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+	testParseArguments("new")
 
 	testutil.AddCommit("second", "")
 
-	allCommits := templates.GetAllCommits()
-
-	updatePr(templates.GetBranchInfo(allCommits[1].Commit, templates.IndicatorTypeCommit), []string{}, templates.IndicatorTypeCommit)
+	testParseArguments("update", "2")
 
 	outWriter := testutil.NewWriteRecorder()
 	printGitLog(outWriter)
 	out := outWriter.String()
 
-	allCommits = templates.GetAllCommits()
+	allCommits := templates.GetAllCommits()
 	assert.Equal("1. ✅ "+color.YellowString(allCommits[0].Commit)+" first\n"+
 		"      - second\n"+
 		"      - first\n",

@@ -4,18 +4,19 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 
 	"github.com/fatih/color"
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/joshallenit/stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 )
 
 // Next `gh pr view 83824 --json latestReviews` and ensure developer is already not approved so that the review is not dismissed
@@ -43,7 +44,7 @@ func createAddReviewersCommand() Command {
 			"\n" +
 			"If PR is marked as a Draft, it is first marked as \"Ready for Review\".",
 		Usage: "sd " + flagSet.Name() + " [flags] [commitIndicator [commitIndicator]...]",
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			commitIndicators := flagSet.Args()
 			if len(commitIndicators) == 0 {
 				slog.Debug("Using main branch because commitIndicators is empty")

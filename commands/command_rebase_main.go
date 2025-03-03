@@ -2,15 +2,16 @@ package commands
 
 import (
 	"flag"
+	"io"
 
 	"fmt"
 	"log/slog"
 	"slices"
 	"strings"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func createRebaseMainCommand() Command {
@@ -27,16 +28,16 @@ func createRebaseMainCommand() Command {
 			"but has slight variation with local main because, for example, a\n" +
 			"change was made with the Github Web UI.",
 		Usage: "sd " + flagSet.Name(),
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			rebaseMain()
+			rebaseMain(sequenceEditorPrefix)
 		}}
 }
 
 // Bring local main branch up to date with remote
-func rebaseMain() {
+func rebaseMain(sequenceEditorPrefix string) {
 	util.RequireMainBranch()
 	shouldPopStash := util.Stash("rebase-main")
 
@@ -44,13 +45,14 @@ func rebaseMain() {
 	ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "fetch")
 	slog.Info("Getting merged branches from Github...")
 	mergedBranches := getMergedBranches()
+	slog.Debug(fmt.Sprint("mergedBranches ", mergedBranches))
 	localLogs := templates.GetNewCommits("HEAD")
 	dropCommits := getDropCommits(localLogs, mergedBranches)
 	slog.Info("Rebasing...")
 	var rebaseError error
 	if len(dropCommits) > 0 {
 		environmentVariables := []string{
-			"GIT_SEQUENCE_EDITOR=sequence_editor_drop_already_merged " +
+			"GIT_SEQUENCE_EDITOR=" + sequenceEditorPrefix + "sequence-editor-drop-already-merged " +
 				strings.Join(util.MapSlice(dropCommits, func(gitLog templates.GitLog) string {
 					return gitLog.Commit
 				}), " ")}

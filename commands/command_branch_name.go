@@ -6,10 +6,10 @@ import (
 	"io"
 	"log/slog"
 
-	"github.com/joshallenit/stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 )
 
-func createBranchNameCommand(stdOut io.Writer) Command {
+func createBranchNameCommand() Command {
 	flagSet := flag.NewFlagSet("branch-name", flag.ContinueOnError)
 	indicatorTypeString := addIndicatorFlag(flagSet)
 	return Command{
@@ -19,7 +19,7 @@ func createBranchNameCommand(stdOut io.Writer) Command {
 		Description: "Outputs the branch name for a given commit indicator.\n" +
 			"Useful for your own custom scripting.",
 		Usage: "sd " + flagSet.Name() + " [flags] <commitIndicator>",
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() == 0 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)
 			}

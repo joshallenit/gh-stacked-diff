@@ -10,10 +10,10 @@ import (
 
 	"errors"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/testutil"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
 	"strings"
 )
@@ -23,7 +23,7 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+	testParseArguments("new")
 
 	// Check that the PR was created
 	outWriter := testutil.NewWriteRecorder()
@@ -46,7 +46,7 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	testutil.AddCommit("second", "")
 	allCommits := templates.GetNewCommits("HEAD")
 
-	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+	testParseArguments("new")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := templates.GetNewCommits("HEAD")
@@ -67,7 +67,7 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 	testutil.AddCommit("third", "")
 	allCommits := templates.GetNewCommits("HEAD")
 
-	createNewPr(true, "", util.GetMainBranchOrDie(), templates.GetBranchInfo("", templates.IndicatorTypeGuess))
+	testParseArguments("new")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := templates.GetNewCommits("HEAD")
@@ -142,7 +142,7 @@ func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 	testutil.AddCommit("first", "")
 
 	draftNotSupported := "pull request create failed: GraphQL: Draft pull requests are not supported in this repository. (createPullRequest)"
-	testExecutor.SetResponseFunc(draftNotSupported, errors.New("sss"), func(programName string, args ...string) bool {
+	testExecutor.SetResponseFunc(draftNotSupported, errors.New("Exit code 1"), func(programName string, args ...string) bool {
 		return programName == "gh" && args[0] == "pr" && args[1] == "create" && slices.Contains(args, "--draft")
 	})
 
@@ -176,4 +176,54 @@ func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 	assert.Equal(2, len(secondCommits))
 	assert.Equal(mainCommits[0].Subject, secondCommits[0].Subject)
 	assert.Equal(testutil.InitialCommitSubject, firstCommits[1].Subject)
+}
+
+func TestSdNew_WhenCherryPickFails_RestoresBranch(t *testing.T) {
+	assert := assert.New(t)
+
+	testutil.InitTest(slog.LevelInfo)
+
+	testutil.AddCommit("first", "")
+
+	testutil.CommitFileChange("second", "first", "changes")
+
+	allCommits := templates.GetAllCommits()
+
+	restoreBranch := util.GetCurrentBranchName()
+	defer func() {
+		r := recover()
+		if r != nil {
+			assert.Equal(restoreBranch, util.GetCurrentBranchName())
+			assert.Equal(allCommits, templates.GetAllCommits())
+		}
+	}()
+
+	testParseArguments("new")
+
+	assert.Fail("did not panic on conflicts with cherry-pick")
+}
+
+func TestSdNew_WhenNewPrFails_RestoresBranch(t *testing.T) {
+	assert := assert.New(t)
+
+	testExecutor := testutil.InitTest(slog.LevelInfo)
+
+	testutil.AddCommit("first", "")
+
+	allCommits := templates.GetAllCommits()
+
+	testExecutor.SetResponse("", errors.New("Exit Code 1"), "gh", "pr", "create", ex.MatchAnyRemainingArgs)
+
+	restoreBranch := util.GetCurrentBranchName()
+	defer func() {
+		r := recover()
+		if r != nil {
+			assert.Equal(restoreBranch, util.GetCurrentBranchName())
+			assert.Equal(allCommits, templates.GetAllCommits())
+		}
+	}()
+
+	testParseArguments("new")
+
+	assert.Fail("did not panic on PR create")
 }

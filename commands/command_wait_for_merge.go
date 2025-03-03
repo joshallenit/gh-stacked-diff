@@ -2,13 +2,14 @@ package commands
 
 import (
 	"flag"
+	"io"
 	"log/slog"
 	"strings"
 	"time"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func createWaitForMergeCommand() Command {
@@ -24,7 +25,7 @@ func createWaitForMergeCommand() Command {
 			"\n" +
 			"Useful for your own custom scripting.",
 		Usage: "sd " + flagSet.Name() + " [flags] <commit hash or pull request number>",
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() != 1 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)
 			}

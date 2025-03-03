@@ -1,83 +1,92 @@
 package util
 
 import (
-	"errors"
-	"fmt"
 	"log/slog"
 	"strings"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 )
 
 // Cached value of main branch name.
-var mainBranchName string
+var mainBranchNameForHelp string
+
+var mainBranchNameFromGitLog string
 
 // Cached value of user email.
 var userEmail string
 
 // Returns name of main branch, or panics if cannot be determined.
 func GetMainBranchOrDie() string {
-	mainBranch, err := getMainBranch()
-	if err != nil {
-		panic(fmt.Sprint("Could not get main branch: ", err))
+	out, err := getMainBranchFromGitLog()
+	if err == nil {
+		return out
 	}
-	return mainBranch
+	out, err = ex.Execute(ex.ExecuteOptions{}, "git", "rev-parse")
+	if err != nil {
+		panic("Not in a git repository. Must be run from a git repository.\n" + out + ": " + err.Error())
+	}
+
+	out, err = ex.Execute(ex.ExecuteOptions{}, "git", "rev-list", "--max-parents=0", "HEAD")
+	if err != nil {
+		panic("Remote repository is empty.\n" +
+			"Push an initial inconsequential commit to origin/main and try again. \n" +
+			"Using a repository without an initial remote commit is not recommended because git \n" +
+			"requires special handling for the root commit, and you might accidentially \n" +
+			"create more than one root commit.\n" + out + ": " + err.Error())
+	}
+
+	setRemoteHead()
+	out, err = getMainBranchFromGitLog()
+	if err != nil {
+		panic("Remote repository not setup.\n" + out + ": " + err.Error())
+	}
+	return out
 }
 
 // Returns name of main branch, or "main" if cannot be determined. For use by CLI help.
 func GetMainBranchForHelp() string {
-	mainBranch, err := getMainBranch()
+	if mainBranchNameForHelp != "" {
+		return mainBranchNameForHelp
+	}
+	mainBranch, err := getMainBranchFromGitLog()
 	if err != nil {
-		return "main"
+		mainBranchNameForHelp = "main"
+	} else {
+		mainBranchNameForHelp = mainBranch
 	}
-	return mainBranch
+	return mainBranchNameForHelp
 }
 
-func getMainBranch() (string, error) {
-	if mainBranchName == "" {
-		remoteMainBranch, err := ex.Execute(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "origin/HEAD")
-		if err == nil {
-			remoteMainBranch = strings.TrimSpace(remoteMainBranch)
-			mainBranchName = remoteMainBranch[strings.Index(remoteMainBranch, "/")+1:]
-		} else {
-			// Check possible reasons.
-			_, inRepositoryErr := ex.Execute(ex.ExecuteOptions{}, "git", "rev-parse")
-			if inRepositoryErr != nil {
-				return "", errors.New("not in a git repository. Must be run from a git repository")
-			}
-			_, hasHeadErr := ex.Execute(ex.ExecuteOptions{}, "git", "rev-list", "--max-parents=0", "HEAD")
-			if hasHeadErr != nil {
-				return "", errors.New("the remote repository is empty.\n" +
-					"Push an initial inconsequential commit to origin/main and try again. \n" +
-					"Using a repository without an initial remote commit is not recommended because git \n" +
-					"requires special handling for the root commit, and you might accidentially \n" +
-					"create more than one root commit")
-			}
-			// Try to set the remote head and try again.
-			trySetRemoteHead()
-			remoteMainBranch, err := ex.Execute(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "origin/HEAD")
-			if err == nil {
-				remoteMainBranch = strings.TrimSpace(remoteMainBranch)
-				mainBranchName = remoteMainBranch[strings.Index(remoteMainBranch, "/")+1:]
-			} else {
-				// else the repository was not cloned
-				return "", errors.New("cannot determine name of main branch because remote head is not set.\n" +
-					"This usually means that repository was not cloned (git init was used instead). \n" +
-					"Set the name of the main branch on remote and try again:\n" +
-					"git remote set-head origin main")
-			}
-		}
+func getMainBranchFromGitLog() (string, error) {
+	if mainBranchNameFromGitLog != "" {
+		return mainBranchNameFromGitLog, nil
 	}
-	return mainBranchName, nil
+	remoteMainBranch, err := ex.Execute(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "origin/HEAD")
+	if err != nil {
+		return remoteMainBranch, err
+	}
+	remoteMainBranch = strings.TrimSpace(remoteMainBranch)
+	mainBranchNameFromGitLog = remoteMainBranch[strings.Index(remoteMainBranch, "/")+1:]
+	return mainBranchNameFromGitLog, nil
 }
 
-func trySetRemoteHead() {
-	defer func() { _ = recover() }()
+func setRemoteHead() {
 	currentBranch := GetCurrentBranchName()
-	defaultBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch"))
+	defaultBranch, err := ex.Execute(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch")
+	if err != nil {
+		// git config init.defaultBranch will fail if default branch is not setup.
+		defaultBranch = "master"
+	} else {
+		defaultBranch = strings.TrimSpace(defaultBranch)
+	}
 	if currentBranch == defaultBranch || currentBranch == "main" {
-		slog.Warn("Setting remote head to " + currentBranch + " because it was not set.")
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "remote", "set-head", "origin", currentBranch)
+		slog.Warn("Setting remote head to " + currentBranch + " because it is not set.")
+		out, err := ex.Execute(ex.ExecuteOptions{}, "git", "remote", "set-head", "origin", currentBranch)
+		if err != nil {
+			panic("Remote repository not setup.\n" + out)
+		}
+	} else {
+		panic("Remote head is not set, and it cannot be set automatically because current branch is not default (" + defaultBranch + ") or main.")
 	}
 }
 
@@ -132,9 +141,9 @@ func GetCurrentBranchName() string {
 }
 
 func Stash(forName string) bool {
-	stashResult := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName))
-	if strings.HasPrefix(stashResult, "Saved working") {
-		slog.Info(stashResult)
+	stashResult := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName)), "\n")
+	if len(stashResult) > 0 && strings.HasPrefix(stashResult[len(stashResult)-1], "Saved working") {
+		slog.Info(stashResult[len(stashResult)-1])
 		return true
 	}
 	return false

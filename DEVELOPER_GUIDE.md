@@ -13,7 +13,12 @@ Then run:
 make build
 ```
 
-Binaries are created in `./bin`. The [stacked-diff] executable is renamed to [sd] in [Makefile].
+Binaries are created in `./bin`.
+
+### Installation From Source
+
+Clone the repository, [then build](DEVELOPER_GUIDE.md#how-to-build), and then follow the [install instructions](#installation-from-a-release) for your platform.
+
 
 ## Code Organization
 
@@ -44,11 +49,17 @@ Follow the steps in golang docs [Publishing a module](https://go.dev/doc/modules
 go mod tidy
 make test
 # Make sure all changes merged into main, git status and sd log should be empty.
+# Otherwise save your changes, "git reset --hard origin/main", create tag, then restore your changes
 git status && sd log
-export RELEASE_VERSION=`grep "releaseVersion" "project.properties" | cut -d '=' -f2`;\
+export RELEASE_VERSION=`grep "latestVersion" "project.properties" | cut -d '=' -f2`;\
 git tag v$RELEASE_VERSION
 git push origin v$RELEASE_VERSION
-GOPROXY=proxy.golang.org go list -m github.com/joshallenit/stacked-diff/v2@v$RELEASE_VERSION
+GOPROXY=proxy.golang.org go list -m github.com/joshallenit/gh-stacked-diff/v2@v$RELEASE_VERSION
+# Then bump latest version in [project.properties]
 ```
 
+Once a tag is created [.github/workflows/release.yml] kicks off and creates the binaries for the release.
 
+## Usage as a golang Library
+
+Look at [main.go] for example usage.

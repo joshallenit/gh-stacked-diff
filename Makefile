@@ -1,29 +1,26 @@
-.PHONY: build
+LATEST_VERSION := $(shell grep "latestVersion" "project.properties" | cut -d '=' -f2)
+STABLE_VERSION := $(shell grep "stableVersion" "project.properties" | cut -d '=' -f2)
+ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
-# TODO: change PATH to include bin for test
-# TODO: support release on windows (zip not on windows)
+ifeq ($(OS),Windows_NT)
+	PATH_SEPARATOR:=;
+else
+	PATH_SEPARATOR:=:
+endif
+# Add executable to PATH so it can be used as the git sequence editor for unit tests.
+export PATH := ${PATH}${PATH_SEPARATOR}${ROOT_DIR}/bin
 
+.PHONY: format
 format:
-	gofmt -w .;\
-	export RELEASE_VERSION=`grep "releaseVersion" "project.properties" | cut -d '=' -f2`;\
-	 sed -i 's/v2@v2\.[0-9]\+\.[0-9]\+/v2@v'${RELEASE_VERSION}'/' README.md
+	gofmt -w .
+# Note: Using * instead of + in regex so it works on both Windows and Mac.
+	sed -i 's/gh-stacked-diff\\/v2@v2\.[0-9]*\.[0-9]*/gh-stacked-diff\\/v2@v'${STABLE_VERSION}'/' README.md
 
+.PHONY: build
 build: format
-	rm -rf bin; \
-	mkdir -p bin; \
-	go build -o bin ./...; \
-	mv bin/stacked-diff* bin/sd  
+	mkdir -p bin
+	go build -o bin
 
+.PHONY: test
 test: build
 	go test ./...
-
-release: test
-ifndef PLATFORM
-	$(error PLATFORM is not set)
-endif
-	rm -rf build/zip
-	mkdir -p build/zip/stacked-diff
-	cp bin/* build/zip/stacked-diff
-	export RELEASE_VERSION=`grep "releaseVersion" "project.properties" | cut -d '=' -f2`; \
-	cd build/zip; \
-	zip -vr stacked-diff-${PLATFORM}-$(RELEASE_VERSION).zip stacked-diff/ -x "*.DS_Store"

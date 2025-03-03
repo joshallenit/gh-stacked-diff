@@ -1,32 +1,39 @@
-/*
-For use as a sequence editor for an interactive git rebase.
-Marks commits as fixup commits.
-
-usage: sequence_editor_mark_as_fixup targetCommit fixupCommit1 [fixupCommit2...] rebaseFilename
-*/
-package main
+package commands
 
 import (
+	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"strings"
 )
 
-/*
- */
-func main() {
-	slog.Debug(fmt.Sprint("Got args ", os.Args))
-	if len(os.Args) < 3 {
-		fmt.Printf("usage: sequence_editor_mark_as_fixup targetCommit fixupCommit1 [fixupCommit2...] rebaseFilename")
-		os.Exit(1)
-	}
-	targetCommit := os.Args[1]
-	fixupCommits := os.Args[2 : len(os.Args)-1]
-	rebaseFilename := os.Args[len(os.Args)-1]
+func createMarkAsFixupCommand() Command {
+	flagSet := flag.NewFlagSet("sequence-editor-mark-as-fixup", flag.ContinueOnError)
+	return Command{
+		FlagSet:     flagSet,
+		Summary:     "Sequence editor for git rebase used by update",
+		Description: "For use as a sequence editor during an interactive git rebase. Marks commits as fixup commits.",
+		Usage:       "sd " + flagSet.Name() + " targetCommit fixupCommit1 [fixupCommit2...] rebaseFilename",
+		Hidden:      true,
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
+			if flagSet.NArg() < 3 {
+				commandError(flagSet, "not enough arguments", command.Usage)
+			}
 
+			targetCommit := flagSet.Arg(0)
+			fixupCommits := flagSet.Args()[1 : len(flagSet.Args())-1]
+			rebaseFilename := flagSet.Arg(len(flagSet.Args()) - 1)
+
+			markAsFixup(targetCommit, fixupCommits, rebaseFilename)
+		}}
+}
+
+func markAsFixup(targetCommit string, fixupCommits []string, rebaseFilename string) {
 	data, err := os.ReadFile(rebaseFilename)
 
+	slog.Debug(fmt.Sprint("Got targetCommit ", targetCommit, " fixupCommits ", fixupCommits, " rebaseFilename ", rebaseFilename))
 	if err != nil {
 		panic(fmt.Sprint("Could not open ", rebaseFilename, err))
 	}

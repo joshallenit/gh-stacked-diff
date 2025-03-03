@@ -1,3 +1,18 @@
+/bin
+
+# VS Code
+.vscode
+
+# IntelliJ
+.idea
+
+# macOS
 .DS_Store
-build
-bin/
+
+# vim
+*.swp
+
+# Emacs
+*~
+
+vendor/

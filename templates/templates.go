@@ -11,8 +11,8 @@ import (
 	"strings"
 	"text/template"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 //go:embed config/branch_name.template
@@ -216,7 +216,7 @@ func getConfigFile(filenameWithoutPath string) *string {
 	if err != nil {
 		panic(fmt.Sprint("Could not get home dir", err))
 	}
-	fullPath := home + "/.stacked-diff/" + filenameWithoutPath
+	fullPath := home + "/.gh-stacked-diff/" + filenameWithoutPath
 	if _, err := os.Stat(fullPath); err == nil {
 		return &fullPath
 	} else {

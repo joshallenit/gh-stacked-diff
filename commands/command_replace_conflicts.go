@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -9,13 +10,13 @@ import (
 	"os"
 	"strings"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/templates"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 
-	"github.com/joshallenit/stacked-diff/v2/util"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-func createReplaceConflictsCommand(stdOut io.Writer) Command {
+func createReplaceConflictsCommand() Command {
 	flagSet := flag.NewFlagSet("replace-conflicts", flag.ContinueOnError)
 	confirmed := flagSet.Bool("confirm", false, "Whether to automatically confirm to do this rather than ask for y/n input")
 	return Command{
@@ -25,19 +26,19 @@ func createReplaceConflictsCommand(stdOut io.Writer) Command {
 			"current uncommitted changes (merge conflicts), with the contents\n" +
 			"(diff between origin/" + util.GetMainBranchForHelp() + " and HEAD) of its associated branch.",
 		Usage: "sd " + flagSet.Name(),
-		OnSelected: func(command Command) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() > 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			replaceConflicts(stdOut, *confirmed)
+			replaceConflicts(stdOut, *confirmed, exit)
 		}}
 }
 
 // For failed rebase: replace changes with its associated branch.
-func replaceConflicts(stdOut io.Writer, confirmed bool) {
+func replaceConflicts(stdOut io.Writer, confirmed bool, exit func(err any)) {
 	commitWithConflicts := getCommitWithConflicts()
 	gitLog := templates.GetBranchInfo(commitWithConflicts, templates.IndicatorTypeCommit)
-	checkConfirmed(stdOut, confirmed)
+	checkConfirmed(stdOut, confirmed, exit)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
 	slog.Info(fmt.Sprint("Replacing changes (merge conflicts) for failed rebase of commit ", commitWithConflicts, ", with changes from associated branch, ", gitLog.Branch))
 	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", "origin/"+util.GetMainBranchOrDie(), gitLog.Branch)
@@ -71,7 +72,7 @@ func getCommitWithConflicts() string {
 	return strings.Fields(statusLines[lastCommandDoneLine])[1]
 }
 
-func checkConfirmed(stdOut io.Writer, confirmed bool) {
+func checkConfirmed(stdOut io.Writer, confirmed bool, exit func(err any)) {
 	if confirmed {
 		return
 	}
@@ -82,7 +83,6 @@ func checkConfirmed(stdOut io.Writer, confirmed bool) {
 	input := strings.ToLower(scanner.Text())
 	slog.Debug(fmt.Sprint("Got input ", input))
 	if input != "y" && input != "yes" {
-		slog.Info("Cancelled by user")
-		os.Exit(0)
+		exit(errors.New("Cancelled by user"))
 	}
 }

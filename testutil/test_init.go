@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	ex "github.com/joshallenit/stacked-diff/v2/execute"
-	"github.com/joshallenit/stacked-diff/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 const InitialCommitSubject = "Initial empty commit"
@@ -31,7 +31,7 @@ func init() {
 	if err != nil {
 		panic("Cannot find UserCacheDir: " + err.Error())
 	}
-	TestWorkingDir = path.Join(userCacheDir, "stacked-diff-tests")
+	TestWorkingDir = path.Join(userCacheDir, "gh-stacked-diff-tests")
 }
 
 // CD into repository directory and set any global DI variables (slog, sleep, and executor).
@@ -43,15 +43,21 @@ func InitTest(logLevel slog.Level) *ex.TestExecutor {
 	}
 	handler := util.NewPrettyHandler(os.Stdout, opts)
 	slog.SetDefault(slog.New(handler))
+
+	// Set new TestExecutor in case previous test has faked any of the git responses.
+	testExecutor := setTestExecutor()
+
 	cdTestRepo()
+	// Setup author config in case it is not set on machine.
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email", "unit-test@example.com")
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.name", "Unit Test")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "--allow-empty", "-m", InitialCommitSubject)
-	defaultBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch"))
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", defaultBranch)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetCurrentBranchName())
 
 	util.SetDefaultSleep(func(d time.Duration) {
 		slog.Debug(fmt.Sprint("Skipping sleep in tests ", d))
 	})
-	return setTestExecutor()
+	return testExecutor
 }
 
 func cdTestRepo() {
