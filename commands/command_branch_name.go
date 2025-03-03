@@ -6,7 +6,7 @@ import (
 	"io"
 	"log/slog"
 
-	"github.com/joshallenit/gh-testsd3/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 )
 
 func createBranchNameCommand() Command {

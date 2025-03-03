@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"slices"
 
-	ex "github.com/joshallenit/gh-testsd3/v2/execute"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 )
 
 type restoreBranchInfo struct {

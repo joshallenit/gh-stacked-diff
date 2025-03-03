@@ -9,8 +9,8 @@ import (
 	"slices"
 	"strings"
 
-	ex "github.com/joshallenit/gh-testsd3/v2/execute"
-	"github.com/joshallenit/gh-testsd3/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
 	"github.com/hairyhenderson/go-codeowners"
 )

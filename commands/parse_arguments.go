@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/joshallenit/gh-testsd3/v2/util"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func ExecuteCommand(stdOut io.Writer, stdErr io.Writer, commandLineArgs []string, sequenceEditorPrefix string, createExit func(lstdErr io.Writer, logLevelVar *slog.LevelVar) func(err any)) {

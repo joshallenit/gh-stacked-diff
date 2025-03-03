@@ -2,21 +2,20 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.10](https://github.com/joshallenit/gh-testsd3/compare/v2.0.0...v2.0.10) - 2025-02-27
+## [2.0.8](https://github.com/joshallenit/gh-stacked-diff/compare/v2.0.0...v2.0.8) - 2025-03-03
 
-### Changes
+### Added
 
-- More reliable rollback for "new" and "update" command when there is a problem.
-
-## [2.0.9](https://github.com/joshallenit/gh-testsd3/compare/v2.0.0...v2.0.9) - 2025-02-27
+- Build actions so that this can be used as a Github CLI plugin.
 
 ### Changes
 
 - Reorganized code so that project can be used as a Github CLI plugin and go library.
 - Removed scripts under /src/bash that were deprecated.
-- Renamed repository from stacked-diff-workflow to stacked-diff
+- Renamed repository from stacked-diff-workflow to gh-stacked-diff. The gh- prefix is required for it to work as a Github CLI plugin.
+- More reliable rollback for "new" and "update" command when there is a problem.
 
-## [2.0.0](https://github.com/joshallenit/gh-testsd3/compare/v1.3.0...v2.0.0) - 2025-02-16
+## [2.0.0](https://github.com/joshallenit/gh-stacked-diff/compare/v1.3.0...v2.0.0) - 2025-02-16
 
 ### Added
 

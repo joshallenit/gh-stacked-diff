@@ -4,9 +4,9 @@ import (
 	"flag"
 	"io"
 
-	ex "github.com/joshallenit/gh-testsd3/v2/execute"
-	"github.com/joshallenit/gh-testsd3/v2/templates"
-	"github.com/joshallenit/gh-testsd3/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func createCheckoutCommand() Command {

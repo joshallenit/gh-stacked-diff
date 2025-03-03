@@ -9,14 +9,14 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	ex "github.com/joshallenit/gh-testsd3/v2/execute"
-	"github.com/joshallenit/gh-testsd3/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/joshallenit/gh-testsd3/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 )
 
 // Next `gh pr view 83824 --json latestReviews` and ensure developer is already not approved so that the review is not dismissed

@@ -14,7 +14,7 @@ export PATH := ${PATH}${PATH_SEPARATOR}${ROOT_DIR}/bin
 format:
 	gofmt -w .
 # Note: Using * instead of + in regex so it works on both Windows and Mac.
-	sed -i 's/gh-testsd3\\/v2@v2\.[0-9]*\.[0-9]*/gh-testsd3\\/v2@v'${STABLE_VERSION}'/' README.md
+	sed -i 's/gh-stacked-diff\\/v2@v2\.[0-9]*\.[0-9]*/gh-stacked-diff\\/v2@v'${STABLE_VERSION}'/' README.md
 
 .PHONY: build
 build: format

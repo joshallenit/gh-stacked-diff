@@ -10,10 +10,10 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	ex "github.com/joshallenit/gh-testsd3/v2/execute"
-	"github.com/joshallenit/gh-testsd3/v2/templates"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 
-	"github.com/joshallenit/gh-testsd3/v2/util"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func createNewCommand() Command {
@@ -60,7 +60,7 @@ func createNewCommand() Command {
 			"   pr-title.template:         templates/config/pr-title.template\n" +
 			"\n" +
 			"To change a template, copy the default from templates/config/ into\n" +
-			"~/.gh-testsd3/ and modify contents.\n" +
+			"~/.gh-stacked-diff/ and modify contents.\n" +
 			"\n" +
 			"The possible values for the templates are:\n" +
 			"\n" +

@@ -7,7 +7,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/joshallenit/gh-testsd3/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 )
 
 func addIndicatorFlag(flagSet *flag.FlagSet) *string {

@@ -1,4 +1,4 @@
-module github.com/joshallenit/gh-testsd3/v2
+module github.com/joshallenit/gh-stacked-diff/v2
 
 go 1.24
 

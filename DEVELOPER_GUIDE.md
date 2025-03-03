@@ -54,7 +54,7 @@ git status && sd log
 export RELEASE_VERSION=`grep "latestVersion" "project.properties" | cut -d '=' -f2`;\
 git tag v$RELEASE_VERSION
 git push origin v$RELEASE_VERSION
-GOPROXY=proxy.golang.org go list -m github.com/joshallenit/gh-testsd3/v2@v$RELEASE_VERSION
+GOPROXY=proxy.golang.org go list -m github.com/joshallenit/gh-stacked-diff/v2@v$RELEASE_VERSION
 # Then bump latest version in [project.properties]
 ```
 

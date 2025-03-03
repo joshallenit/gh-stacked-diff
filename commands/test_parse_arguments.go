@@ -5,11 +5,11 @@ import (
 	"io"
 	"log/slog"
 
-	"github.com/joshallenit/gh-testsd3/v2/testutil"
+	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 )
 
 // Program name
-const programName string = "gh-testsd3"
+const programName string = "gh-stacked-diff"
 
 // Calls [parseArguments] for unit tests.
 func testParseArguments(commandLineArgs ...string) string {

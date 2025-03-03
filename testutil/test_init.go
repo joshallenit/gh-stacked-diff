@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	ex "github.com/joshallenit/gh-testsd3/v2/execute"
-	"github.com/joshallenit/gh-testsd3/v2/util"
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 const InitialCommitSubject = "Initial empty commit"
@@ -31,7 +31,7 @@ func init() {
 	if err != nil {
 		panic("Cannot find UserCacheDir: " + err.Error())
 	}
-	TestWorkingDir = path.Join(userCacheDir, "gh-testsd3-tests")
+	TestWorkingDir = path.Join(userCacheDir, "gh-stacked-diff-tests")
 }
 
 // CD into repository directory and set any global DI variables (slog, sleep, and executor).

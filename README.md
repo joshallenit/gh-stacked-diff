@@ -1,6 +1,6 @@
 # Stacked Diff Workflow
 
-Using a [stacked diff workflow](https://newsletter.pragmaticengineer.com/p/gh-testsd3s) allows you to break down a pull request into several smaller PRs. It also allows you to work on separate streams of work without the overhead of changing branches. Once you experience the efficiency of stacked diffs you can't imagine going back to your old workflow.
+Using a [stacked diff workflow](https://newsletter.pragmaticengineer.com/p/stacked-diffs) allows you to break down a pull request into several smaller PRs. It also allows you to work on separate streams of work without the overhead of changing branches. Once you experience the efficiency of stacked diffs you can't imagine going back to your old workflow.
 
 This project is a Command Line Interface that manages git commits and branches to allow you to quickly use a stacked diff workflow. It uses the Github CLI to create pull requests and add reviewers once PR checks have passed.
 
@@ -18,10 +18,10 @@ brew install gh
 # Setup login for Github CLI
 gh auth login
 # Install plugin
-gh extensions install joshallenit/gh-testsd3 
+gh extensions install joshallenit/gh-stacked-diff 
 # Add a shell alias to make it faster to use. 
 # For example if using zsh:
-echo "alias sd='gh testsd3'" >> ~/.zshrc
+echo "alias sd='gh stacked-diff'" >> ~/.zshrc
 source ~/.zshrc
 ```
 
@@ -33,10 +33,10 @@ brew install gh
 # Setup login for Github CLI
 gh auth login
 # Install plugin
-gh extensions install joshallenit/gh-testsd3 
+gh extensions install joshallenit/gh-stacked-diff 
 # Add a shell alias to make it faster to use. 
 # For example if using Git Bash:
-echo "alias sd='gh testsd3'" >> ~/.bashrc
+echo "alias sd='gh stacked-diff'" >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -45,7 +45,7 @@ source ~/.bashrc
 The code can also be used as a go library within your own go application. See the [Developer Guide](DEVELOPER_GUIDE.md#usage-as-a-golang-library) for more info.
 
 ```bash
-go get github.com/joshallenit/gh-testsd3/v2@v2.0.9
+go get github.com/joshallenit/gh-stacked-diff/v2@v2.0.9
 ```
 
 ## Command Line Interface
@@ -131,7 +131,7 @@ The default templates are:
    pr-title.template:         templates/config/pr-title.template
 
 To change a template, copy the default from templates/config/ into
-~/.gh-testsd3/ and modify contents.
+~/.gh-stacked-diff/ and modify contents.
 
 The possible values for the templates are:
 
@@ -477,10 +477,6 @@ See the [Developer Guide](DEVELOPER_GUIDE.md), which includes instructions on ho
 ## Stacked Pull Requests?
 
 Note: these scripts do *not* facilitate Stacked *Pull Requests*. Github does some things that add friction to using Stacked PR's, even with support from third party software. For example, after merging one of the PR's in the stack, the other PR's will require a re-review. Instead of Stacked PRs, it's recommended to organize your PR's, as much as reasonably possible, so that they can be all be rebased against main at the same time. When there are dependencies, wait for dependant PR to be merged before putting up the next one. You may find that often you are still working on the next commit while the other is being reviewed/merged.
-
-## Contact
-
-Join the discussion in [#devel-gh-testsd3](https://slack-pde.slack.com/archives/C03V94N2A84)
 
 ## Acknowledgments
 

@@ -38,7 +38,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/joshallenit/gh-testsd3/v2/commands"
+	"github.com/joshallenit/gh-stacked-diff/v2/commands"
 )
 
 func main() {
