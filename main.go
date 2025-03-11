@@ -39,9 +39,11 @@ import (
 	"strings"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/commands"
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 )
 
-func main() {
+func main2() {
+
 	thisExecutable, err := os.Executable()
 	if err != nil {
 		panic(fmt.Sprint("Cannot determine executable ", err))
@@ -51,4 +53,9 @@ func main() {
 	// Quote in case the path has a space.
 	thisExecutable = "\"" + thisExecutable + "\""
 	commands.ExecuteCommand(os.Stdout, os.Stderr, os.Args[1:], thisExecutable+" ", commands.CreateDefaultExit)
+}
+
+func main() {
+	result := interactive.GetTableSelection([]string{"Column1", "Col2"}, [][]string{{"one", "two"}, {"three", "four"}})
+	fmt.Println("result is: ", result)
 }
