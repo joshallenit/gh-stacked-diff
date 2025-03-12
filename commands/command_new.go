@@ -36,7 +36,9 @@ func createNewCommand() Command {
 			"on the commit summary), and then uses Github CLI to create a PR.\n" +
 			"\n" +
 			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
-		Usage: "sd new [flags] [commitIndicator (default is HEAD commit on " + util.GetMainBranchForHelp() + ")]\n" +
+		Usage: "sd new [flags] commitIndicator\n" +
+			"\n" +
+			"IF commitIdicator is missing then the user will be prompted to select commit.\n" +
 			"\n" +
 			color.HiWhiteString("Ticket Number:") + "\n" +
 			"\n" +
