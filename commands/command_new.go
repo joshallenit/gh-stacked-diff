@@ -84,8 +84,6 @@ func createNewCommand() Command {
 			if flagSet.NArg() > 1 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			// what happens if new is used when there are no new commits?
-			// if --ask is specified and there are no new commits, then it should show commandError: no new commits and --ask specified
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			gitLog := templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
 			// Note: set the default here rather than via flags to avoid GetMainBranchOrDie being called before OnSelected.

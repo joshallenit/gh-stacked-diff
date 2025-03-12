@@ -42,7 +42,6 @@ import (
 )
 
 func main() {
-
 	thisExecutable, err := os.Executable()
 	if err != nil {
 		panic(fmt.Sprint("Cannot determine executable ", err))
