@@ -96,7 +96,7 @@ func GetTableSelection(columns []string, rows [][]string) int {
 		table.WithColumns(tableColumns),
 		table.WithRows(tableRows),
 		table.WithFocused(true),
-		table.WithHeight(min(len(rows), 10)),
+		table.WithHeight(min(len(rows)+3, 10)),
 	)
 
 	s := table.DefaultStyles()
