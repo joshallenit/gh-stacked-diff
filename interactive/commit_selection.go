@@ -24,11 +24,13 @@ func GetCommitSelection(withPr bool) (templates.GitLog, error) {
 	}
 	prBranches := strings.Fields(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitBranchArgs...))
 
+	shownCommits := make([]templates.GitLog, 0, len(newCommits))
 	rows := make([][]string, 0, len(newCommits))
 
 	for i, commit := range newCommits {
 		hasLocalBranch := slices.Contains(prBranches, commit.Branch)
 		if (withPr && hasLocalBranch) || (!withPr && !hasLocalBranch) {
+			shownCommits = append(shownCommits, commit)
 			indexString := fmt.Sprint(i + 1)
 			if withPr {
 				indexString += " ✅"
@@ -47,5 +49,5 @@ func GetCommitSelection(withPr bool) (templates.GitLog, error) {
 	if selected == -1 {
 		return templates.GitLog{}, UserCancelled
 	}
-	return newCommits[selected], nil
+	return shownCommits[selected], nil
 }
