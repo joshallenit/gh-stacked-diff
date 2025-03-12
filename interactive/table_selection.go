@@ -2,7 +2,6 @@ package interactive
 
 import (
 	"fmt"
-	"slices"
 
 	bubbletable "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
@@ -11,9 +10,7 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-var baseStyle = lipgloss.NewStyle().
-	BorderStyle(lipgloss.NormalBorder()).
-	BorderForeground(lipgloss.Color("240"))
+var baseStyle = lipgloss.NewStyle()
 
 var highlightedStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("229")).
@@ -23,6 +20,7 @@ var highlightedStyle = lipgloss.NewStyle().
 type model struct {
 	table       bubbletable.Model
 	selectedRow int
+	windowWidth int
 }
 
 func (m model) Init() tea.Cmd { return nil }
@@ -39,38 +37,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
-		newColumns := resizeColumns(msg.Width-10, m.table.Columns(), m.table.Rows())
-		m.table.SetColumns(newColumns)
+		m.windowWidth = msg.Width
 		return m, nil
 	}
 	m.table, cmd = m.table.Update(msg)
 	return m, cmd
-}
-
-func resizeColumns(maxTotalWidth int, columns []bubbletable.Column, rows []bubbletable.Row) []bubbletable.Column {
-	resizedColumns := make([]bubbletable.Column, 0, len(columns))
-	for _, column := range columns {
-		resizedColumns = append(resizedColumns, bubbletable.Column{Title: column.Title, Width: len(column.Title)})
-	}
-	for _, row := range rows {
-		for i, cell := range row {
-			resizedColumns[i].Width = max(len(cell), resizedColumns[i].Width)
-		}
-	}
-	for totalWidth(resizedColumns) > maxTotalWidth {
-		resized := false
-		for i, _ := range slices.Backward(resizedColumns) {
-			if resizedColumns[i].Width > 1 {
-				resizedColumns[i].Width = resizedColumns[i].Width - 1
-				resized = true
-				break
-			}
-		}
-		if !resized {
-			break
-		}
-	}
-	return resizedColumns
 }
 
 func totalWidth(columns []bubbletable.Column) int {
@@ -100,20 +71,24 @@ func (m model) View() string {
 			default:
 				return baseStyle
 			}
-		})
-	return fmt.Sprint(renderTable) + "\n"
+		}).Width(m.windowWidth - 2)
+	return renderTable.Render() + "\n"
 }
 
 // Returns empty array if the user cancelled.
 func GetTableSelection(prompt string, columns []string, rows [][]string) int {
 	tableColumns := make([]bubbletable.Column, len(columns))
 	for i, columnName := range columns {
-		tableColumns[i] = bubbletable.Column{Title: columnName, Width: 1}
+		tableColumns[i] = bubbletable.Column{Title: (columnName + columnName + columnName + columnName + columnName + columnName), Width: 1}
 	}
 
 	tableRows := make([]bubbletable.Row, len(rows))
 	for i, rowData := range rows {
 		tableRows[i] = rowData
+	}
+
+	for i, _ := range rows {
+		tableRows = append(tableRows, bubbletable.Row{"fake data " + fmt.Sprint(i), "fake data 2", "fake data 3"})
 	}
 
 	t := bubbletable.New(
@@ -126,13 +101,7 @@ func GetTableSelection(prompt string, columns []string, rows [][]string) int {
 	s := bubbletable.DefaultStyles()
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderBottom(true).
-		Bold(false)
-	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
-		Bold(false)
+		BorderBottom(true)
 	t.SetStyles(s)
 
 	initialModel := model{table: t, selectedRow: -1}
