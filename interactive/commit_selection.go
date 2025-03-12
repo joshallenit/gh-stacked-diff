@@ -24,19 +24,15 @@ func GetCommitSelection(withPr bool, prompt string) (templates.GitLog, error) {
 	}
 	prBranches := strings.Fields(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitBranchArgs...))
 
-	shownCommits := make([]templates.GitLog, 0, len(newCommits))
 	rows := make([][]string, 0, len(newCommits))
 
 	for i, commit := range newCommits {
 		hasLocalBranch := slices.Contains(prBranches, commit.Branch)
-		if (withPr && hasLocalBranch) || (!withPr && !hasLocalBranch) {
-			shownCommits = append(shownCommits, commit)
-			indexString := fmt.Sprint(i + 1)
-			if withPr {
-				indexString += " ✅"
-			}
-			rows = append(rows, []string{indexString, commit.Commit, commit.Subject})
+		indexString := fmt.Sprint(i + 1)
+		if hasLocalBranch {
+			indexString += " ✅"
 		}
+		rows = append(rows, []string{indexString, commit.Commit, commit.Subject})
 	}
 	// so I need multi-select which is going to need a different style
 	// and I'm going to need a disabled selection too... so how should that behave?
@@ -47,9 +43,12 @@ func GetCommitSelection(withPr bool, prompt string) (templates.GitLog, error) {
 			return templates.GitLog{}, errors.New("No new commits without PRs")
 		}
 	}
-	selected := GetTableSelection(prompt, columns, rows)
+	selected := GetTableSelection(prompt, columns, rows, false, func(row int) bool {
+		hasLocalBranch := slices.Contains(prBranches, newCommits[row].Branch)
+		return (withPr && hasLocalBranch) || (!withPr && !hasLocalBranch)
+	})
 	if selected == -1 {
 		return templates.GitLog{}, UserCancelled
 	}
-	return shownCommits[selected], nil
+	return newCommits[selected], nil
 }

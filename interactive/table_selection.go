@@ -1,8 +1,6 @@
 package interactive
 
 import (
-	"fmt"
-
 	bubbletable "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -12,15 +10,26 @@ import (
 
 var baseStyle = lipgloss.NewStyle()
 
-var highlightedStyle = lipgloss.NewStyle().
+var highlightEnabledStyle = baseStyle.
 	Foreground(lipgloss.Color("229")).
-	Background(lipgloss.Color("57")).
-	Bold(false)
+	Background(lipgloss.Color("57"))
+
+var highlightDisabledStyle = baseStyle.
+	Foreground(lipgloss.Color("240")).
+	Background(lipgloss.Color("244"))
+
+var enabledRow = baseStyle
+
+var disabledRow = baseStyle.
+	Foreground(lipgloss.Color("240"))
 
 type model struct {
 	table       bubbletable.Model
 	selectedRow int
 	windowWidth int
+	multiselect bool
+	rowEnabled  func(row int) bool
+	maxRowWidth int
 }
 
 func (m model) Init() tea.Cmd { return nil }
@@ -44,15 +53,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func totalWidth(columns []bubbletable.Column) int {
-	totalSize := 0
-	for _, column := range columns {
-		totalSize += column.Width
-	}
-	return totalSize
-}
-
 func (m model) View() string {
+	// Use bubbletea.table to support up/down to change selected row, not used for rendering.
+	// Use lipgloss.table to support StyleFunc (which has not been ported to bubbletea.table yet)
 	if m.selectedRow != -1 {
 		return ""
 	}
@@ -66,29 +69,44 @@ func (m model) View() string {
 		Rows(rows...).
 		StyleFunc(func(row, col int) lipgloss.Style {
 			switch {
-			case row == m.table.Cursor():
-				return highlightedStyle
-			default:
+			case row < 0 || row >= len(rows):
+				// < 0 is the header row
+				// >= len can happen on resize
 				return baseStyle
+			case row == m.table.Cursor():
+				if m.rowEnabled(row) {
+					return highlightEnabledStyle
+				} else {
+					return highlightDisabledStyle
+				}
+			default:
+				if m.rowEnabled(row) {
+					return enabledRow
+				} else {
+					return disabledRow
+				}
 			}
-		}).Width(m.windowWidth - 2)
+		}).Width(min(m.maxRowWidth, m.windowWidth-2))
 	return renderTable.Render() + "\n"
 }
 
-// Returns empty array if the user cancelled.
-func GetTableSelection(prompt string, columns []string, rows [][]string) int {
+// Returns -1 if the user cancelled.
+func GetTableSelection(prompt string, columns []string, rows [][]string, multiselect bool, rowEnabled func(row int) bool) int {
 	tableColumns := make([]bubbletable.Column, len(columns))
 	for i, columnName := range columns {
-		tableColumns[i] = bubbletable.Column{Title: (columnName + columnName + columnName + columnName + columnName + columnName), Width: 1}
+		tableColumns[i] = bubbletable.Column{Title: columnName, Width: len(columnName)}
 	}
 
 	tableRows := make([]bubbletable.Row, len(rows))
+	firstEnabledRow := -1
 	for i, rowData := range rows {
 		tableRows[i] = rowData
-	}
-
-	for i, _ := range rows {
-		tableRows = append(tableRows, bubbletable.Row{"fake data " + fmt.Sprint(i), "fake data 2", "fake data 3"})
+		if firstEnabledRow == -1 && rowEnabled(i) {
+			firstEnabledRow = i
+		}
+		for i, cell := range rowData {
+			tableColumns[i].Width = max(tableColumns[i].Width, len(cell))
+		}
 	}
 
 	t := bubbletable.New(
@@ -96,11 +114,29 @@ func GetTableSelection(prompt string, columns []string, rows [][]string) int {
 		bubbletable.WithRows(tableRows),
 		bubbletable.WithFocused(true),
 	)
+	if firstEnabledRow != -1 {
+		t.SetCursor(firstEnabledRow)
+	}
 
-	initialModel := model{table: t, selectedRow: -1}
+	initialModel := model{
+		table:       t,
+		selectedRow: -1,
+		multiselect: multiselect,
+		rowEnabled:  rowEnabled,
+		maxRowWidth: totalWidth(t.Columns()),
+	}
 	finalModel, err := tea.NewProgram(initialModel).Run()
 	if err != nil {
 		panic(err)
 	}
 	return finalModel.(model).selectedRow
+}
+
+func totalWidth(columns []bubbletable.Column) int {
+	totalSize := 0
+	for _, column := range columns {
+		totalSize += column.Width
+	}
+	// Each column has a border, plus 1 for the last border.
+	return totalSize + len(columns) + 1
 }
