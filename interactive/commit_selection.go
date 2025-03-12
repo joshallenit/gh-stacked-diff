@@ -29,7 +29,7 @@ func GetCommitSelection(withPr bool) (templates.GitLog, error) {
 	for i, commit := range newCommits {
 		hasLocalBranch := slices.Contains(prBranches, commit.Branch)
 		if (withPr && hasLocalBranch) || (!withPr && !hasLocalBranch) {
-			indexString := fmt.Sprint(i)
+			indexString := fmt.Sprint(i + 1)
 			if withPr {
 				indexString += " ✅"
 			}
