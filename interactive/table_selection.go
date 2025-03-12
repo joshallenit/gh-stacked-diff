@@ -1,7 +1,6 @@
 package interactive
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -32,8 +31,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
-		m.table.SetColumns(resizeColumns(msg.Width-2, m.table.Columns(), m.table.Rows()))
-		return m, tea.Println("Sequence ", fmt.Sprint(m.table.Columns()))
+		newColumns := resizeColumns(msg.Width-10, m.table.Columns(), m.table.Rows())
+		m.table.SetColumns(newColumns)
+		return m, nil
 	}
 	m.table, cmd = m.table.Update(msg)
 	return m, cmd
@@ -51,9 +51,9 @@ func resizeColumns(maxTotalWidth int, columns []table.Column, rows []table.Row) 
 	}
 	for totalWidth(resizedColumns) > maxTotalWidth {
 		resized := false
-		for _, resizedColumn := range slices.Backward(resizedColumns) {
-			if resizedColumn.Width > 1 {
-				resizedColumn.Width--
+		for i, _ := range slices.Backward(resizedColumns) {
+			if resizedColumns[i].Width > 1 {
+				resizedColumns[i].Width = resizedColumns[i].Width - 1
 				resized = true
 				break
 			}

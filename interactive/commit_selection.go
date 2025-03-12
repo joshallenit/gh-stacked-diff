@@ -9,7 +9,7 @@ import (
 )
 
 func GetCommitSelection(exit func(err any)) templates.GitLog {
-	columns := []string{"Index", "Commit", "Summary"}
+	columns := []string{" ", "Commit", "Summary"}
 	newCommits := templates.GetNewCommits("HEAD")
 	index := 0
 	rows := util.MapSlice(newCommits, func(commit templates.GitLog) []string {
