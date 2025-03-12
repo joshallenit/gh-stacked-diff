@@ -15,7 +15,7 @@ var baseStyle = lipgloss.NewStyle().
 
 type model struct {
 	table       table.Model
-	selectedRow table.Row
+	selectedRow int
 }
 
 func (m model) Init() tea.Cmd { return nil }
@@ -28,7 +28,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc", "q", "ctrl+c":
 			return m, tea.Quit
 		case "enter":
-			m.selectedRow = m.table.SelectedRow()
+			m.selectedRow = m.table.Cursor()
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
@@ -74,14 +74,14 @@ func totalWidth(columns []table.Column) int {
 }
 
 func (m model) View() string {
-	if len(m.selectedRow) != 0 {
+	if m.selectedRow != -1 {
 		return ""
 	}
 	return baseStyle.Render(m.table.View()) + "\n"
 }
 
 // Returns empty array if the user cancelled.
-func GetTableSelection(columns []string, rows [][]string) []string {
+func GetTableSelection(columns []string, rows [][]string) int {
 	tableColumns := make([]table.Column, len(columns))
 	for i, columnName := range columns {
 		tableColumns[i] = table.Column{Title: columnName, Width: 1}
@@ -111,7 +111,7 @@ func GetTableSelection(columns []string, rows [][]string) []string {
 		Bold(false)
 	t.SetStyles(s)
 
-	initialModel := model{table: t}
+	initialModel := model{table: t, selectedRow: -1}
 	finalModel, err := tea.NewProgram(initialModel).Run()
 	if err != nil {
 		panic(err)

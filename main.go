@@ -35,6 +35,7 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -56,6 +57,9 @@ func main2() {
 }
 
 func main() {
-	result := interactive.GetTableSelection([]string{"Column1", "Col2"}, [][]string{{"one", "two"}, {"three", "four"}})
+	var levelVar slog.LevelVar
+	levelVar.Set(slog.LevelInfo)
+	exit := commands.CreateDefaultExit(os.Stderr, &levelVar)
+	result := interactive.GetCommitSelection(exit)
 	fmt.Println("result is: ", result)
 }
