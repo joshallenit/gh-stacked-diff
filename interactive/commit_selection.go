@@ -2,26 +2,50 @@ package interactive
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 
-	"github.com/joshallenit/gh-stacked-diff/v2/util"
+	"errors"
+	"strings"
+
+	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 )
 
-func GetCommitSelection(exit func(err any)) templates.GitLog {
-	columns := []string{" ", "Commit", "Summary"}
+var UserCancelled error = errors.New("User cancelled")
+
+func GetCommitSelection(withPr bool) (templates.GitLog, error) {
+	columns := []string{"Index", "Commit", "Summary"}
 	newCommits := templates.GetNewCommits("HEAD")
-	index := 0
-	rows := util.MapSlice(newCommits, func(commit templates.GitLog) []string {
-		index++
-		return []string{fmt.Sprint(index), commit.Commit, commit.Subject}
-	})
+	gitBranchArgs := make([]string, 0, len(newCommits)+2)
+	gitBranchArgs = append(gitBranchArgs, "branch", "-l")
+	for _, log := range newCommits {
+		gitBranchArgs = append(gitBranchArgs, log.Branch)
+	}
+	prBranches := strings.Fields(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitBranchArgs...))
+
+	rows := make([][]string, 0, len(newCommits))
+
+	for i, commit := range newCommits {
+		hasLocalBranch := slices.Contains(prBranches, commit.Branch)
+		if (withPr && hasLocalBranch) || (!withPr && !hasLocalBranch) {
+			indexString := fmt.Sprint(i)
+			if withPr {
+				indexString += " ✅"
+			}
+			rows = append(rows, []string{indexString, commit.Commit, commit.Subject})
+		}
+	}
 	if len(rows) == 0 {
-		panic("No new commits to select from")
+		if withPr {
+			return templates.GitLog{}, errors.New("No new commits with PRs")
+		} else {
+			return templates.GitLog{}, errors.New("No new commits without PRs")
+		}
 	}
 	selected := GetTableSelection(columns, rows)
 	if selected == -1 {
-		exit(nil)
+		return templates.GitLog{}, UserCancelled
 	}
-	return newCommits[selected]
+	return newCommits[selected], nil
 }

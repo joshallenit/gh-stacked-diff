@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
@@ -27,15 +28,26 @@ func createUpdateCommand() Command {
 			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
 		Usage: "sd " + flagSet.Name() + " [flags] <PR commitIndicator> [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]",
 		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
-			if flagSet.NArg() == 0 {
-				commandError(flagSet, "missing commitIndicator", command.Usage)
-			}
-			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
+			var destCommit templates.GitLog
 			var otherCommits []string
-			if len(flagSet.Args()) > 1 {
-				otherCommits = flagSet.Args()[1:]
+			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
+			if flagSet.NArg() == 0 {
+				var err error
+				destCommit, err = interactive.GetCommitSelection(true)
+				if err != nil {
+					if err == interactive.UserCancelled {
+						exit(nil)
+					} else {
+						commandError(flagSet, err.Error(), command.Usage)
+					}
+				}
+			} else {
+				if len(flagSet.Args()) > 1 {
+					otherCommits = flagSet.Args()[1:]
+				}
+				destCommit = templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
+
 			}
-			destCommit := templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
 			updatePr(destCommit, otherCommits, indicatorType, sequenceEditorPrefix)
 			if *reviewers != "" {
 				addReviewersToPr([]string{destCommit.Commit}, templates.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)

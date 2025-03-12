@@ -35,15 +35,13 @@ package main
 
 import (
 	"fmt"
-	"log/slog"
 	"os"
 	"strings"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/commands"
-	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 )
 
-func main2() {
+func main() {
 
 	thisExecutable, err := os.Executable()
 	if err != nil {
@@ -54,12 +52,4 @@ func main2() {
 	// Quote in case the path has a space.
 	thisExecutable = "\"" + thisExecutable + "\""
 	commands.ExecuteCommand(os.Stdout, os.Stderr, os.Args[1:], thisExecutable+" ", commands.CreateDefaultExit)
-}
-
-func main() {
-	var levelVar slog.LevelVar
-	levelVar.Set(slog.LevelInfo)
-	exit := commands.CreateDefaultExit(os.Stderr, &levelVar)
-	result := interactive.GetCommitSelection(exit)
-	fmt.Println("result is: ", result)
 }
