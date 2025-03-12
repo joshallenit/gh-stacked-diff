@@ -13,7 +13,7 @@ const programName string = "gh-stacked-diff"
 
 // Calls [parseArguments] for unit tests.
 func testParseArguments(commandLineArgs ...string) string {
-	createPanicOnExit := func(stdErr io.Writer, logLevelVar *slog.LevelVar) func(err any) {
+	createPanicOnExit := func(stdErr io.Writer, logLeveler slog.Leveler) func(err any) {
 		return func(err any) {
 			panic(err)
 		}
