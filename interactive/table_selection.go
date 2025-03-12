@@ -95,14 +95,7 @@ func GetTableSelection(prompt string, columns []string, rows [][]string) int {
 		bubbletable.WithColumns(tableColumns),
 		bubbletable.WithRows(tableRows),
 		bubbletable.WithFocused(true),
-		bubbletable.WithHeight(min(len(rows)+3, 10)),
 	)
-
-	s := bubbletable.DefaultStyles()
-	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderBottom(true)
-	t.SetStyles(s)
 
 	initialModel := model{table: t, selectedRow: -1}
 	finalModel, err := tea.NewProgram(initialModel).Run()
