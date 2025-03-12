@@ -14,7 +14,7 @@ import (
 
 var UserCancelled error = errors.New("User cancelled")
 
-func GetCommitSelection(withPr bool) (templates.GitLog, error) {
+func GetCommitSelection(withPr bool, prompt string) (templates.GitLog, error) {
 	columns := []string{"Index", "Commit", "Summary"}
 	newCommits := templates.GetNewCommits("HEAD")
 	gitBranchArgs := make([]string, 0, len(newCommits)+2)
@@ -38,6 +38,8 @@ func GetCommitSelection(withPr bool) (templates.GitLog, error) {
 			rows = append(rows, []string{indexString, commit.Commit, commit.Subject})
 		}
 	}
+	// so I need multi-select which is going to need a different style
+	// and I'm going to need a disabled selection too... so how should that behave?
 	if len(rows) == 0 {
 		if withPr {
 			return templates.GitLog{}, errors.New("No new commits with PRs")
@@ -45,7 +47,7 @@ func GetCommitSelection(withPr bool) (templates.GitLog, error) {
 			return templates.GitLog{}, errors.New("No new commits without PRs")
 		}
 	}
-	selected := GetTableSelection(columns, rows)
+	selected := GetTableSelection(prompt, columns, rows)
 	if selected == -1 {
 		return templates.GitLog{}, UserCancelled
 	}

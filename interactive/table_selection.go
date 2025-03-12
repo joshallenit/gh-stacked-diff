@@ -1,19 +1,27 @@
 package interactive
 
 import (
+	"fmt"
 	"slices"
 
-	"github.com/charmbracelet/bubbles/table"
+	bubbletable "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	lipglosstable "github.com/charmbracelet/lipgloss/table"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 var baseStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder()).
 	BorderForeground(lipgloss.Color("240"))
 
+var highlightedStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("229")).
+	Background(lipgloss.Color("57")).
+	Bold(false)
+
 type model struct {
-	table       table.Model
+	table       bubbletable.Model
 	selectedRow int
 }
 
@@ -39,10 +47,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func resizeColumns(maxTotalWidth int, columns []table.Column, rows []table.Row) []table.Column {
-	resizedColumns := make([]table.Column, 0, len(columns))
+func resizeColumns(maxTotalWidth int, columns []bubbletable.Column, rows []bubbletable.Row) []bubbletable.Column {
+	resizedColumns := make([]bubbletable.Column, 0, len(columns))
 	for _, column := range columns {
-		resizedColumns = append(resizedColumns, table.Column{Title: column.Title, Width: len(column.Title)})
+		resizedColumns = append(resizedColumns, bubbletable.Column{Title: column.Title, Width: len(column.Title)})
 	}
 	for _, row := range rows {
 		for i, cell := range row {
@@ -65,7 +73,7 @@ func resizeColumns(maxTotalWidth int, columns []table.Column, rows []table.Row) 
 	return resizedColumns
 }
 
-func totalWidth(columns []table.Column) int {
+func totalWidth(columns []bubbletable.Column) int {
 	totalSize := 0
 	for _, column := range columns {
 		totalSize += column.Width
@@ -77,29 +85,45 @@ func (m model) View() string {
 	if m.selectedRow != -1 {
 		return ""
 	}
-	return baseStyle.Render(m.table.View()) + "\n"
+	columns := util.MapSlice(m.table.Columns(), func(column bubbletable.Column) string {
+		return column.Title
+	})
+	rows := util.MapSlice(m.table.Rows(), func(row bubbletable.Row) []string {
+		return row
+	})
+	renderTable := lipglosstable.New().Headers(columns...).
+		Rows(rows...).
+		StyleFunc(func(row, col int) lipgloss.Style {
+			switch {
+			case row == m.table.Cursor():
+				return highlightedStyle
+			default:
+				return baseStyle
+			}
+		})
+	return fmt.Sprint(renderTable) + "\n"
 }
 
 // Returns empty array if the user cancelled.
-func GetTableSelection(columns []string, rows [][]string) int {
-	tableColumns := make([]table.Column, len(columns))
+func GetTableSelection(prompt string, columns []string, rows [][]string) int {
+	tableColumns := make([]bubbletable.Column, len(columns))
 	for i, columnName := range columns {
-		tableColumns[i] = table.Column{Title: columnName, Width: 1}
+		tableColumns[i] = bubbletable.Column{Title: columnName, Width: 1}
 	}
 
-	tableRows := make([]table.Row, len(rows))
+	tableRows := make([]bubbletable.Row, len(rows))
 	for i, rowData := range rows {
 		tableRows[i] = rowData
 	}
 
-	t := table.New(
-		table.WithColumns(tableColumns),
-		table.WithRows(tableRows),
-		table.WithFocused(true),
-		table.WithHeight(min(len(rows)+3, 10)),
+	t := bubbletable.New(
+		bubbletable.WithColumns(tableColumns),
+		bubbletable.WithRows(tableRows),
+		bubbletable.WithFocused(true),
+		bubbletable.WithHeight(min(len(rows)+3, 10)),
 	)
 
-	s := table.DefaultStyles()
+	s := bubbletable.DefaultStyles()
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
 		BorderForeground(lipgloss.Color("240")).

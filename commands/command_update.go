@@ -33,7 +33,7 @@ func createUpdateCommand() Command {
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			if flagSet.NArg() == 0 {
 				var err error
-				destCommit, err = interactive.GetCommitSelection(true)
+				destCommit, err = interactive.GetCommitSelection(true, "What PR do you want to update?")
 				if err != nil {
 					if err == interactive.UserCancelled {
 						exit(nil)
