@@ -3,7 +3,6 @@ package interactive
 import (
 	"slices"
 
-	"github.com/charmbracelet/bubbles/key"
 	bubbletable "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -29,6 +28,8 @@ var disabledRowStyle = baseStyle.
 
 var selectedRowStyle = baseStyle.Bold(true)
 
+var selectedHighlightRowStyle = highlightEnabledStyle.Bold(true)
+
 type model struct {
 	table        bubbletable.Model
 	selectedRows []int
@@ -43,14 +44,14 @@ type model struct {
 func (m model) Init() tea.Cmd { return nil }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc", "q", "ctrl+c":
+			m.selectedRows = []int{}
 			return m, tea.Quit
 		case " ":
-			if !m.multiselect {
+			if !m.multiselect || !m.rowEnabled(m.table.Cursor()) {
 				break
 			}
 			existingIndex := slices.Index(m.selectedRows, m.table.Cursor())
@@ -61,20 +62,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		case "enter":
-			if m.rowEnabled(m.table.Cursor()) {
-				if !slices.Contains(m.selectedRows, m.table.Cursor()) {
-					m.selectedRows = append(m.selectedRows, m.table.Cursor())
-				}
-				m.completed = true
-				return m, tea.Quit
-			} else {
-				return m, nil
+			if !m.rowEnabled(m.table.Cursor()) {
+				break
 			}
+			if !slices.Contains(m.selectedRows, m.table.Cursor()) {
+				m.selectedRows = append(m.selectedRows, m.table.Cursor())
+			}
+			m.completed = true
+			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
 		m.windowWidth = msg.Width
 		return m, nil
 	}
+	var cmd tea.Cmd
 	m.table, cmd = m.table.Update(msg)
 	return m, cmd
 }
@@ -101,7 +102,11 @@ func (m model) View() string {
 				return baseStyle
 			case row == m.table.Cursor():
 				if m.rowEnabled(row) {
-					return highlightEnabledStyle
+					if slices.Contains(m.selectedRows, row) {
+						return selectedHighlightRowStyle
+					} else {
+						return highlightEnabledStyle
+					}
 				} else {
 					return highlightDisabledStyle
 				}
@@ -137,19 +142,10 @@ func GetTableSelection(prompt string, columns []string, rows [][]string, multise
 		}
 	}
 
-	keyMap := bubbletable.DefaultKeyMap()
-	if multiselect {
-		// Remove spacebar as an option for PageDown.
-		keyMap.PageDown = key.NewBinding(
-			key.WithKeys("f", "pgdown"),
-			key.WithHelp("f/pgdn", "page down"),
-		)
-	}
 	t := bubbletable.New(
 		bubbletable.WithColumns(tableColumns),
 		bubbletable.WithRows(tableRows),
 		bubbletable.WithFocused(true),
-		bubbletable.WithKeyMap(keyMap),
 	)
 
 	if firstEnabledRow != -1 {
