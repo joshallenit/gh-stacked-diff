@@ -119,7 +119,8 @@ func (m model) View() string {
 					return disabledRowStyle
 				}
 			}
-		}).Width(min(m.maxRowWidth, m.windowWidth-2))
+		}).
+		Width(min(m.maxRowWidth, m.windowWidth-2))
 	return promptStyle.Render(m.prompt) + "\n" + renderTable.Render() + "\n"
 }
 
