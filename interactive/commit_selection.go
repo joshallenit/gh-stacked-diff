@@ -14,7 +14,20 @@ import (
 
 var UserCancelled error = errors.New("User cancelled")
 
-func GetCommitSelection(withPr bool, prompt string) (templates.GitLog, error) {
+func GetPrSelection(prompt string) (templates.GitLog, error) {
+	prSelected, err := getCommitSelection(true, false, prompt)
+	if err == nil {
+		return prSelected[0], nil
+	} else {
+		return templates.GitLog{}, err
+	}
+}
+
+func GetCommitSelection(prompt string) ([]templates.GitLog, error) {
+	return getCommitSelection(false, true, prompt)
+}
+
+func getCommitSelection(withPr bool, multiSelect bool, prompt string) ([]templates.GitLog, error) {
 	columns := []string{"Index", "Commit", "Summary"}
 	newCommits := templates.GetNewCommits("HEAD")
 	gitBranchArgs := make([]string, 0, len(newCommits)+2)
@@ -38,17 +51,21 @@ func GetCommitSelection(withPr bool, prompt string) (templates.GitLog, error) {
 	// and I'm going to need a disabled selection too... so how should that behave?
 	if len(rows) == 0 {
 		if withPr {
-			return templates.GitLog{}, errors.New("No new commits with PRs")
+			return []templates.GitLog{}, errors.New("No new commits with PRs")
 		} else {
-			return templates.GitLog{}, errors.New("No new commits without PRs")
+			return []templates.GitLog{}, errors.New("No new commits without PRs")
 		}
 	}
-	selected := GetTableSelection(prompt, columns, rows, false, func(row int) bool {
+	selected := GetTableSelection(prompt, columns, rows, multiSelect, func(row int) bool {
 		hasLocalBranch := slices.Contains(prBranches, newCommits[row].Branch)
 		return (withPr && hasLocalBranch) || (!withPr && !hasLocalBranch)
 	})
-	if selected == -1 {
-		return templates.GitLog{}, UserCancelled
+	if len(selected) == 0 {
+		return []templates.GitLog{}, UserCancelled
 	}
-	return newCommits[selected], nil
+	selectedCommits := make([]templates.GitLog, len(selected))
+	for i, selectedRow := range selected {
+		selectedCommits[i] = newCommits[selectedRow]
+	}
+	return selectedCommits, nil
 }
