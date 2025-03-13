@@ -49,6 +49,7 @@ func getDestCommit(flagSet *flag.FlagSet, command Command, indicatorType templat
 				commandError(flagSet, err.Error(), command.Usage)
 			}
 		}
+		slog.Info("Destination commit: " + fmt.Sprint(destCommit))
 		return destCommit
 	} else {
 		return templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
@@ -65,6 +66,7 @@ func getCommitsToCherryPick(flagSet *flag.FlagSet, command Command, indicatorTyp
 				commandError(flagSet, err.Error(), command.Usage)
 			}
 		}
+		slog.Info("Cherry picking commits: " + fmt.Sprint(selectedCommits))
 		return util.MapSlice(selectedCommits, func(commit templates.GitLog) string {
 			return commit.Commit
 		})

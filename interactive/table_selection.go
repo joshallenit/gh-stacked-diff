@@ -3,6 +3,7 @@ package interactive
 import (
 	"slices"
 
+	"github.com/charmbracelet/bubbles/key"
 	bubbletable "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -48,7 +49,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "esc", "q", "ctrl+c":
 			return m, tea.Quit
-		case m.multiselect && " ":
+		case " ":
+			if !m.multiselect {
+				break
+			}
 			existingIndex := slices.Index(m.selectedRows, m.table.Cursor())
 			if existingIndex != -1 {
 				m.selectedRows = slices.Delete(m.selectedRows, existingIndex, existingIndex+1)
@@ -118,7 +122,7 @@ func (m model) View() string {
 func GetTableSelection(prompt string, columns []string, rows [][]string, multiselect bool, rowEnabled func(row int) bool) []int {
 	tableColumns := make([]bubbletable.Column, len(columns))
 	for i, columnName := range columns {
-		tableColumns[i] = bubbletable.Column{Title: columnName, Width: len(columnName)}
+		tableColumns[i] = bubbletable.Column{Title: columnName, Width: 1}
 	}
 
 	tableRows := make([]bubbletable.Row, len(rows))
@@ -134,7 +138,7 @@ func GetTableSelection(prompt string, columns []string, rows [][]string, multise
 	}
 
 	keyMap := bubbletable.DefaultKeyMap()
-	if (multiselect) {
+	if multiselect {
 		// Remove spacebar as an option for PageDown.
 		keyMap.PageDown = key.NewBinding(
 			key.WithKeys("f", "pgdown"),
@@ -145,9 +149,9 @@ func GetTableSelection(prompt string, columns []string, rows [][]string, multise
 		bubbletable.WithColumns(tableColumns),
 		bubbletable.WithRows(tableRows),
 		bubbletable.WithFocused(true),
-		bubbletable.WithKeyMap(keyMap)
+		bubbletable.WithKeyMap(keyMap),
 	)
-	
+
 	if firstEnabledRow != -1 {
 		t.SetCursor(firstEnabledRow)
 	}
