@@ -132,7 +132,6 @@ func GetTableSelection(prompt string, columns []string, rows [][]string, multise
 		bubbletable.WithColumns(tableColumns),
 		bubbletable.WithRows(tableRows),
 		bubbletable.WithFocused(true),
-		bubbletable.WithHeight(8),
 	)
 	if firstEnabledRow != -1 {
 		t.SetCursor(firstEnabledRow)
