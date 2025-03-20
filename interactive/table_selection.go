@@ -6,8 +6,6 @@ import (
 	bubbletable "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	lipglosstable "github.com/charmbracelet/lipgloss/table"
-	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 var baseStyle = lipgloss.NewStyle()
@@ -86,42 +84,44 @@ func (m model) View() string {
 	if m.completed {
 		return ""
 	}
-	columns := util.MapSlice(m.table.Columns(), func(column bubbletable.Column) string {
-		return column.Title
-	})
-	rows := util.MapSlice(m.table.Rows(), func(row bubbletable.Row) []string {
-		return row
-	})
-	renderTable := lipglosstable.New().Headers(columns...).
-		Rows(rows...).
-		StyleFunc(func(row, col int) lipgloss.Style {
-			switch {
-			case row < 0 || row >= len(rows):
-				// < 0 is the header row
-				// >= len can happen on resize
-				return baseStyle
-			case row == m.table.Cursor():
-				if m.rowEnabled(row) {
-					if slices.Contains(m.selectedRows, row) {
-						return selectedHighlightRowStyle
-					} else {
-						return highlightEnabledStyle
-					}
-				} else {
-					return highlightDisabledStyle
-				}
-			case slices.Contains(m.selectedRows, row):
-				return selectedRowStyle
-			default:
-				if m.rowEnabled(row) {
-					return enabledRowStyle
-				} else {
-					return disabledRowStyle
-				}
-			}
-		}).
-		Width(min(m.maxRowWidth, m.windowWidth-2))
-	return promptStyle.Render(m.prompt) + "\n" + renderTable.Render() + "\n"
+	// oh no I need the resize capabilities
+
+	// columns := util.MapSlice(m.table.Columns(), func(column bubbletable.Column) string {
+	// 	return column.Title
+	// })
+	// rows := util.MapSlice(m.table.Rows(), func(row bubbletable.Row) []string {
+	// 	return row
+	// })
+	// renderTable := lipglosstable.New().Headers(columns...).
+	// 	Rows(rows...).
+	// 	StyleFunc(func(row, col int) lipgloss.Style {
+	// 		switch {
+	// 		case row < 0 || row >= len(rows):
+	// 			// < 0 is the header row
+	// 			// >= len can happen on resize
+	// 			return baseStyle
+	// 		case row == m.table.Cursor():
+	// 			if m.rowEnabled(row) {
+	// 				if slices.Contains(m.selectedRows, row) {
+	// 					return selectedHighlightRowStyle
+	// 				} else {
+	// 					return highlightEnabledStyle
+	// 				}
+	// 			} else {
+	// 				return highlightDisabledStyle
+	// 			}
+	// 		case slices.Contains(m.selectedRows, row):
+	// 			return selectedRowStyle
+	// 		default:
+	// 			if m.rowEnabled(row) {
+	// 				return enabledRowStyle
+	// 			} else {
+	// 				return disabledRowStyle
+	// 			}
+	// 		}
+	// 	}).
+	// 	Width(min(m.maxRowWidth, m.windowWidth-2))
+	return promptStyle.Render(m.prompt) + "\n" + m.table.View() + "\n"
 }
 
 // Returns -1 if the user cancelled.
@@ -147,8 +147,33 @@ func GetTableSelection(prompt string, columns []string, rows [][]string, multise
 		bubbletable.WithColumns(tableColumns),
 		bubbletable.WithRows(tableRows),
 		bubbletable.WithFocused(true),
+		bubbletable.WithStyleFunc(func(m bubbletable.Model, row, col int) lipgloss.Style {
+			switch {
+			case row < 0 || row >= len(rows):
+				// < 0 is the header row
+				// >= len can happen on resize
+				return baseStyle
+			case row == m.Cursor():
+				if rowEnabled(row) {
+					// if slices.Contains(m.selectedRows, row) {
+					return selectedHighlightRowStyle
+					// } else {
+					// 	return highlightEnabledStyle
+					// }
+				} else {
+					return highlightDisabledStyle
+				}
+			// case slices.Contains(m.selectedRows, row):
+			// return selectedRowStyle
+			default:
+				if rowEnabled(row) {
+					return enabledRowStyle
+				} else {
+					return disabledRowStyle
+				}
+			}
+		}),
 	)
-
 	if firstEnabledRow != -1 {
 		t.SetCursor(firstEnabledRow)
 	}
