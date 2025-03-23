@@ -149,5 +149,7 @@ func GetTableSelection(prompt string, columns []string, rows [][]string, multise
 	if err != nil {
 		panic(err)
 	}
-	return finalModel.(model).selectedRows
+	selected := finalModel.(model).selectedRows
+	slices.Sort(selected)
+	return selected
 }
