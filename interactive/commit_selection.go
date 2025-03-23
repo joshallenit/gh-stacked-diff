@@ -64,7 +64,8 @@ func getCommitSelection(withPr bool, multiSelect bool, prompt string) ([]templat
 		return []templates.GitLog{}, UserCancelled
 	}
 	selectedCommits := make([]templates.GitLog, len(selected))
-	for i, selectedRow := range selected {
+	// reverse the selected indexes to do cherry-picks in order.
+	for i, selectedRow := range slices.Backward(selected) {
 		selectedCommits[i] = newCommits[selectedRow]
 	}
 	return selectedCommits, nil
