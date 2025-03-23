@@ -32,7 +32,6 @@ var selectedHighlightRowStyle = highlightEnabledStyle.Bold(true)
 type model struct {
 	table        bubbletable.Model
 	selectedRows []int
-	windowWidth  int
 	multiselect  bool
 	rowEnabled   func(row int) bool
 	completed    bool
@@ -42,10 +41,11 @@ type model struct {
 func (m model) Init() tea.Cmd { return nil }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	m.table.SetStyleFunc(m.createStyleFunc())
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc", "q", "ctrl+c":
+		case "esc", "q", "Q", "ctrl+c":
 			m.selectedRows = []int{}
 			return m, tea.Quit
 		case " ":
@@ -70,7 +70,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
-		m.windowWidth = msg.Width
+		m.table.SetHeight(min(max(msg.Height-10, 5), 20))
 		return m, nil
 	}
 	var cmd tea.Cmd
@@ -78,13 +78,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) View() string {
-	// Use bubbletea.table to support up/down to change selected row, not used for rendering.
-	// Use lipgloss.table to support StyleFunc (which has not been ported to bubbletea.table yet)
-	if m.completed {
-		return ""
-	}
-	m.table.SetStyleFunc(func(tableModel bubbletable.Model, row, col int) lipgloss.Style {
+// This needs to be recreated everytime the model changes so that the model reference is updated.
+func (m model) createStyleFunc() func(tableModel bubbletable.Model, row int, col int) lipgloss.Style {
+	return func(tableModel bubbletable.Model, row int, col int) lipgloss.Style {
 		switch {
 		case row < 0 || row >= len(tableModel.Rows()):
 			// < 0 is the header row
@@ -109,7 +105,13 @@ func (m model) View() string {
 				return disabledRowStyle
 			}
 		}
-	})
+	}
+}
+
+func (m model) View() string {
+	if m.completed {
+		return ""
+	}
 	return promptStyle.Render(m.prompt) + "\n" + m.table.View() + "\n"
 }
 
@@ -127,7 +129,6 @@ func GetTableSelection(prompt string, columns []string, rows [][]string, multise
 			firstEnabledRow = i
 		}
 	}
-
 	t := bubbletable.New(
 		bubbletable.WithColumns(tableColumns),
 		bubbletable.WithRows(tableRows),
