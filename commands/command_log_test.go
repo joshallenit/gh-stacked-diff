@@ -99,7 +99,7 @@ func TestPrintGitLog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) 
 
 	testutil.AddCommit("second", "")
 
-	testParseArguments("update", "2")
+	testParseArguments("update", "2", "1")
 
 	outWriter := testutil.NewWriteRecorder()
 	printGitLog(outWriter)

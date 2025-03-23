@@ -44,7 +44,7 @@ func createAddReviewersCommand() Command {
 			"\n" +
 			"If PR is marked as a Draft, it is first marked as \"Ready for Review\".",
 		Usage: "sd " + flagSet.Name() + " [flags] [commitIndicator [commitIndicator]...]",
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
 			commitIndicators := flagSet.Args()
 			if len(commitIndicators) == 0 {
 				slog.Debug("Using main branch because commitIndicators is empty")

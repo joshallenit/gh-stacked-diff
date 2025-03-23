@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"bytes"
 	"errors"
 	"log/slog"
 
@@ -27,7 +28,7 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 
 	commitsOnMain := templates.GetAllCommits()
 
-	testParseArguments("update", "2")
+	testParseArguments("update", "2", "1")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[1].Branch)
 
@@ -53,7 +54,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	commitsOnMain := templates.GetAllCommits()
 
-	testParseArguments("update", "3")
+	testParseArguments("update", "3", "1")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[2].Branch)
 
@@ -85,7 +86,7 @@ func TestSdUpdate_UpdatesPr(t *testing.T) {
 
 	allCommits := templates.GetAllCommits()
 
-	testParseArguments("update", allCommits[1].Commit)
+	testParseArguments("update", allCommits[1].Commit, "1")
 
 	allCommits = templates.GetAllCommits()
 
@@ -145,7 +146,7 @@ func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	testParseArguments("update", "--reviewers=mybestie", "2")
+	testParseArguments("update", "--reviewers=mybestie", "2", "1")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[1].Branch, "--add-reviewer", "mybestie"}
@@ -175,7 +176,7 @@ func TestSdUpdate_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 		}
 	}()
 
-	testParseArguments("update", "3")
+	testParseArguments("update", "3", "1")
 
 	assert.Fail("did not panic on cherry-pick")
 }
@@ -208,7 +209,29 @@ func TestSdUpdate_WhenPushFails_RestoresBranches(t *testing.T) {
 			assert.Equal(firstCommits, templates.GetAllCommits())
 		}
 	}()
-	testParseArguments("update", "2")
+	testParseArguments("update", "2", "1")
 
 	assert.Fail("did not panic on cherry-pick")
+}
+
+func TestSdUpdate_WhenCherryPickCommitsNotSpcecified_AsksForCommits(t *testing.T) {
+	assert := assert.New(t)
+	testutil.InitTest(slog.LevelInfo)
+	testutil.AddCommit("first", "")
+
+	testParseArguments("new")
+
+	testutil.AddCommit("second", "")
+
+	commitsOnMain := templates.GetAllCommits()
+
+	stdin := new(bytes.Buffer)
+	stdin.WriteString("q")
+	testParseArgumentsWithStdIn(stdin, "update", "2")
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[1].Branch)
+
+	commitsOnBranch := templates.GetAllCommits()
+
+	assert.Equal(3, len(commitsOnBranch))
 }

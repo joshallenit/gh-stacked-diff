@@ -50,5 +50,5 @@ func main() {
 	thisExecutable = strings.ReplaceAll(thisExecutable, "\\", "\\\\")
 	// Quote in case the path has a space.
 	thisExecutable = "\"" + thisExecutable + "\""
-	commands.ExecuteCommand(os.Stdout, os.Stderr, os.Args[1:], thisExecutable+" ", commands.CreateDefaultExit)
+	commands.ExecuteCommand(os.Stdout, os.Stderr, os.Stdin, os.Args[1:], thisExecutable+" ", commands.CreateDefaultExit)
 }

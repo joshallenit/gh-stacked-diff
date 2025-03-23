@@ -7,6 +7,7 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 
 	"errors"
+	"io"
 	"strings"
 
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
@@ -14,8 +15,8 @@ import (
 
 var UserCancelled error = errors.New("User cancelled")
 
-func GetPrSelection(prompt string) (templates.GitLog, error) {
-	prSelected, err := getCommitSelection(true, false, prompt)
+func GetPrSelection(prompt string, stdIn io.Reader) (templates.GitLog, error) {
+	prSelected, err := getCommitSelection(true, false, prompt, stdIn)
 	if err == nil {
 		return prSelected[0], nil
 	} else {
@@ -23,11 +24,11 @@ func GetPrSelection(prompt string) (templates.GitLog, error) {
 	}
 }
 
-func GetCommitSelection(prompt string) ([]templates.GitLog, error) {
-	return getCommitSelection(false, true, prompt)
+func GetCommitSelection(prompt string, stdIn io.Reader) ([]templates.GitLog, error) {
+	return getCommitSelection(false, true, prompt, stdIn)
 }
 
-func getCommitSelection(withPr bool, multiSelect bool, prompt string) ([]templates.GitLog, error) {
+func getCommitSelection(withPr bool, multiSelect bool, prompt string, stdIn io.Reader) ([]templates.GitLog, error) {
 	columns := []string{"Index", "Commit", "Summary"}
 	newCommits := templates.GetNewCommits("HEAD")
 	gitBranchArgs := make([]string, 0, len(newCommits)+2)
@@ -56,7 +57,7 @@ func getCommitSelection(withPr bool, multiSelect bool, prompt string) ([]templat
 			return []templates.GitLog{}, errors.New("No new commits without PRs")
 		}
 	}
-	selected := GetTableSelection(prompt, columns, rows, multiSelect, func(row int) bool {
+	selected := GetTableSelection(prompt, columns, rows, multiSelect, stdIn, func(row int) bool {
 		hasLocalBranch := slices.Contains(prBranches, newCommits[row].Branch)
 		return (withPr && hasLocalBranch) || (!withPr && !hasLocalBranch)
 	})

@@ -27,10 +27,10 @@ func createUpdateCommand() Command {
 			"\n" +
 			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
 		Usage: "sd " + flagSet.Name() + " [flags] <PR commitIndicator> [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]",
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
-			destCommit := getDestCommit(flagSet, command, indicatorType, exit)
-			commitsToCherryPick := getCommitsToCherryPick(flagSet, command, indicatorType, exit)
+			destCommit := getDestCommit(flagSet, command, indicatorType, stdIn, exit)
+			commitsToCherryPick := getCommitsToCherryPick(flagSet, command, indicatorType, stdIn, exit)
 			updatePr(destCommit, commitsToCherryPick, indicatorType, sequenceEditorPrefix)
 			if *reviewers != "" {
 				addReviewersToPr([]string{destCommit.Commit}, templates.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
@@ -38,10 +38,10 @@ func createUpdateCommand() Command {
 		}}
 }
 
-func getDestCommit(flagSet *flag.FlagSet, command Command, indicatorType templates.IndicatorType, exit func(any)) templates.GitLog {
+func getDestCommit(flagSet *flag.FlagSet, command Command, indicatorType templates.IndicatorType, stdIn io.Reader, exit func(any)) templates.GitLog {
 	if flagSet.NArg() == 0 {
 		var err error
-		destCommit, err := interactive.GetPrSelection("What PR do you want to update?")
+		destCommit, err := interactive.GetPrSelection("What PR do you want to update?", stdIn)
 		if err != nil {
 			if err == interactive.UserCancelled {
 				exit(nil)
@@ -56,9 +56,9 @@ func getDestCommit(flagSet *flag.FlagSet, command Command, indicatorType templat
 	}
 }
 
-func getCommitsToCherryPick(flagSet *flag.FlagSet, command Command, indicatorType templates.IndicatorType, exit func(any)) []string {
+func getCommitsToCherryPick(flagSet *flag.FlagSet, command Command, indicatorType templates.IndicatorType, stdIn io.Reader, exit func(any)) []string {
 	if flagSet.NArg() < 2 {
-		selectedCommits, err := interactive.GetCommitSelection("What commits do you want to add?")
+		selectedCommits, err := interactive.GetCommitSelection("What commits do you want to add?", stdIn)
 		if err != nil {
 			if err == interactive.UserCancelled {
 				exit(nil)

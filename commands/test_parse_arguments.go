@@ -11,17 +11,32 @@ import (
 // Program name
 const programName string = "gh-stacked-diff"
 
+// io.Reader where Read panics (to indicate that the test should not use stdin)
+type unsupportedReader struct{}
+
+func (r unsupportedReader) Read([]byte) (int, error) {
+	panic("Use of stdin not expected for this test")
+}
+
+var _ io.Reader = unsupportedReader{}
+
 // Calls [parseArguments] for unit tests.
 func testParseArguments(commandLineArgs ...string) string {
+	return testParseArgumentsWithStdIn(unsupportedReader{}, commandLineArgs...)
+}
+
+func testParseArgumentsWithStdIn(stdIn io.Reader, commandLineArgs ...string) string {
 	createPanicOnExit := func(stdErr io.Writer, logLeveler slog.Leveler) func(err any) {
 		return func(err any) {
-			panic(err)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 	out := testutil.NewWriteRecorder()
 	// Executable must be on PATH for tests to pass so that sequenceEditorPrefix will execute.
 	// PATH is set in ../Makefile
 	sequenceEditorPrefix := programName + " --log-level=INFO "
-	parseArguments(out, out, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, sequenceEditorPrefix, createPanicOnExit)
+	parseArguments(out, out, stdIn, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, sequenceEditorPrefix, createPanicOnExit)
 	return out.String()
 }

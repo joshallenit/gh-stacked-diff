@@ -3,6 +3,8 @@ package interactive
 import (
 	"slices"
 
+	"io"
+
 	bubbletable "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -116,7 +118,7 @@ func (m model) View() string {
 }
 
 // Returns -1 if the user cancelled.
-func GetTableSelection(prompt string, columns []string, rows [][]string, multiselect bool, rowEnabled func(row int) bool) []int {
+func GetTableSelection(prompt string, columns []string, rows [][]string, multiselect bool, stdIn io.Reader, rowEnabled func(row int) bool) []int {
 	tableColumns := util.MapSlice(columns, func(columnName string) bubbletable.Column {
 		return bubbletable.Column{Title: columnName}
 	})
@@ -145,7 +147,7 @@ func GetTableSelection(prompt string, columns []string, rows [][]string, multise
 		rowEnabled:   rowEnabled,
 		prompt:       prompt,
 	}
-	finalModel, err := tea.NewProgram(initialModel).Run()
+	finalModel, err := tea.NewProgram(initialModel, tea.WithInput(stdIn)).Run()
 	if err != nil {
 		panic(err)
 	}

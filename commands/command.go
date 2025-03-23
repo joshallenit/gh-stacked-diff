@@ -9,12 +9,14 @@ import (
 	"log/slog"
 )
 
+type OnSelectedFunc func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any))
+
 // sd program command.
 type Command struct {
 	// Any flags specific for the command.
 	FlagSet *flag.FlagSet
 	// Executes the command.
-	OnSelected func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any))
+	OnSelected OnSelectedFunc
 	// Default if not set is 0 which is Info.
 	DefaultLogLevel slog.Level
 	// Short, one line summary of command

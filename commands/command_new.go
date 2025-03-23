@@ -78,6 +78,7 @@ func createNewCommand() Command {
 			command Command,
 			stdOut io.Writer,
 			stdErr io.Writer,
+			stdIn io.Reader,
 			sequenceEditorPrefix string,
 			exit func(err any),
 		) {
