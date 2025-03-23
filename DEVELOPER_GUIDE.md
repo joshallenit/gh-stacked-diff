@@ -58,6 +58,15 @@ GOPROXY=proxy.golang.org go list -m github.com/joshallenit/gh-stacked-diff/v2@v$
 # Then bump latest version in [project.properties]
 ```
 
+For bubbles and bubbletea forks:
+
+```bash
+GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbles@v0.20.1
+
+GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbletea@v1.3.5
+```
+
+
 Once a tag is created [.github/workflows/release.yml] kicks off and creates the binaries for the release.
 
 ## Usage as a golang Library
