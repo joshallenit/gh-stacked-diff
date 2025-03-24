@@ -28,9 +28,10 @@ func testParseArguments(commandLineArgs ...string) string {
 func testParseArgumentsWithStdIn(stdIn io.Reader, commandLineArgs ...string) string {
 	createPanicOnExit := func(stdErr io.Writer, logLeveler slog.Leveler) func(err any) {
 		return func(err any) {
-			if err != nil {
-				panic(err)
+			if err == nil {
+				panic("User cancelled")
 			}
+			panic(err)
 		}
 	}
 	out := testutil.NewWriteRecorder()

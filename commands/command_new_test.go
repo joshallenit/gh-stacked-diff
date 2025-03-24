@@ -19,7 +19,7 @@ import (
 )
 
 func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -38,7 +38,7 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
@@ -57,7 +57,7 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
@@ -78,7 +78,7 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 func TestSdNew_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -92,7 +92,7 @@ func TestSdNew_CreatesPr(t *testing.T) {
 func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -120,7 +120,7 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")
@@ -137,7 +137,7 @@ func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -155,7 +155,7 @@ func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")
@@ -181,7 +181,7 @@ func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 func TestSdNew_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -206,7 +206,7 @@ func TestSdNew_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 func TestSdNew_WhenNewPrFails_RestoresBranch(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 

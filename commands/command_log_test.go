@@ -18,7 +18,7 @@ import (
 
 func TestPrintGitLog_OnEmptyRemote_PrintsLog(t *testing.T) {
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -32,7 +32,7 @@ func TestPrintGitLog_OnEmptyRemote_PrintsLog(t *testing.T) {
 }
 
 func TestPrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -53,7 +53,7 @@ func TestPrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 }
 
 func TestPrintGitLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *testing.T) {
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -71,7 +71,7 @@ func TestPrintGitLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t 
 func TestPrintGitLog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -91,7 +91,7 @@ func TestPrintGitLog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 
 func TestPrintGitLog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -115,7 +115,7 @@ func TestPrintGitLog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) 
 func TestSdLog_LogsOutput(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -127,7 +127,7 @@ func TestSdLog_LogsOutput(t *testing.T) {
 func TestSdLog_WhenManyCommits_PadsFirstCommits(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")
@@ -149,7 +149,7 @@ func TestSdLog_WhenManyCommits_PadsFirstCommits(t *testing.T) {
 func TestSdLog_WhenMultiplePrs_MatchesAllPrs(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")

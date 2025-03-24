@@ -21,6 +21,8 @@ build: format
 	mkdir -p bin
 	go build -o bin
 
+# Example TEST_ARGS:
+# make TEST_ARGS="-timeout 30s -run TestSdUpdate_WhenCherryPickCommitsNotSpecified_CherryPicsUserSelection" test
 .PHONY: test
 test: build
-	go test ./...
+	go test ${TEST_ARGS} ./...

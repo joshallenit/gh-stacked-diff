@@ -19,7 +19,7 @@ import (
 
 func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 	testutil.AddCommit("first", "")
 
 	testParseArguments("new")
@@ -39,7 +39,7 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 
 func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
@@ -76,7 +76,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 func TestSdUpdate_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -98,7 +98,7 @@ func TestSdUpdate_UpdatesPr(t *testing.T) {
 func TestSdUpdate_WithListIndicators_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -128,7 +128,7 @@ func TestSdUpdate_WithListIndicators_UpdatesPr(t *testing.T) {
 func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -160,7 +160,7 @@ func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 func TestSdUpdate_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 	assert := assert.New(t)
 
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	testParseArguments("new")
@@ -184,7 +184,7 @@ func TestSdUpdate_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 func TestSdUpdate_WhenPushFails_RestoresBranches(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	firstBranch := templates.GetAllCommits()[0].Branch
@@ -214,9 +214,9 @@ func TestSdUpdate_WhenPushFails_RestoresBranches(t *testing.T) {
 	assert.Fail("did not panic on cherry-pick")
 }
 
-func TestSdUpdate_WhenCherryPickCommitsNotSpcecified_AsksForCommits(t *testing.T) {
+func TestSdUpdate_WhenCherryPickCommitsNotSpecifiedAndUserQuits_NoOp(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 	testutil.AddCommit("first", "")
 
 	testParseArguments("new")
@@ -225,13 +225,55 @@ func TestSdUpdate_WhenCherryPickCommitsNotSpcecified_AsksForCommits(t *testing.T
 
 	commitsOnMain := templates.GetAllCommits()
 
+	defer func() {
+		r := recover()
+		if r != nil {
+			assert.Equal(commitsOnMain, templates.GetAllCommits())
+		}
+	}()
 	stdin := new(bytes.Buffer)
 	stdin.WriteString("q")
 	testParseArgumentsWithStdIn(stdin, "update", "2")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[1].Branch)
+	assert.Fail("did not panic on quit")
+}
 
-	commitsOnBranch := templates.GetAllCommits()
+func TestSdUpdate_WhenCherryPickCommitsNotSpecified_CherryPicsUserSelection(t *testing.T) {
+	assert := assert.New(t)
+	testutil.InitTest(t, slog.LevelInfo)
+	testutil.AddCommit("first", "")
 
-	assert.Equal(3, len(commitsOnBranch))
+	testParseArguments("new")
+
+	testutil.AddCommit("second", "")
+
+	stdin := new(bytes.Buffer)
+	stdin.WriteString(testutil.LineBreak)
+	testParseArgumentsWithStdIn(stdin, "update", "2")
+
+	allCommits := templates.GetAllCommits()
+
+	assert.Equal(2, len(allCommits))
+	assert.Equal("first", allCommits[0].Subject)
+	assert.Equal(testutil.InitialCommitSubject, allCommits[1].Subject)
+}
+
+func TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr(t *testing.T) {
+	assert := assert.New(t)
+	testutil.InitTest(t, slog.LevelInfo)
+	testutil.AddCommit("first", "")
+
+	testParseArguments("new")
+
+	testutil.AddCommit("second", "")
+
+	stdin := new(bytes.Buffer)
+	stdin.WriteString(testutil.LineBreak + testutil.LineBreak)
+	testParseArgumentsWithStdIn(stdin, "update")
+
+	allCommits := templates.GetAllCommits()
+
+	assert.Equal(2, len(allCommits))
+	assert.Equal("first", allCommits[0].Subject)
+	assert.Equal(testutil.InitialCommitSubject, allCommits[1].Subject)
 }

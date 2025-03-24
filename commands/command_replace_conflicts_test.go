@@ -15,7 +15,7 @@ import (
 
 func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "file-with-conflicts")
 	testutil.CommitFileChange("second", "file-with-conflicts", "1")
