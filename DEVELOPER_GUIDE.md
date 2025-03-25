@@ -33,7 +33,7 @@ If one of the command*_test fails you can pass "--log-level=debug" to `parseArgu
 Follow the steps in golang docs [Publishing a module](https://go.dev/doc/modules/publishing):
 
 ```bash
-# Update current and stable version numbers in [util/current_version.txt] and [util/stable_version.txt], merge changes, update local, and then:
+# Update the stable version so that it is equal to current version [util/stable_version.txt], merge changes, update local, and then:
 git checkout main
 go mod tidy
 make test
@@ -44,6 +44,7 @@ export RELEASE_VERSION=`cat util/stable_version.txt" | cut -d '=' -f2`;\
 git tag v$RELEASE_VERSION
 git push origin v$RELEASE_VERSION
 GOPROXY=proxy.golang.org go list -m github.com/joshallenit/gh-stacked-diff/v2@v$RELEASE_VERSION
+# Update [util/current_version.txt]
 ```
 
 For bubbles and bubbletea forks:
