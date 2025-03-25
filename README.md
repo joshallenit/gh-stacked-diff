@@ -191,7 +191,15 @@ Add commits from local main branch to an existing PR.
 Can also add reviewers once PR checks have passed, see "--reviewers" flag.
 
 ```bash
-usage: sd update [flags] <commitIndicator> [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]
+usage: sd update [flags] [PR commitIndicator [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]]
+
+If commitIndicator are missing then you will be prompted to select commits:
+
+   [enter]    confirms selection
+   [space]    adds to selection when selecting commits to add
+   [up,k]     moves cursor up
+   [down,j]   moves cursor down
+   [q,esc]    cancels
 
 flags:
 
