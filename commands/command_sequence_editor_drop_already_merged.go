@@ -23,7 +23,7 @@ func createDropAlreadyMergedCommand() Command {
 		Description: "Drops any commits passed as arguments.",
 		Usage:       "sd " + flagSet.Name() + " dropCommit1 [dropCommit2...] rebaseFilename",
 		Hidden:      true,
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
 			if flagSet.NArg() < 2 {
 				commandError(flagSet, "not enough arguments", command.Usage)
 			}

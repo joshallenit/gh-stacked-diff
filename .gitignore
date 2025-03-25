@@ -16,3 +16,7 @@
 *~
 
 vendor/
+
+# To allow using locally checked out modules.
+go.work
+go.work.sum

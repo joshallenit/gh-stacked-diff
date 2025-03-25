@@ -14,7 +14,7 @@ import (
 func TestSdWaitForMerge_WaitsForMerge(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	allCommits := templates.GetAllCommits()

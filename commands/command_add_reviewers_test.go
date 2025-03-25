@@ -16,7 +16,7 @@ import (
 func TestSdAddReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(slog.LevelDebug)
+	testExecutor := testutil.InitTest(t, slog.LevelDebug)
 
 	testutil.AddCommit("first", "")
 
@@ -45,7 +45,7 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -74,7 +74,7 @@ func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 

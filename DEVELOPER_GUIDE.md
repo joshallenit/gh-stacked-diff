@@ -37,7 +37,7 @@ export PLATFORM=mac; make release
 
 ## How to Debug Unit Tests
 
-If one of the command*_test fails you can pass "--log-level=debug" to `parseArguments` for more detailed logging. For more detailed logging up until the `parseArguments` call use `testutil.InitTest(slog.LevelDebug)`
+If one of the command*_test fails you can pass "--log-level=debug" to `parseArguments` for more detailed logging. For more detailed logging up until the `parseArguments` call use `testutil.InitTest(t, slog.LevelDebug)`
 
 
 ## Making a Release
@@ -57,6 +57,15 @@ git push origin v$RELEASE_VERSION
 GOPROXY=proxy.golang.org go list -m github.com/joshallenit/gh-stacked-diff/v2@v$RELEASE_VERSION
 # Then bump latest version in [project.properties]
 ```
+
+For bubbles and bubbletea forks:
+
+```bash
+GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbles@v0.20.1
+
+GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbletea@v1.3.5
+```
+
 
 Once a tag is created [.github/workflows/release.yml] kicks off and creates the binaries for the release.
 

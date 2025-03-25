@@ -78,13 +78,13 @@ func createNewCommand() Command {
 			command Command,
 			stdOut io.Writer,
 			stdErr io.Writer,
+			stdIn io.Reader,
 			sequenceEditorPrefix string,
 			exit func(err any),
 		) {
 			if flagSet.NArg() > 1 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			gitLog := templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
 			// Note: set the default here rather than via flags to avoid GetMainBranchOrDie being called before OnSelected.

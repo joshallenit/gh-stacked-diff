@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"testing"
+
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
@@ -35,7 +37,8 @@ func init() {
 }
 
 // CD into repository directory and set any global DI variables (slog, sleep, and executor).
-func InitTest(logLevel slog.Level) *ex.TestExecutor {
+func InitTest(t *testing.T, logLevel slog.Level) *ex.TestExecutor {
+	startTime := time.Now()
 	opts := util.PrettyHandlerOptions{
 		SlogOpts: slog.HandlerOptions{
 			Level: logLevel,
@@ -43,11 +46,16 @@ func InitTest(logLevel slog.Level) *ex.TestExecutor {
 	}
 	handler := util.NewPrettyHandler(os.Stdout, opts)
 	slog.SetDefault(slog.New(handler))
+	testFunctionName := getTestFunctionName()
+	slog.Info("Running test " + testFunctionName + "\n")
+	t.Cleanup(func() {
+		slog.Info(fmt.Sprint("Running test "+testFunctionName+" took ", time.Since(startTime), "\n"))
+	})
 
 	// Set new TestExecutor in case previous test has faked any of the git responses.
 	testExecutor := setTestExecutor()
 
-	cdTestRepo()
+	cdTestRepo(testFunctionName)
 	// Setup author config in case it is not set on machine.
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email", "unit-test@example.com")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.name", "Unit Test")
@@ -60,22 +68,7 @@ func InitTest(logLevel slog.Level) *ex.TestExecutor {
 	return testExecutor
 }
 
-func cdTestRepo() {
-	cdTestDir()
-	// Create a git repository with a local remote
-	remoteDir := "remote-repo"
-	repositoryDir := "local-repo"
-
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "init", "--bare", remoteDir)
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "clone", remoteDir, repositoryDir)
-
-	os.Chdir(repositoryDir)
-	// os.Getwd() returns an unusable path ("c:\..."") in windows when running from Git Bash. Instead use "pwd"
-	wd := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "pwd"))
-	slog.Info("Changed to test repository directory:\n" + wd)
-}
-
-func cdTestDir() {
+func getTestFunctionName() string {
 	var functionName string
 	for i := 0; i < 10; i++ {
 		pc, file, _, ok := runtime.Caller(i)
@@ -92,8 +85,26 @@ func cdTestDir() {
 	}
 	// Reduce the length of the function name as otherwise on windows the OS max can be exceeded.
 	functionParts := strings.Split(functionName, "/")
-	functionName = functionParts[len(functionParts)-1]
-	individualTestDir := path.Join(TestWorkingDir, functionName)
+	return functionParts[len(functionParts)-1]
+}
+
+func cdTestRepo(testFunctionName string) {
+	cdTestDir(testFunctionName)
+	// Create a git repository with a local remote
+	remoteDir := "remote-repo"
+	repositoryDir := "local-repo"
+
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "init", "--bare", remoteDir)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "clone", remoteDir, repositoryDir)
+
+	os.Chdir(repositoryDir)
+	// os.Getwd() returns an unusable path ("c:\..."") in windows when running from Git Bash. Instead use "pwd"
+	wd := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "pwd"))
+	slog.Info("Changed to test repository directory:\n" + wd)
+}
+
+func cdTestDir(testFunctionName string) {
+	individualTestDir := path.Join(TestWorkingDir, getTestFunctionName())
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "rm", "-rf", individualTestDir)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "mkdir", "-p", individualTestDir)
 	os.Chdir(individualTestDir)

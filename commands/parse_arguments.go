@@ -13,27 +13,33 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-func ExecuteCommand(stdOut io.Writer, stdErr io.Writer, commandLineArgs []string, sequenceEditorPrefix string, createExit func(lstdErr io.Writer, logLevelVar *slog.LevelVar) func(err any)) {
+func ExecuteCommand(stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, commandLineArgs []string, sequenceEditorPrefix string, createExit func(lstdErr io.Writer, logLeveler slog.Leveler) func(err any)) {
 	// Unset any color in case a previous terminal command set colors and then was
 	// terminated before it could reset the colors.
 	color.Unset()
 
-	parseArguments(stdOut, stdErr, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, sequenceEditorPrefix, createExit)
+	parseArguments(stdOut, stdErr, stdIn, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, sequenceEditorPrefix, createExit)
 }
 
-func CreateDefaultExit(stdErr io.Writer, logLevelVar *slog.LevelVar) func(err any) {
+func CreateDefaultExit(stdErr io.Writer, logLeveler slog.Leveler) func(err any) {
 	return func(err any) {
 		// Show panic stack trace during debug log level.
-		if logLevelVar.Level() <= slog.LevelDebug {
-			panic(err)
-		} else {
+		if logLeveler.Level() <= slog.LevelDebug {
+			if err == nil {
+				panic("Cancelled")
+			} else {
+				panic(err)
+			}
+		} else if err != nil {
 			fmt.Fprintln(stdErr, fmt.Sprint("error: ", err))
 			os.Exit(1)
+		} else {
+			os.Exit(0)
 		}
 	}
 }
 
-func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSet, commandLineArgs []string, sequenceEditorPrefix string, createExit func(stdErr io.Writer, logLevelVar *slog.LevelVar) func(err any)) {
+func parseArguments(stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, commandLine *flag.FlagSet, commandLineArgs []string, sequenceEditorPrefix string, createExit func(stdErr io.Writer, logLeveler slog.Leveler) func(err any)) {
 	if commandLine.ErrorHandling() != flag.ContinueOnError {
 		// Use ContinueOnError so that a description of the command can be included before usage
 		// for help.
@@ -134,7 +140,7 @@ func parseArguments(stdOut io.Writer, stdErr io.Writer, commandLine *flag.FlagSe
 	// Note: call GetMainBranchOrDie early as it has useful error messages.
 	slog.Debug(fmt.Sprint("Using main branch " + util.GetMainBranchOrDie()))
 
-	commands[selectedIndex].OnSelected(commands[selectedIndex], stdOut, stdErr, sequenceEditorPrefix, exit)
+	commands[selectedIndex].OnSelected(commands[selectedIndex], stdOut, stdErr, stdIn, sequenceEditorPrefix, exit)
 }
 
 func getCommandSummaries(commands []Command) []string {

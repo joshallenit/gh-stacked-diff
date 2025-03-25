@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
@@ -26,28 +27,58 @@ func createUpdateCommand() Command {
 			"\n" +
 			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
 		Usage: "sd " + flagSet.Name() + " [flags] <PR commitIndicator> [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]",
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, sequenceEditorPrefix string, exit func(err any)) {
-			if flagSet.NArg() == 0 {
-				commandError(flagSet, "missing commitIndicator", command.Usage)
-			}
+		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
-			var otherCommits []string
-			if len(flagSet.Args()) > 1 {
-				otherCommits = flagSet.Args()[1:]
-			}
-			destCommit := templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
-			updatePr(destCommit, otherCommits, indicatorType, sequenceEditorPrefix)
+			destCommit := getDestCommit(flagSet, command, indicatorType, stdIn, exit)
+			commitsToCherryPick := getCommitsToCherryPick(flagSet, command, indicatorType, stdIn, exit)
+			updatePr(destCommit, commitsToCherryPick, indicatorType, sequenceEditorPrefix)
 			if *reviewers != "" {
 				addReviewersToPr([]string{destCommit.Commit}, templates.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
 		}}
 }
 
+func getDestCommit(flagSet *flag.FlagSet, command Command, indicatorType templates.IndicatorType, stdIn io.Reader, exit func(any)) templates.GitLog {
+	if flagSet.NArg() == 0 {
+		var err error
+		destCommit, err := interactive.GetPrSelection("What PR do you want to update?", stdIn)
+		if err != nil {
+			if err == interactive.UserCancelled {
+				exit(nil)
+			} else {
+				commandError(flagSet, err.Error(), command.Usage)
+			}
+		}
+		slog.Info("Destination commit: " + fmt.Sprint(destCommit))
+		return destCommit
+	} else {
+		return templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
+	}
+}
+
+func getCommitsToCherryPick(flagSet *flag.FlagSet, command Command, indicatorType templates.IndicatorType, stdIn io.Reader, exit func(any)) []string {
+	if flagSet.NArg() < 2 {
+		selectedCommits, err := interactive.GetCommitSelection("What commits do you want to add?", stdIn)
+		if err != nil {
+			if err == interactive.UserCancelled {
+				exit(nil)
+			} else {
+				commandError(flagSet, err.Error(), command.Usage)
+			}
+		}
+		slog.Info("Cherry picking commits: " + fmt.Sprint(selectedCommits))
+		return util.MapSlice(selectedCommits, func(commit templates.GitLog) string {
+			return commit.Commit
+		})
+	} else {
+		return commitIndicatorsToCommitHashes(flagSet.Args()[1:], indicatorType)
+	}
+}
+
 // Add commits from main to an existing PR.
-func updatePr(destCommit templates.GitLog, otherCommits []string, indicatorType templates.IndicatorType, sequenceEditorPrefix string) {
+func updatePr(destCommit templates.GitLog, commitsToCherryPick []string, indicatorType templates.IndicatorType, sequenceEditorPrefix string) {
 	util.RequireMainBranch()
 	templates.RequireCommitOnMain(destCommit.Commit)
-	var commitsToCherryPick []string = getCommitsToCherryPick(otherCommits, indicatorType)
 	shouldPopStash := util.Stash("before update-pr " + destCommit.Commit)
 	rollbackManager := &util.GitRollbackManager{}
 	rollbackManager.SaveState()
@@ -114,7 +145,7 @@ func updatePr(destCommit templates.GitLog, otherCommits []string, indicatorType 
 	rollbackManager.Clear()
 }
 
-func getCommitsToCherryPick(otherCommits []string, indicatorType templates.IndicatorType) []string {
+func commitIndicatorsToCommitHashes(otherCommits []string, indicatorType templates.IndicatorType) []string {
 	var commitsToCherryPick []string
 	if len(otherCommits) > 0 {
 		if indicatorType == templates.IndicatorTypeGuess || indicatorType == templates.IndicatorTypeList {

@@ -15,7 +15,7 @@ import (
 
 func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
@@ -46,7 +46,7 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "rebase-will-keep-this-file")
@@ -76,7 +76,7 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "1")
 	testutil.AddCommit("second", "2")
@@ -113,7 +113,7 @@ func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommits(t *testing.T) {
 
 func TestSdRebaseMain_WithDuplicateBranches_Panics(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "1")
 	testutil.AddCommit("second", "2.1")
@@ -134,7 +134,7 @@ func TestSdRebaseMain_WithDuplicateBranches_Panics(t *testing.T) {
 
 func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(slog.LevelDebug)
+	testExecutor := testutil.InitTest(t, slog.LevelDebug)
 
 	testutil.AddCommit("first", "file-with-conflicts")
 	testutil.CommitFileChange("second", "change-value-to-avoid-same-hash", "1")
@@ -163,7 +163,7 @@ func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 
 func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "second-1")
