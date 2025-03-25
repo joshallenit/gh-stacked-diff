@@ -190,7 +190,7 @@ Add commits from local main branch to an existing PR.
 
 Can also add reviewers once PR checks have passed, see "--reviewers" flag.
 
-```bash
+```
 usage: sd update [flags] [PR commitIndicator [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]]
 
 If commitIndicator are missing then you will be prompted to select commits:
@@ -230,7 +230,7 @@ Add reviewers to Pull Request on Github once its checks have passed.
 
 If PR is marked as a Draft, it is first marked as "Ready for Review".
 
-```bash
+```
 usage: sd add-reviewers [flags] [commitIndicator [commitIndicator]...]
 
 flags:
@@ -283,7 +283,7 @@ Rebase with origin/main, dropping any commits who's associated branches have bee
 
 This avoids having to manually call "git reset --hard head" whenever you have merge conflicts with a commit that has already been merged but has slight variation with local main because, for example, a change was made with the Github Web UI.
 
-```bash
+```
 usage: sd rebase-main
 ```
 
@@ -295,7 +295,7 @@ For when you want to merge only the branch with with origin/main, rather than yo
 
 After modifying the branch you can use "sd replace-commit" to sync local main.
 
-```bash
+```
 usage: sd checkout [flags] <commitIndicator>
 
 flags:
@@ -318,7 +318,7 @@ Replaces a commit on main branch with the squashed contents of its associated br
 
 This is useful when you make changes within a branch, for example to fix a problem found on CI, and want to bring the changes over to your local main branch.
 
-```bash
+```
 usage: sd replace-commit [flags] <commitIndicator>
 
 flags:
@@ -340,7 +340,7 @@ flags:
 
 During a rebase that failed because of merge conflicts, replace the current uncommitted changes (merge conflicts), with the contents (diff between origin/main and HEAD) of its associated branch.
 
-```bash
+```
 usage: sd replace-conflicts
 
 flags:
@@ -355,7 +355,7 @@ flags:
 
 Outputs the branch name for a given commit indicator. Useful for your own custom scripting.
 
-```bash
+```
 usage: sd branch-name [flags] <commitIndicator>
 
 flags:
@@ -379,7 +379,7 @@ Waits for a pull request to be merged. Polls PR every 30 seconds.
 
 Useful for your own custom scripting.
 
-```bash
+```
 usage: sd main [flags] <commit hash or pull request number>
 
 flags:
@@ -403,7 +403,7 @@ flags:
 
 Outputs code owners for each file that has been modified in the current local branch when compared to the remote main branch
 
-```bash
+```
 usage: sd code-owners
 ```
 
@@ -411,7 +411,7 @@ usage: sd code-owners
 
 Lists all of your open PRs. Useful for copying PR numbers.
 
-```bash
+```
 usage: sd prs
 ```
 
