@@ -107,7 +107,14 @@ This command first creates an associated branch, (with a name based on the commi
 Can also add reviewers once PR checks have passed, see "--reviewers" flag.
 
 ```bash
-usage: sd new [flags] [commitIndicator (default is HEAD commit on main)]
+usage: sd new [flags] [commitIndicator]
+
+If commitIndicator is missing then you will be prompted to select commit:
+
+   [enter]    confirms selection
+   [up,k]     moves cursor up
+   [down,j]   moves cursor down
+   [q,esc]    cancels
 
 Ticket Number:
 
