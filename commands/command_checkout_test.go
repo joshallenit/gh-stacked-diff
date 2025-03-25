@@ -19,7 +19,7 @@ func TestSdCheckout_ChecksOutBranch(t *testing.T) {
 
 	allCommits := templates.GetAllCommits()
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	testParseArguments("checkout", allCommits[0].Commit)
 

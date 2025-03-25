@@ -11,11 +11,14 @@ import (
 	"errors"
 
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
 	"strings"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
@@ -23,7 +26,7 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	// Check that the PR was created
 	outWriter := testutil.NewWriteRecorder()
@@ -46,7 +49,7 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	testutil.AddCommit("second", "")
 	allCommits := templates.GetNewCommits("HEAD")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := templates.GetNewCommits("HEAD")
@@ -67,7 +70,7 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 	testutil.AddCommit("third", "")
 	allCommits := templates.GetNewCommits("HEAD")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := templates.GetNewCommits("HEAD")
@@ -82,7 +85,7 @@ func TestSdNew_CreatesPr(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	out := testParseArguments("log")
 
@@ -146,7 +149,7 @@ func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 		return programName == "gh" && args[0] == "pr" && args[1] == "create" && slices.Contains(args, "--draft")
 	})
 
-	out := testParseArguments("new")
+	out := testParseArguments("new", "1")
 
 	assert.Contains(out, "Use \"--draft=false\" to avoid this warning")
 	assert.Contains(out, "Created PR ")
@@ -161,7 +164,7 @@ func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 	testutil.AddCommit("second", "")
 
 	testParseArguments("new", "2")
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	mainCommits := templates.GetAllCommits()
 
@@ -198,7 +201,7 @@ func TestSdNew_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 		}
 	}()
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	assert.Fail("did not panic on conflicts with cherry-pick")
 }
@@ -223,7 +226,24 @@ func TestSdNew_WhenNewPrFails_RestoresBranch(t *testing.T) {
 		}
 	}()
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	assert.Fail("did not panic on PR create")
+}
+
+func TestSdNew_WhenDestinationCommitNotSpecified_CreatesPrWithSelectedCommit(t *testing.T) {
+	assert := assert.New(t)
+	testutil.InitTest(t, slog.LevelInfo)
+	testutil.AddCommit("first", "")
+	testutil.AddCommit("second", "")
+
+	interactive.SendToProgram(t, 0,
+		interactive.NewMessageKey(tea.KeyDown),
+		interactive.NewMessageKey(tea.KeyEnter),
+	)
+	testParseArguments("new")
+
+	allCommits := templates.GetAllCommits()
+
+	assert.True(util.RemoteHasBranch(allCommits[1].Branch))
 }

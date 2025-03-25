@@ -24,7 +24,7 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 	testutil.CommitFileChange("third", "file-with-conflicts", "2")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	testParseArguments("checkout", "1")
 

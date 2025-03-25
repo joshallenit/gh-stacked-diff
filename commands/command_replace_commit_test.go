@@ -20,7 +20,7 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 	testutil.AddCommit("first", "1")
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 	testutil.AddCommit("second", "will-be-replaced")
-	testParseArguments("new")
+	testParseArguments("new", "1")
 	testutil.AddCommit("fifth", "5")
 
 	allCommits := templates.GetAllCommits()
@@ -66,7 +66,7 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 
 	testutil.AddCommit("first", "1")
 	testutil.AddCommit("second", "will-be-replaced")
-	testParseArguments("new")
+	testParseArguments("new", "1")
 	testutil.AddCommit("fifth", "5")
 
 	allCommits := templates.GetAllCommits()
