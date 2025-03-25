@@ -73,6 +73,7 @@ func parseArguments(stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, command
 	commands := []Command{
 		createAddReviewersCommand(),
 		createBranchNameCommand(),
+		createCheckoutCommand(),
 		createCodeOwnersCommand(),
 		createDropAlreadyMergedCommand(),
 		createLogCommand(),
@@ -83,7 +84,7 @@ func parseArguments(stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, command
 		createReplaceCommitCommand(),
 		createReplaceConflictsCommand(),
 		createUpdateCommand(),
-		createCheckoutCommand(),
+		createVersionCommand(),
 		createWaitForMergeCommand(),
 	}
 
