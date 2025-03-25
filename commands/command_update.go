@@ -26,7 +26,14 @@ func createUpdateCommand() Command {
 		Description: "Add commits from local " + util.GetMainBranchForHelp() + " branch to an existing PR.\n" +
 			"\n" +
 			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
-		Usage: "sd " + flagSet.Name() + " [flags] <PR commitIndicator> [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]",
+		Usage: "sd " + flagSet.Name() + " [flags] [PR commitIndicator [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]]\n" +
+			"\nIf commitIndicator are missing then you will be prompted to select commits:\n" +
+			"\n" +
+			"   [enter]    confirms selection\n" +
+			"   [space]    adds to selection when selecting commits to add\n" +
+			"   [up,k]     moves cursor up\n" +
+			"   [down,j]   moves cursor down\n" +
+			"   [q,esc]    cancels\n",
 		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			destCommit := getDestCommit(flagSet, command, indicatorType, stdIn, exit)
