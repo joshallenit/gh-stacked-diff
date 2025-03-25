@@ -38,7 +38,7 @@ func createNewCommand() Command {
 			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
 		Usage: "sd new [flags] commitIndicator\n" +
 			"\n" +
-			"IF commitIdicator is missing then the user will be prompted to select commit.\n" +
+			"If commitIdicator is missing then the user will be prompted to select commit.\n" +
 			"\n" +
 			color.HiWhiteString("Ticket Number:") + "\n" +
 			"\n" +
