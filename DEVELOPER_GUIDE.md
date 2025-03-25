@@ -40,7 +40,7 @@ make test
 # Make sure all changes merged into main, git status and sd log should be empty.
 # Otherwise save your changes, "git reset --hard origin/main", create tag, then restore your changes
 git status && sd log
-export RELEASE_VERSION=`cat util/stable_version.txt" | cut -d '=' -f2`;\
+export RELEASE_VERSION=`cat util/stable_version.txt`
 git tag v$RELEASE_VERSION
 git push origin v$RELEASE_VERSION
 GOPROXY=proxy.golang.org go list -m github.com/joshallenit/gh-stacked-diff/v2@v$RELEASE_VERSION
