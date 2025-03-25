@@ -107,7 +107,7 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
-	testParseArguments("new", "1", "--reviewers=mybestie")
+	testParseArguments("new", "--reviewers=mybestie", "1")
 
 	allCommits := templates.GetAllCommits()
 
