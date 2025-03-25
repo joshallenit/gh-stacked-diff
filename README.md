@@ -193,7 +193,7 @@ Can also add reviewers once PR checks have passed, see "--reviewers" flag.
 ```
 usage: sd update [flags] [PR commitIndicator [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]]
 
-If commitIndicator are missing then you will be prompted to select commits:
+If commitIndicators are missing then you will be prompted to select commits:
 
    [enter]    confirms selection
    [space]    adds to selection when selecting commits to add
