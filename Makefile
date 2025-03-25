@@ -1,5 +1,5 @@
-LATEST_VERSION := $(shell grep "latestVersion" "project.properties" | cut -d '=' -f2)
-STABLE_VERSION := $(shell grep "stableVersion" "project.properties" | cut -d '=' -f2)
+STABLE_VERSION := $(shell cat util/stable_version.txt)
+$(info $$STABLE_VERSION is [${STABLE_VERSION}])
 ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 ifeq ($(OS),Windows_NT)

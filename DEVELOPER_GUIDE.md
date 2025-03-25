@@ -24,35 +24,23 @@ Clone the repository, [then build](DEVELOPER_GUIDE.md#how-to-build), and then fo
 
 The main entry point to the Stacked Diff Workflow CLI ("sd") is [main.go]. The commands are implemented under [commands].
 
-## How to Make a Release
-
-1. Set releaseVersion in [project.properties](project.properties).
-2. On each platform (Windows and Mac) run `make release`, setting the PLATFORM environment variable accordingly.
-```bash
-# On a Windows machine
-export PLATFORM=windows; make release
-# On a Mac machine
-export PLATFORM=mac; make release
-```
-
 ## How to Debug Unit Tests
 
 If one of the command*_test fails you can pass "--log-level=debug" to `parseArguments` for more detailed logging. For more detailed logging up until the `parseArguments` call use `testutil.InitTest(t, slog.LevelDebug)`
-
 
 ## Making a Release
 
 Follow the steps in golang docs [Publishing a module](https://go.dev/doc/modules/publishing):
 
 ```bash
-# Update latest and stable version numbers in [project.properties], merge changes, update local, and then:
+# Update current and stable version numbers in [util/current_version.txt] and [util/stable_version.txt], merge changes, update local, and then:
 git checkout main
 go mod tidy
 make test
 # Make sure all changes merged into main, git status and sd log should be empty.
 # Otherwise save your changes, "git reset --hard origin/main", create tag, then restore your changes
 git status && sd log
-export RELEASE_VERSION=`grep "latestVersion" "project.properties" | cut -d '=' -f2`;\
+export RELEASE_VERSION=`cat util/stable_version.txt" | cut -d '=' -f2`;\
 git tag v$RELEASE_VERSION
 git push origin v$RELEASE_VERSION
 GOPROXY=proxy.golang.org go list -m github.com/joshallenit/gh-stacked-diff/v2@v$RELEASE_VERSION
