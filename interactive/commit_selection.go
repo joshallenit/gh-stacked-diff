@@ -24,8 +24,17 @@ func GetPrSelection(prompt string, stdIn io.Reader) (templates.GitLog, error) {
 	}
 }
 
-func GetCommitSelection(prompt string, stdIn io.Reader) ([]templates.GitLog, error) {
+func GetCommitMultiSelection(prompt string, stdIn io.Reader) ([]templates.GitLog, error) {
 	return getCommitSelection(false, true, prompt, stdIn)
+}
+
+func GetCommitSingleSelection(prompt string, stdIn io.Reader) (templates.GitLog, error) {
+	commitSelected, err := getCommitSelection(false, false, prompt, stdIn)
+	if err == nil {
+		return commitSelected[0], nil
+	} else {
+		return templates.GitLog{}, err
+	}
 }
 
 func getCommitSelection(withPr bool, multiSelect bool, prompt string, stdIn io.Reader) ([]templates.GitLog, error) {

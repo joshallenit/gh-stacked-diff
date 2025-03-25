@@ -65,7 +65,7 @@ func getDestCommit(flagSet *flag.FlagSet, command Command, indicatorType templat
 
 func getCommitsToCherryPick(flagSet *flag.FlagSet, command Command, indicatorType templates.IndicatorType, stdIn io.Reader, exit func(any)) []string {
 	if flagSet.NArg() < 2 {
-		selectedCommits, err := interactive.GetCommitSelection("What commits do you want to add?", stdIn)
+		selectedCommits, err := interactive.GetCommitMultiSelection("What commits do you want to add?", stdIn)
 		if err != nil {
 			if err == interactive.UserCancelled {
 				exit(nil)

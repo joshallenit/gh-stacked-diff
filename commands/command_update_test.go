@@ -23,7 +23,7 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 	testutil.InitTest(t, slog.LevelInfo)
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	testutil.AddCommit("second", "")
 
@@ -47,7 +47,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	testutil.AddCommit("second", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	testutil.AddCommit("third", "")
 
@@ -81,7 +81,7 @@ func TestSdUpdate_UpdatesPr(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	testutil.AddCommit("second", "")
 
@@ -103,7 +103,7 @@ func TestSdUpdate_WithListIndicators_UpdatesPr(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	testutil.AddCommit("second", "")
 	testutil.AddCommit("third", "")
@@ -133,7 +133,7 @@ func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	testutil.AddCommit("second", "")
 
@@ -164,7 +164,7 @@ func TestSdUpdate_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
-	testParseArguments("new")
+	testParseArguments("new", "1")
 	testutil.CommitFileChange("second", "first", "made change")
 	testutil.CommitFileChange("third", "first", "another change")
 
@@ -190,7 +190,7 @@ func TestSdUpdate_WhenPushFails_RestoresBranches(t *testing.T) {
 	testutil.AddCommit("first", "")
 	firstBranch := templates.GetAllCommits()[0].Branch
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", firstBranch)
 	firstCommits := templates.GetAllCommits()
@@ -220,7 +220,7 @@ func TestSdUpdate_WhenCherryPickCommitsNotSpecifiedAndUserQuits_NoOp(t *testing.
 	testutil.InitTest(t, slog.LevelInfo)
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	testutil.AddCommit("second", "")
 
@@ -244,7 +244,7 @@ func TestSdUpdate_WhenCherryPickCommitsNotSpecified_CherryPicsUserSelection(t *t
 	testutil.InitTest(t, slog.LevelInfo)
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	testutil.AddCommit("second", "")
 
@@ -263,7 +263,7 @@ func TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr(t *testing
 	testutil.InitTest(t, slog.LevelInfo)
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	testutil.AddCommit("second", "")
 

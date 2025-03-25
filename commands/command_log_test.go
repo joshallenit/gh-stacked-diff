@@ -57,7 +57,7 @@ func TestPrintGitLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t 
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	outWriter := testutil.NewWriteRecorder()
 	printGitLog(outWriter)
@@ -95,7 +95,7 @@ func TestPrintGitLog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) 
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	testutil.AddCommit("second", "")
 

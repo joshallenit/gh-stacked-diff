@@ -20,7 +20,7 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	allCommits := templates.GetAllCommits()
 	testExecutor.SetResponse(
@@ -49,7 +49,7 @@ func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	allCommits := templates.GetAllCommits()
 	testExecutor.SetResponse(
@@ -78,7 +78,7 @@ func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	allCommits := templates.GetAllCommits()
 	testExecutor.SetResponse(

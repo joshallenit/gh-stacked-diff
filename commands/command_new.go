@@ -13,6 +13,7 @@ import (
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
@@ -36,7 +37,14 @@ func createNewCommand() Command {
 			"on the commit summary), and then uses Github CLI to create a PR.\n" +
 			"\n" +
 			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
-		Usage: "sd new [flags] [commitIndicator (default is HEAD commit on " + util.GetMainBranchForHelp() + ")]\n" +
+		Usage: "sd new [flags] [commitIndicator]\n" +
+			"\n" +
+			"If commitIndicator is missing then you will be prompted to select commit:\n" +
+			"\n" +
+			"   [enter]    confirms selection\n" +
+			"   [up,k]     moves cursor up\n" +
+			"   [down,j]   moves cursor down\n" +
+			"   [q,esc]    cancels\n" +
 			"\n" +
 			color.HiWhiteString("Ticket Number:") + "\n" +
 			"\n" +
@@ -86,7 +94,7 @@ func createNewCommand() Command {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
-			gitLog := templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
+			gitLog := getTargetCommit(flagSet, command, indicatorType, stdIn, exit)
 			// Note: set the default here rather than via flags to avoid GetMainBranchOrDie being called before OnSelected.
 			if *baseBranch == "" {
 				*baseBranch = util.GetMainBranchOrDie()
@@ -96,6 +104,24 @@ func createNewCommand() Command {
 				addReviewersToPr([]string{gitLog.Commit}, templates.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
 		}}
+}
+
+func getTargetCommit(flagSet *flag.FlagSet, command Command, indicatorType templates.IndicatorType, stdIn io.Reader, exit func(any)) templates.GitLog {
+	if flagSet.NArg() == 0 {
+		var err error
+		targetCommit, err := interactive.GetCommitSingleSelection("What commit do you want to create a PR from?", stdIn)
+		if err != nil {
+			if err == interactive.UserCancelled {
+				exit(nil)
+			} else {
+				commandError(flagSet, err.Error(), command.Usage)
+			}
+		}
+		slog.Info("Target commit: " + fmt.Sprint(targetCommit))
+		return targetCommit
+	} else {
+		return templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
+	}
 }
 
 // Creates a new pull request via Github CLI.

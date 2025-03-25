@@ -174,7 +174,7 @@ func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 
 	testutil.AddCommit("second", "second-2")
-	testParseArguments("new")
+	testParseArguments("new", "1")
 
 	// Use the commit of the first "second" commit as the branch
 	// that was merged so that the second "second" commit is not dropped.
