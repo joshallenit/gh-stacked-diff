@@ -39,4 +39,4 @@ require (
 
 replace github.com/charmbracelet/bubbles => github.com/joshallenit/bubbles v0.20.1
 
-replace github.com/charmbracelet/bubbletea => github.com/joshallenit/bubbletea v1.3.5
+replace github.com/charmbracelet/bubbletea => github.com/joshallenit/bubbletea v1.3.6

@@ -46,6 +46,7 @@ Follow the steps in golang docs [Publishing a module](https://go.dev/doc/modules
 
 ```bash
 # Update latest and stable version numbers in [project.properties], merge changes, update local, and then:
+git checkout main
 go mod tidy
 make test
 # Make sure all changes merged into main, git status and sd log should be empty.
@@ -60,9 +61,18 @@ GOPROXY=proxy.golang.org go list -m github.com/joshallenit/gh-stacked-diff/v2@v$
 For bubbles and bubbletea forks:
 
 ```bash
-GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbles@v0.20.1
+# Make labels in their repositories
+git checkout main
+git status && sd log
+export RELEASE_VERSION=1.3.6
+git tag v$RELEASE_VERSION
+git push origin v$RELEASE_VERSION
+# sd rebase-main if required
+GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbletea@v$RELEASE_VERSION
+# Update version in go.mod replace
 
-GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbletea@v1.3.5
+# Same steps for:
+GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbles@v0.20.1
 ```
 
 
