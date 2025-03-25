@@ -281,9 +281,9 @@ func TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr(t *testing
 func TestSdUpdate_WhenDestinationCommitNotSpecifiedAndMultiplePossibleValues_UpdatesSelectedPr(t *testing.T) {
 	assert := assert.New(t)
 	testutil.InitTest(t, slog.LevelInfo)
-	testutil.AddCommit("first", "")
+	testutil.AddCommit("first", "destination")
 	testParseArguments("new", "1")
-	testutil.AddCommit("second", "destination")
+	testutil.AddCommit("second", "")
 	testParseArguments("new", "1")
 	testutil.AddCommit("third", "")
 	testutil.AddCommit("fourth", "added1")
@@ -305,10 +305,10 @@ func TestSdUpdate_WhenDestinationCommitNotSpecifiedAndMultiplePossibleValues_Upd
 	allCommits := templates.GetAllCommits()
 
 	assert.Equal(5, len(allCommits))
-	assert.Equal("first", allCommits[0].Subject)
-	assert.Equal("second", allCommits[1].Subject)
-	assert.Equal("third", allCommits[2].Subject)
-	assert.Equal("sixth", allCommits[3].Subject)
+	assert.Equal("sixth", allCommits[0].Subject)
+	assert.Equal("third", allCommits[1].Subject)
+	assert.Equal("second", allCommits[2].Subject)
+	assert.Equal("first", allCommits[3].Subject)
 	assert.Equal(testutil.InitialCommitSubject, allCommits[4].Subject)
-	assert.True(util.RemoteHasBranch(allCommits[1].Branch))
+	assert.True(util.RemoteHasBranch(allCommits[3].Branch))
 }
