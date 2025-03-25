@@ -50,11 +50,11 @@ func addNewProgramListener(t *testing.T, onNewProgram func(programIndex int, pro
 }
 
 // Convienience method for creating a message for when user typed a key.
-func NewKeyMessageRune(r rune) tea.KeyMsg {
-	return tea.KeyMsg(tea.Key{Type: tea.KeyRunes, Runes: []rune{'r'}})
+func NewMessageRune(r rune) tea.KeyMsg {
+	return tea.KeyMsg(tea.Key{Type: tea.KeyRunes, Runes: []rune{r}})
 }
 
-// Convienience method for creating a message for when user hit enter.
-func NewKeyMessageEnter() tea.KeyMsg {
-	return tea.KeyMsg(tea.Key{Type: tea.KeyEnter})
+// Convienience method for creating a message for when user hits a non-rune key like enter or up/down.
+func NewMessageKey(keyType tea.KeyType) tea.KeyMsg {
+	return tea.KeyMsg(tea.Key{Type: keyType})
 }

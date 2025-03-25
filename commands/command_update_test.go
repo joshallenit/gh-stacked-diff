@@ -6,6 +6,7 @@ import (
 
 	"testing"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/stretchr/testify/assert"
 
 	"slices"
@@ -232,7 +233,7 @@ func TestSdUpdate_WhenCherryPickCommitsNotSpecifiedAndUserQuits_NoOp(t *testing.
 		}
 	}()
 
-	interactive.SendToProgram(t, 0, interactive.NewKeyMessageRune('q'))
+	interactive.SendToProgram(t, 0, interactive.NewMessageRune('q'))
 	testParseArguments("update", "2")
 
 	assert.Fail("did not panic on quit")
@@ -247,7 +248,7 @@ func TestSdUpdate_WhenCherryPickCommitsNotSpecified_CherryPicsUserSelection(t *t
 
 	testutil.AddCommit("second", "")
 
-	interactive.SendToProgram(t, 0, interactive.NewKeyMessageEnter())
+	interactive.SendToProgram(t, 0, interactive.NewMessageKey(tea.KeyEnter))
 	testParseArguments("update", "2")
 
 	allCommits := templates.GetAllCommits()
@@ -266,8 +267,8 @@ func TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr(t *testing
 
 	testutil.AddCommit("second", "")
 
-	interactive.SendToProgram(t, 0, interactive.NewKeyMessageEnter())
-	interactive.SendToProgram(t, 1, interactive.NewKeyMessageEnter())
+	interactive.SendToProgram(t, 0, interactive.NewMessageKey(tea.KeyEnter))
+	interactive.SendToProgram(t, 1, interactive.NewMessageKey(tea.KeyEnter))
 	testParseArguments("update")
 
 	allCommits := templates.GetAllCommits()
@@ -275,4 +276,39 @@ func TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr(t *testing
 	assert.Equal(2, len(allCommits))
 	assert.Equal("first", allCommits[0].Subject)
 	assert.Equal(testutil.InitialCommitSubject, allCommits[1].Subject)
+}
+
+func TestSdUpdate_WhenDestinationCommitNotSpecifiedAndMultiplePossibleValues_UpdatesSelectedPr(t *testing.T) {
+	assert := assert.New(t)
+	testutil.InitTest(t, slog.LevelInfo)
+	testutil.AddCommit("first", "")
+	testParseArguments("new", "1")
+	testutil.AddCommit("second", "destination")
+	testParseArguments("new", "1")
+	testutil.AddCommit("third", "")
+	testutil.AddCommit("fourth", "added1")
+	testutil.AddCommit("fifth", "added2")
+	testutil.AddCommit("sixth", "")
+
+	interactive.SendToProgram(t, 0,
+		interactive.NewMessageKey(tea.KeyDown),
+		interactive.NewMessageKey(tea.KeyEnter),
+	)
+	interactive.SendToProgram(t, 1,
+		interactive.NewMessageKey(tea.KeyDown),
+		interactive.NewMessageRune(' '),
+		interactive.NewMessageKey(tea.KeyDown),
+		interactive.NewMessageKey(tea.KeyEnter),
+	)
+	testParseArguments("update")
+
+	allCommits := templates.GetAllCommits()
+
+	assert.Equal(5, len(allCommits))
+	assert.Equal("first", allCommits[0].Subject)
+	assert.Equal("second", allCommits[1].Subject)
+	assert.Equal("third", allCommits[2].Subject)
+	assert.Equal("sixth", allCommits[3].Subject)
+	assert.Equal(testutil.InitialCommitSubject, allCommits[4].Subject)
+	assert.True(util.RemoteHasBranch(allCommits[1].Branch))
 }
