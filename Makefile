@@ -22,7 +22,7 @@ build: format
 	go build -o bin
 
 # Example TEST_ARGS:
-# make TEST_ARGS="-timeout 30s -run TestSdUpdate_WhenCherryPickCommitsNotSpecified_CherryPicsUserSelection" test
+# make TEST_ARGS="-timeout 10s -run TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr" test
 .PHONY: test
 test: build
 	go test ${TEST_ARGS} ./...

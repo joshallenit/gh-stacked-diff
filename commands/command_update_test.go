@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"bytes"
 	"errors"
 	"log/slog"
 
@@ -12,6 +11,7 @@ import (
 	"slices"
 
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -231,9 +231,9 @@ func TestSdUpdate_WhenCherryPickCommitsNotSpecifiedAndUserQuits_NoOp(t *testing.
 			assert.Equal(commitsOnMain, templates.GetAllCommits())
 		}
 	}()
-	stdin := new(bytes.Buffer)
-	stdin.WriteString("q")
-	testParseArgumentsWithStdIn(stdin, "update", "2")
+
+	interactive.SendToProgram(t, 0, interactive.NewKeyMessageRune('q'))
+	testParseArguments("update", "2")
 
 	assert.Fail("did not panic on quit")
 }
@@ -247,9 +247,8 @@ func TestSdUpdate_WhenCherryPickCommitsNotSpecified_CherryPicsUserSelection(t *t
 
 	testutil.AddCommit("second", "")
 
-	stdin := new(bytes.Buffer)
-	stdin.WriteString(testutil.LineBreak)
-	testParseArgumentsWithStdIn(stdin, "update", "2")
+	interactive.SendToProgram(t, 0, interactive.NewKeyMessageEnter())
+	testParseArguments("update", "2")
 
 	allCommits := templates.GetAllCommits()
 
@@ -267,9 +266,9 @@ func TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr(t *testing
 
 	testutil.AddCommit("second", "")
 
-	stdin := new(bytes.Buffer)
-	stdin.WriteString(testutil.LineBreak + testutil.LineBreak)
-	testParseArgumentsWithStdIn(stdin, "update")
+	interactive.SendToProgram(t, 0, interactive.NewKeyMessageEnter())
+	interactive.SendToProgram(t, 1, interactive.NewKeyMessageEnter())
+	testParseArguments("update")
 
 	allCommits := templates.GetAllCommits()
 

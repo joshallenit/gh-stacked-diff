@@ -147,7 +147,7 @@ func GetTableSelection(prompt string, columns []string, rows [][]string, multise
 		rowEnabled:   rowEnabled,
 		prompt:       prompt,
 	}
-	finalModel, err := tea.NewProgram(initialModel, tea.WithInput(stdIn)).Run()
+	finalModel, err := NewProgram(initialModel, tea.WithInput(stdIn)).Run()
 	if err != nil {
 		panic(err)
 	}
