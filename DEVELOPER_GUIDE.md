@@ -70,6 +70,7 @@ git push origin v$RELEASE_VERSION
 # sd rebase-main if required
 GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbletea@v$RELEASE_VERSION
 # Update version in go.mod replace
+go mod tidy
 
 # Same steps for:
 GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbles@v0.20.1
