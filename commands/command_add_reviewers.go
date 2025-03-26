@@ -47,7 +47,7 @@ func createAddReviewersCommand() Command {
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			selectPrsOptions := interactive.CommitSelectionOptions{
 				Prompt:      "What PR do you want to add reviewers too?",
-				WithPr:      true,
+				CommitType:  interactive.CommitTypePr,
 				MultiSelect: true,
 			}
 			targetCommits := getTargetCommits(appConfig, command, flagSet.Args(), indicatorTypeString, selectPrsOptions)

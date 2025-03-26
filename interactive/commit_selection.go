@@ -13,8 +13,16 @@ import (
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 )
 
+type CommitType int
+
+const (
+	CommitTypePr CommitType = iota
+	CommitTypeNoPr
+	CommitTypeBoth
+)
+
 type CommitSelectionOptions struct {
-	WithPr      bool
+	CommitType  CommitType
 	MultiSelect bool
 	Prompt      string
 }
@@ -40,19 +48,27 @@ func GetCommitSelection(stdIo util.StdIo, options CommitSelectionOptions) ([]tem
 		}
 		rows = append(rows, []string{indexString, commit.Commit, commit.Subject})
 	}
-	// so I need multi-select which is going to need a different style
-	// and I'm going to need a disabled selection too... so how should that behave?
-	if len(rows) == 0 {
-		if options.WithPr {
+
+	selected := GetTableSelection(options.Prompt, columns, rows, options.MultiSelect, stdIo.In, func(row int) bool {
+		if options.CommitType == CommitTypeBoth {
+			return true
+		}
+		hasLocalBranch := slices.Contains(prBranches, newCommits[row].Branch)
+		return (options.CommitType == CommitTypePr && hasLocalBranch) || (options.CommitType == CommitTypeNoPr && !hasLocalBranch)
+	})
+	if len(selected) == 0 {
+		switch options.CommitType {
+		case CommitTypePr:
 			return []templates.GitLog{}, errors.New("No new commits with PRs")
-		} else {
+		case CommitTypeNoPr:
 			return []templates.GitLog{}, errors.New("No new commits without PRs")
+		case CommitTypeBoth:
+			return []templates.GitLog{}, errors.New("No new commits")
+		default:
+			panic("Unknown commit type " + fmt.Sprint(options.CommitType))
 		}
 	}
-	selected := GetTableSelection(options.Prompt, columns, rows, options.MultiSelect, stdIo.In, func(row int) bool {
-		hasLocalBranch := slices.Contains(prBranches, newCommits[row].Branch)
-		return (options.WithPr && hasLocalBranch) || (!options.WithPr && !hasLocalBranch)
-	})
+
 	selectedCommits := make([]templates.GitLog, 0, len(selected))
 	// reverse the selected indexes to do cherry-picks in order.
 	for _, selectedRow := range slices.Backward(selected) {

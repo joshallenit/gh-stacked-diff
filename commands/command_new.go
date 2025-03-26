@@ -87,7 +87,7 @@ func createNewCommand() Command {
 			}
 			selectCommitOptions := interactive.CommitSelectionOptions{
 				Prompt:      "What commit do you want to create a PR from?",
-				WithPr:      false,
+				CommitType:  interactive.CommitTypeNoPr,
 				MultiSelect: false,
 			}
 			targetCommits := getTargetCommits(appConfig, command, flagSet.Args(), indicatorTypeString, selectCommitOptions)

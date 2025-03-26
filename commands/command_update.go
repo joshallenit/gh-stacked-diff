@@ -46,7 +46,7 @@ func createUpdateCommand() Command {
 func getDestCommit(appConfig util.AppConfig, command Command, indicatorTypeString *string) templates.GitLog {
 	selectPrOptions := interactive.CommitSelectionOptions{
 		Prompt:      "What PR do you want to update?",
-		WithPr:      true,
+		CommitType:  interactive.CommitTypePr,
 		MultiSelect: false,
 	}
 	targetCommits := getTargetCommits(appConfig, command, []string{command.FlagSet.Arg(0)}, indicatorTypeString, selectPrOptions)
@@ -56,7 +56,7 @@ func getDestCommit(appConfig util.AppConfig, command Command, indicatorTypeStrin
 func getCommitsToCherryPick(appConfig util.AppConfig, command Command, indicatorTypeString *string) []templates.GitLog {
 	selectCommitsOptions := interactive.CommitSelectionOptions{
 		Prompt:      "What commits do you want to add?",
-		WithPr:      false,
+		CommitType:  interactive.CommitTypeNoPr,
 		MultiSelect: true,
 	}
 	var commitsFromCommandLine []string
