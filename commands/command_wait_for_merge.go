@@ -7,6 +7,7 @@ import (
 	"time"
 
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
@@ -25,18 +26,22 @@ func createWaitForMergeCommand() Command {
 			"Useful for your own custom scripting.",
 		Usage: "sd " + flagSet.Name() + " [flags] <commit hash or pull request number>",
 		OnSelected: func(appConfig util.AppConfig, command Command) {
-			if flagSet.NArg() != 1 {
-				commandError(flagSet, "missing commitIndicator", command.Usage)
+			if flagSet.NArg() > 1 {
+				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
-			waitForMerge(flagSet.Arg(0), indicatorType, *silent)
+			selectCommitOptions := interactive.CommitSelectionOptions{
+				Prompt:      "What PR do you want to wait for to be merged?",
+				CommitType:  interactive.CommitTypePr,
+				MultiSelect: false,
+			}
+			targetCommit := getTargetCommits(appConfig, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
+			waitForMerge(targetCommit[0], *silent)
 		}}
 }
 
 // Waits for a pull request to be merged.
-func waitForMerge(commitIndicator string, indicatorType templates.IndicatorType, silent bool) {
-	branchName := templates.GetBranchInfo(commitIndicator, indicatorType).Branch
-	for getMergedAt(branchName) == "" {
+func waitForMerge(targetCommit templates.GitLog, silent bool) {
+	for getMergedAt(targetCommit.Branch) == "" {
 		slog.Info("Not merged yet...")
 		util.Sleep(30 * time.Second)
 	}
