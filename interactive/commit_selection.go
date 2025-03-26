@@ -40,23 +40,29 @@ func GetCommitSelection(stdIo util.StdIo, options CommitSelectionOptions) ([]tem
 
 	rows := make([][]string, 0, len(newCommits))
 
+	rowEnabled := func(row int) bool {
+		if options.CommitType == CommitTypeBoth {
+			return true
+		}
+		hasLocalBranch := slices.Contains(prBranches, newCommits[row].Branch)
+		return (options.CommitType == CommitTypePr && hasLocalBranch) || (options.CommitType == CommitTypeNoPr && !hasLocalBranch)
+	}
+
+	hasEnabledRow := false
 	for i, commit := range newCommits {
 		hasLocalBranch := slices.Contains(prBranches, commit.Branch)
 		indexString := fmt.Sprint(i + 1)
 		if hasLocalBranch {
 			indexString += " ✅"
 		}
-		rows = append(rows, []string{indexString, commit.Commit, commit.Subject})
+		row := []string{indexString, commit.Commit, commit.Subject}
+		if rowEnabled(i) {
+			hasEnabledRow = true
+		}
+		rows = append(rows, row)
 	}
 
-	selected := GetTableSelection(options.Prompt, columns, rows, options.MultiSelect, stdIo.In, func(row int) bool {
-		if options.CommitType == CommitTypeBoth {
-			return true
-		}
-		hasLocalBranch := slices.Contains(prBranches, newCommits[row].Branch)
-		return (options.CommitType == CommitTypePr && hasLocalBranch) || (options.CommitType == CommitTypeNoPr && !hasLocalBranch)
-	})
-	if len(selected) == 0 {
+	if !hasEnabledRow {
 		switch options.CommitType {
 		case CommitTypePr:
 			return []templates.GitLog{}, errors.New("No new commits with PRs")
@@ -68,6 +74,8 @@ func GetCommitSelection(stdIo util.StdIo, options CommitSelectionOptions) ([]tem
 			panic("Unknown commit type " + fmt.Sprint(options.CommitType))
 		}
 	}
+
+	selected := GetTableSelection(options.Prompt, columns, rows, options.MultiSelect, stdIo.In, rowEnabled)
 
 	selectedCommits := make([]templates.GitLog, 0, len(selected))
 	// reverse the selected indexes to do cherry-picks in order.
