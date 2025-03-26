@@ -70,7 +70,7 @@ func getCommitsToCherryPick(appConfig util.AppConfig, command Command, indicator
 func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCherryPick []templates.GitLog) {
 	util.RequireMainBranch()
 	templates.RequireCommitOnMain(destCommit.Commit)
-	shouldPopStash := util.Stash("before update-pr " + destCommit.Commit)
+	shouldPopStash := util.Stash("before update-pr " + destCommit.Commit + " " + destCommit.Subject)
 	rollbackManager := &util.GitRollbackManager{}
 	rollbackManager.SaveState()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", destCommit.Branch)

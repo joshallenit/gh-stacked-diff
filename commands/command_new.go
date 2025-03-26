@@ -95,7 +95,7 @@ func createNewCommand() Command {
 			if *baseBranch == "" {
 				*baseBranch = util.GetMainBranchOrDie()
 			}
-			createNewPr(appConfig, *draft, *featureFlag, *baseBranch, targetCommits[0])
+			createNewPr(*draft, *featureFlag, *baseBranch, targetCommits[0])
 			if *reviewers != "" {
 				addReviewersToPr(targetCommits, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
@@ -103,10 +103,10 @@ func createNewCommand() Command {
 }
 
 // Creates a new pull request via Github CLI.
-func createNewPr(appConfig util.AppConfig, draft bool, featureFlag string, baseBranch string, gitLog templates.GitLog) {
+func createNewPr(draft bool, featureFlag string, baseBranch string, gitLog templates.GitLog) {
 	util.RequireMainBranch()
 	templates.RequireCommitOnMain(gitLog.Commit)
-	shouldPopStash := util.Stash("sd new " + flag.Arg(0))
+	shouldPopStash := util.Stash("sd new " + gitLog.Commit + " " + gitLog.Subject)
 	rollbackManager := &util.GitRollbackManager{}
 	rollbackManager.SaveState()
 	defer func() {
