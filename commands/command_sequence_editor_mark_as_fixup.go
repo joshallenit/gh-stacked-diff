@@ -3,10 +3,11 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"io"
 	"log/slog"
 	"os"
 	"strings"
+
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func createMarkAsFixupCommand() Command {
@@ -17,7 +18,7 @@ func createMarkAsFixupCommand() Command {
 		Description: "For use as a sequence editor during an interactive git rebase. Marks commits as fixup commits.",
 		Usage:       "sd " + flagSet.Name() + " targetCommit fixupCommit1 [fixupCommit2...] rebaseFilename",
 		Hidden:      true,
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
+		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() < 3 {
 				commandError(flagSet, "not enough arguments", command.Usage)
 			}

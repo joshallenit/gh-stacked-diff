@@ -13,12 +13,12 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-func ExecuteCommand(stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, commandLineArgs []string, sequenceEditorPrefix string, createExit func(lstdErr io.Writer, logLeveler slog.Leveler) func(err any)) {
+func ExecuteCommand(stdIo util.StdIo, commandLineArgs []string, appExecutable string, createExit func(lstdErr io.Writer, logLeveler slog.Leveler) func(err any)) {
 	// Unset any color in case a previous terminal command set colors and then was
 	// terminated before it could reset the colors.
 	color.Unset()
 
-	parseArguments(stdOut, stdErr, stdIn, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, sequenceEditorPrefix, createExit)
+	parseArguments(stdIo, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, appExecutable, createExit)
 }
 
 func CreateDefaultExit(stdErr io.Writer, logLeveler slog.Leveler) func(err any) {
@@ -39,7 +39,7 @@ func CreateDefaultExit(stdErr io.Writer, logLeveler slog.Leveler) func(err any) 
 	}
 }
 
-func parseArguments(stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, commandLine *flag.FlagSet, commandLineArgs []string, sequenceEditorPrefix string, createExit func(stdErr io.Writer, logLeveler slog.Leveler) func(err any)) {
+func parseArguments(stdIo util.StdIo, commandLine *flag.FlagSet, commandLineArgs []string, appExecutable string, createExit func(stdErr io.Writer, logLeveler slog.Leveler) func(err any)) {
 	if commandLine.ErrorHandling() != flag.ContinueOnError {
 		// Use ContinueOnError so that a description of the command can be included before usage
 		// for help.
@@ -65,7 +65,7 @@ func parseArguments(stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, command
 		var logLevel slog.Level
 		logLevel, parseErr = stringToLogLevel(*logLevelString)
 		if parseErr == nil {
-			logLevelVar = setSlogLogger(stdOut, logLevel)
+			logLevelVar = setSlogLogger(stdIo.Out, logLevel)
 		}
 	}
 	// parseErr is dealt with below via commandError and commandHelp.
@@ -131,7 +131,7 @@ func parseArguments(stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, command
 	if *logLevelString == "" {
 		logLevelVar.Set(commands[selectedIndex].DefaultLogLevel)
 	}
-	exit := createExit(stdErr, logLevelVar)
+	exit := createExit(stdIo.Err, logLevelVar)
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -140,8 +140,8 @@ func parseArguments(stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, command
 	}()
 	// Note: call GetMainBranchOrDie early as it has useful error messages.
 	slog.Debug(fmt.Sprint("Using main branch " + util.GetMainBranchOrDie()))
-
-	commands[selectedIndex].OnSelected(commands[selectedIndex], stdOut, stdErr, stdIn, sequenceEditorPrefix, exit)
+	appConfig := util.AppConfig{Io: stdIo, AppExecutable: appExecutable, Exit: exit}
+	commands[selectedIndex].OnSelected(appConfig, commands[selectedIndex])
 }
 
 func getCommandSummaries(commands []Command) []string {

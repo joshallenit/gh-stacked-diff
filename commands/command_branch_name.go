@@ -3,10 +3,10 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"io"
 	"log/slog"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func createBranchNameCommand() Command {
@@ -19,7 +19,7 @@ func createBranchNameCommand() Command {
 		Description: "Outputs the branch name for a given commit indicator.\n" +
 			"Useful for your own custom scripting.",
 		Usage: "sd " + flagSet.Name() + " [flags] <commitIndicator>",
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
+		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() == 0 {
 				commandError(flagSet, "missing commitIndicator", command.Usage)
 			}
@@ -28,6 +28,6 @@ func createBranchNameCommand() Command {
 			}
 			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
 			branchName := templates.GetBranchInfo(flagSet.Arg(0), indicatorType).Branch
-			fmt.Fprint(stdOut, branchName)
+			fmt.Fprint(appConfig.Io.Out, branchName)
 		}}
 }

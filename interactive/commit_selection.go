@@ -5,39 +5,22 @@ import (
 	"slices"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
 	"errors"
-	"io"
 	"strings"
 
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 )
 
-var UserCancelled error = errors.New("User cancelled")
-
-func GetPrSelection(prompt string, stdIn io.Reader) (templates.GitLog, error) {
-	prSelected, err := getCommitSelection(true, false, prompt, stdIn)
-	if err == nil {
-		return prSelected[0], nil
-	} else {
-		return templates.GitLog{}, err
-	}
+type CommitSelectionOptions struct {
+	WithPr      bool
+	MultiSelect bool
+	Prompt      string
 }
 
-func GetCommitMultiSelection(prompt string, stdIn io.Reader) ([]templates.GitLog, error) {
-	return getCommitSelection(false, true, prompt, stdIn)
-}
-
-func GetCommitSingleSelection(prompt string, stdIn io.Reader) (templates.GitLog, error) {
-	commitSelected, err := getCommitSelection(false, false, prompt, stdIn)
-	if err == nil {
-		return commitSelected[0], nil
-	} else {
-		return templates.GitLog{}, err
-	}
-}
-
-func getCommitSelection(withPr bool, multiSelect bool, prompt string, stdIn io.Reader) ([]templates.GitLog, error) {
+// Returns an empty array if user cancelled.
+func GetCommitSelection(stdIo util.StdIo, options CommitSelectionOptions) ([]templates.GitLog, error) {
 	columns := []string{"Index", "Commit", "Summary"}
 	newCommits := templates.GetNewCommits("HEAD")
 	gitBranchArgs := make([]string, 0, len(newCommits)+2)
@@ -60,19 +43,16 @@ func getCommitSelection(withPr bool, multiSelect bool, prompt string, stdIn io.R
 	// so I need multi-select which is going to need a different style
 	// and I'm going to need a disabled selection too... so how should that behave?
 	if len(rows) == 0 {
-		if withPr {
+		if options.WithPr {
 			return []templates.GitLog{}, errors.New("No new commits with PRs")
 		} else {
 			return []templates.GitLog{}, errors.New("No new commits without PRs")
 		}
 	}
-	selected := GetTableSelection(prompt, columns, rows, multiSelect, stdIn, func(row int) bool {
+	selected := GetTableSelection(options.Prompt, columns, rows, options.MultiSelect, stdIo.In, func(row int) bool {
 		hasLocalBranch := slices.Contains(prBranches, newCommits[row].Branch)
-		return (withPr && hasLocalBranch) || (!withPr && !hasLocalBranch)
+		return (options.WithPr && hasLocalBranch) || (!options.WithPr && !hasLocalBranch)
 	})
-	if len(selected) == 0 {
-		return []templates.GitLog{}, UserCancelled
-	}
 	selectedCommits := make([]templates.GitLog, 0, len(selected))
 	// reverse the selected indexes to do cherry-picks in order.
 	for _, selectedRow := range slices.Backward(selected) {

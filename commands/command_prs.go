@@ -2,10 +2,10 @@ package commands
 
 import (
 	"flag"
-	"io"
 	"log/slog"
 
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func createPrsCommand() Command {
@@ -19,11 +19,11 @@ func createPrsCommand() Command {
 			"You must be logged-in, via \"gh auth login\"",
 		Usage:           "sd " + flagSet.Name(),
 		DefaultLogLevel: slog.LevelError,
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
+		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: stdOut, Stderr: stdErr}},
+			ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: appConfig.Io.Out, Stderr: appConfig.Io.Err}},
 				"gh", "pr", "list", "--author", "@me")
 		}}
 }
