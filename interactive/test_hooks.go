@@ -49,7 +49,7 @@ func SendToProgram(t *testing.T, programIndex int, messages ...tea.Msg) {
 			return next == programListener
 		})
 		if programListener.numSent != len(programListener.messages) {
-			panic("Did not use the all of the desired input: " + fmt.Sprint(programListener))
+			panic("Did not use the all of the desired input: " + fmt.Sprint(*programListener))
 		}
 	})
 }
