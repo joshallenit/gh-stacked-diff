@@ -312,3 +312,47 @@ func TestSdUpdate_WhenDestinationCommitNotSpecifiedAndMultiplePossibleValues_Upd
 	assert.Equal(testutil.InitialCommitSubject, allCommits[4].Subject)
 	assert.True(util.RemoteHasBranch(allCommits[3].Branch))
 }
+
+func TestSdUpdate_WhenBranchAlreadyMergedAndUserDoesNotConfirm_Cancels() {
+	assert := assert.New(t)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testutil.AddCommit("first", "")
+
+	testParseArguments("new", "1")
+
+	testutil.AddCommit("second", "")
+
+	allCommits := templates.GetAllCommits()
+
+	interactive.SendToProgram(t, 0,
+		interactive.NewMessageKey('n'),
+	)
+	testExecutor.SetResponse(allCommits[0].Branch+" fakeMergeCommit",
+		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+
+	testParseArguments("update", "2", "1")
+
+	assert.Equal(allCommits, templates.GetAllCommits())
+}
+
+func TestSdUpdate_WhenBranchAlreadyMergedAndUserConfirms_Updates() {
+	assert := assert.New(t)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testutil.AddCommit("first", "")
+
+	testParseArguments("new", "1")
+
+	testutil.AddCommit("second", "")
+
+	allCommits := templates.GetAllCommits()
+
+	interactive.SendToProgram(t, 0,
+		interactive.NewMessageKey('y'),
+	)
+	testExecutor.SetResponse(allCommits[0].Branch+" fakeMergeCommit",
+		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+
+	testParseArguments("update", "2", "1")
+
+	assert.Equal(allCommits, templates.GetAllCommits())
+}

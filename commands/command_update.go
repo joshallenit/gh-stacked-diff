@@ -12,6 +12,7 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
+	"slices"
 	"time"
 )
 
@@ -70,6 +71,7 @@ func getCommitsToCherryPick(appConfig util.AppConfig, command Command, indicator
 func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCherryPick []templates.GitLog) {
 	util.RequireMainBranch()
 	templates.RequireCommitOnMain(destCommit.Commit)
+	checkNotMerged(appConfig, destCommit.Branch)
 	shouldPopStash := util.Stash("before update-pr " + destCommit.Commit + " " + destCommit.Subject)
 	rollbackManager := &util.GitRollbackManager{}
 	rollbackManager.SaveState()
@@ -137,4 +139,12 @@ func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCh
 	options := ex.ExecuteOptions{EnvironmentVariables: environmentVariables, Output: ex.NewStandardOutput()}
 	ex.ExecuteOrDie(options, "git", "rebase", "-i", destCommit.Commit+"^")
 	rollbackManager.Clear()
+}
+
+func checkNotMerged(appConfig util.AppConfig, branchName string) {
+	slog.Info("Checking if PR was already merged...")
+	mergedBranches := getMergedBranches()
+	if slices.Contains(mergedBranches, branchName) {
+		interactive.ConfirmOrDie(appConfig, "It looks like this PR was already merged. Try running \"sd rebase-main\". Are you sure you want to update this PR?")
+	}
 }

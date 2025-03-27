@@ -100,9 +100,7 @@ func getDropCommits(localLogs []templates.GitLog, mergedBranches []string) []tem
 	// Look for matching summaries between localLogs and mergedBranches
 	var dropCommits []templates.GitLog
 	for _, localLog := range localLogs {
-		if slices.ContainsFunc(mergedBranches, func(mergedBranch string) bool {
-			return mergedBranch == localLog.Branch
-		}) {
+		if slices.Contains(mergedBranches, localLog.Branch) {
 			slog.Info(fmt.Sprint("Force dropping as it was already merged: ", localLog.Commit, " ", localLog.Subject))
 			dropCommits = append(dropCommits, localLog)
 		}
