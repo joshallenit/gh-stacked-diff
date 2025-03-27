@@ -72,17 +72,13 @@ func (indicator IndicatorType) IsValid() bool {
 
 // Returns BranchInfo for commitIndicator and indicatorType.
 func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) GitLog {
+	util.RequireNotEmptyString(commitIndicator)
 	if !indicatorType.IsValid() {
 		panic("Invalid IndicatorType " + string(indicatorType))
-	}
-	if commitIndicator == "" {
-		commitIndicator = util.GetMainBranchOrDie()
-		indicatorType = IndicatorTypeCommit
 	}
 	if indicatorType == IndicatorTypeGuess {
 		indicatorType = guessIndicatorType(commitIndicator)
 	}
-
 	var info GitLog
 	switch indicatorType {
 	case IndicatorTypePr:
