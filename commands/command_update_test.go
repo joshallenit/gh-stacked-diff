@@ -313,7 +313,7 @@ func TestSdUpdate_WhenDestinationCommitNotSpecifiedAndMultiplePossibleValues_Upd
 	assert.True(util.RemoteHasBranch(allCommits[3].Branch))
 }
 
-func TestSdUpdate_WhenBranchAlreadyMergedAndUserDoesNotConfirm_Cancels() {
+func TestSdUpdate_WhenBranchAlreadyMergedAndUserDoesNotConfirm_Cancels(t *testing.T) {
 	assert := assert.New(t)
 	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 	testutil.AddCommit("first", "")
@@ -324,18 +324,23 @@ func TestSdUpdate_WhenBranchAlreadyMergedAndUserDoesNotConfirm_Cancels() {
 
 	allCommits := templates.GetAllCommits()
 
-	interactive.SendToProgram(t, 0,
-		interactive.NewMessageKey('n'),
-	)
-	testExecutor.SetResponse(allCommits[0].Branch+" fakeMergeCommit",
+	interactive.SendToProgram(t, 0, interactive.NewMessageRune('n'))
+	testExecutor.SetResponse(allCommits[1].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+
+	defer func() {
+		r := recover()
+		if r != nil {
+			assert.Equal(allCommits, templates.GetAllCommits())
+		}
+	}()
 
 	testParseArguments("update", "2", "1")
 
-	assert.Equal(allCommits, templates.GetAllCommits())
+	assert.Fail("did not cancel")
 }
 
-func TestSdUpdate_WhenBranchAlreadyMergedAndUserConfirms_Updates() {
+func TestSdUpdate_WhenBranchAlreadyMergedAndUserConfirms_Updates(t *testing.T) {
 	assert := assert.New(t)
 	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 	testutil.AddCommit("first", "")
@@ -345,14 +350,11 @@ func TestSdUpdate_WhenBranchAlreadyMergedAndUserConfirms_Updates() {
 	testutil.AddCommit("second", "")
 
 	allCommits := templates.GetAllCommits()
-
-	interactive.SendToProgram(t, 0,
-		interactive.NewMessageKey('y'),
-	)
-	testExecutor.SetResponse(allCommits[0].Branch+" fakeMergeCommit",
+	testExecutor.SetResponse(allCommits[1].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
 
+	interactive.SendToProgram(t, 0, interactive.NewMessageRune('y'))
 	testParseArguments("update", "2", "1")
 
-	assert.Equal(allCommits, templates.GetAllCommits())
+	assert.Equal(2, len(templates.GetAllCommits()))
 }

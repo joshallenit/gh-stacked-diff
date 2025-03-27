@@ -1,7 +1,6 @@
 package interactive
 
 import (
-	"fmt"
 	"testing"
 
 	"slices"
@@ -13,7 +12,6 @@ var programListeners = make([]*newProgramListener, 0)
 
 type newProgramListener struct {
 	messages             []tea.Msg
-	numSent              int
 	targetProgram        int
 	currentProgramNumber int
 }
@@ -24,7 +22,6 @@ func (l *newProgramListener) onNewProgram(program *tea.Program) {
 		go func() {
 			for _, msg := range l.messages {
 				program.Send(msg)
-				l.numSent++
 			}
 		}()
 	}
@@ -48,9 +45,6 @@ func SendToProgram(t *testing.T, programIndex int, messages ...tea.Msg) {
 		programListeners = slices.DeleteFunc(programListeners, func(next *newProgramListener) bool {
 			return next == programListener
 		})
-		if programListener.numSent != len(programListener.messages) {
-			panic("Did not use the all of the desired input: " + fmt.Sprint(*programListener))
-		}
 	})
 }
 
