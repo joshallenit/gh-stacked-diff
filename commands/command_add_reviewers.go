@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"io"
 	"log/slog"
 	"os"
 
 	"github.com/fatih/color"
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
 	"strings"
@@ -44,47 +44,45 @@ func createAddReviewersCommand() Command {
 			"\n" +
 			"If PR is marked as a Draft, it is first marked as \"Ready for Review\".",
 		Usage: "sd " + flagSet.Name() + " [flags] [commitIndicator [commitIndicator]...]",
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
-			commitIndicators := flagSet.Args()
-			if len(commitIndicators) == 0 {
-				slog.Debug("Using main branch because commitIndicators is empty")
-				commitIndicators = []string{util.GetMainBranchOrDie()}
-				*indicatorTypeString = string(templates.IndicatorTypeCommit)
+		OnSelected: func(appConfig util.AppConfig, command Command) {
+			selectPrsOptions := interactive.CommitSelectionOptions{
+				Prompt:      "What PR do you want to add reviewers too?",
+				CommitType:  interactive.CommitTypePr,
+				MultiSelect: true,
 			}
+			targetCommits := getTargetCommits(appConfig, command, flagSet.Args(), indicatorTypeString, selectPrsOptions)
 			if *reviewers == "" {
 				*reviewers = os.Getenv("PR_REVIEWERS")
 				if *reviewers == "" {
 					commandError(flagSet, "reviewers not specified. Use reviewers flag or set PR_REVIEWERS environment variable", command.Usage)
 				}
 			}
-			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
-			addReviewersToPr(commitIndicators, indicatorType, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
+			addReviewersToPr(targetCommits, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
 		}}
 }
 
 // Adds reviewers to a PR once checks have passed via Github CLI.
-func addReviewersToPr(commitIndicators []string, indicatorType templates.IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+func addReviewersToPr(targetCommits []templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
 	if reviewers == "" {
 		panic("Reviewers cannot be empty")
 	}
 	var wg sync.WaitGroup
-	for _, commitIndicator := range commitIndicators {
+	for _, targetCommit := range targetCommits {
 		wg.Add(1)
-		go checkBranch(&wg, commitIndicator, indicatorType, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
+		go checkBranch(&wg, targetCommit, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
 	}
 	wg.Wait()
 }
 
-func checkBranch(wg *sync.WaitGroup, commitIndicator string, indicatorType templates.IndicatorType, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
-	branchName := templates.GetBranchInfo(commitIndicator, indicatorType).Branch
+func checkBranch(wg *sync.WaitGroup, targetCommit templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
 	if whenChecksPass {
 		for {
-			summary := getChecksStatus(branchName)
+			summary := getChecksStatus(targetCommit.Branch)
 			if summary.Failing > 0 {
 				if !silent {
 					ex.ExecuteOrDie(ex.ExecuteOptions{}, "say", "Checks failed")
 				}
-				slog.Error(fmt.Sprint("Checks failed for ", commitIndicator, ". "+
+				slog.Error(fmt.Sprint("Checks failed for ", targetCommit, ". "+
 					"Total: ", summary.Total,
 					" | Passed: ", summary.Passing,
 					" | Pending: ", summary.Pending,
@@ -99,18 +97,18 @@ func checkBranch(wg *sync.WaitGroup, commitIndicator string, indicatorType templ
 				slog.Info(fmt.Sprint("All ", summary.Total, " checks passed"))
 				break
 			} else if summary.Passing == 0 {
-				slog.Info(fmt.Sprint("Checks pending for ", commitIndicator, ". Completed: 0%"))
+				slog.Info(fmt.Sprint("Checks pending for ", targetCommit, ". Completed: 0%"))
 			} else {
-				slog.Info(fmt.Sprint("Checks pending for ", commitIndicator, ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%"))
+				slog.Info(fmt.Sprint("Checks pending for ", targetCommit, ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%"))
 			}
 			util.Sleep(pollFrequency)
 		}
 	}
 	slog.Info("Marking PR as ready for review")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "ready", branchName)
+	ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "ready", targetCommit.Branch)
 	slog.Info("Waiting 10 seconds for any automatically assigned reviewers to be added...")
 	util.Sleep(10 * time.Second)
-	prUrl := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "edit", branchName, "--add-reviewer", reviewers))
+	prUrl := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "edit", targetCommit.Branch, "--add-reviewer", reviewers))
 	slog.Info(fmt.Sprint("Added reviewers ", reviewers, " to ", prUrl))
 	wg.Done()
 }

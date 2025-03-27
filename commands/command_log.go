@@ -35,11 +35,11 @@ func createLogCommand() Command {
 			"their associated commit summary).",
 		Usage:           "sd " + flagSet.Name(),
 		DefaultLogLevel: slog.LevelError,
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
+		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			printGitLog(stdOut)
+			printGitLog(appConfig.Io.Out)
 		}}
 }
 

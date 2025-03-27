@@ -2,10 +2,9 @@ package commands
 
 import (
 	"flag"
-	"io"
 
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
-	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
@@ -23,15 +22,16 @@ func createCheckoutCommand() Command {
 			"\n" +
 			"After modifying the branch you can use \"sd replace-commit\" to sync local " + util.GetMainBranchForHelp() + ".",
 		Usage: "sd " + flagSet.Name() + " [flags] <commitIndicator>",
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
-			if flagSet.NArg() == 0 {
-				commandError(flagSet, "missing commitIndicator", command.Usage)
-			}
+		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() > 1 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
-			branchName := templates.GetBranchInfo(flagSet.Arg(0), indicatorType).Branch
-			ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "checkout", branchName)
+			selectCommitOptions := interactive.CommitSelectionOptions{
+				Prompt:      "What commit do you want to checkout the associated branch for?",
+				CommitType:  interactive.CommitTypePr,
+				MultiSelect: false,
+			}
+			targetCommit := getTargetCommits(appConfig, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
+			ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "checkout", targetCommit[0].Branch)
 		}}
 }

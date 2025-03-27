@@ -117,7 +117,7 @@ func (m model) View() string {
 	return promptStyle.Render(m.prompt) + "\n" + m.table.View() + "\n"
 }
 
-// Returns -1 if the user cancelled.
+// Returns empty selection if the user cancelled.
 func GetTableSelection(prompt string, columns []string, rows [][]string, multiselect bool, stdIn io.Reader, rowEnabled func(row int) bool) []int {
 	tableColumns := util.MapSlice(columns, func(columnName string) bubbletable.Column {
 		return bubbletable.Column{Title: columnName}

@@ -44,7 +44,7 @@ func addNewProgramListener(t *testing.T, onNewProgram func(programIndex int, pro
 	}
 	programListeners = append(programListeners, programListener)
 	t.Cleanup(func() {
-		// clear all. Removing individually would require using an ID as you cannot compare functions in golang.
+		// Clear all. Removing individually is not necessary because this is only called in tests, and would require using an ID, as you cannot compare functions in golang.
 		programListeners = make([]func(program *tea.Program), 0)
 	})
 }

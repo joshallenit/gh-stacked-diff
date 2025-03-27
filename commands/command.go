@@ -5,11 +5,12 @@ package commands
 
 import (
 	"flag"
-	"io"
 	"log/slog"
+
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-type OnSelectedFunc func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any))
+type OnSelectedFunc func(appConfig util.AppConfig, command Command)
 
 // sd program command.
 type Command struct {

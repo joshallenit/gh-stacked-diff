@@ -7,7 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	tea "github.com/charmbracelet/bubbletea"
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -71,7 +73,7 @@ func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 	}))
 }
 
-func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
+func TestSdAddReviewers_WhenOmittingCommitIndicator_AsksForSelection(t *testing.T) {
 	assert := assert.New(t)
 
 	testExecutor := testutil.InitTest(t, slog.LevelInfo)
@@ -89,6 +91,9 @@ func TestSdAddReviewers_WhenOmittingCommitIndicator_UsesHead(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
 
+	interactive.SendToProgram(t, 0,
+		interactive.NewMessageKey(tea.KeyEnter),
+	)
 	testParseArguments("add-reviewers", "--indicator=list", "--reviewers=mybestie")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {

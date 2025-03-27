@@ -1,18 +1,15 @@
 package commands
 
 import (
-	"bufio"
-	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"log/slog"
-	"os"
 	"strings"
 
 	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
@@ -26,19 +23,19 @@ func createReplaceConflictsCommand() Command {
 			"current uncommitted changes (merge conflicts), with the contents\n" +
 			"(diff between origin/" + util.GetMainBranchForHelp() + " and HEAD) of its associated branch.",
 		Usage: "sd " + flagSet.Name(),
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
+		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() > 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			replaceConflicts(stdOut, *confirmed, exit)
+			replaceConflicts(appConfig, *confirmed)
 		}}
 }
 
 // For failed rebase: replace changes with its associated branch.
-func replaceConflicts(stdOut io.Writer, confirmed bool, exit func(err any)) {
+func replaceConflicts(appConfig util.AppConfig, confirmed bool) {
 	commitWithConflicts := getCommitWithConflicts()
 	gitLog := templates.GetBranchInfo(commitWithConflicts, templates.IndicatorTypeCommit)
-	checkConfirmed(stdOut, confirmed, exit)
+	checkConfirmed(appConfig, confirmed)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
 	slog.Info(fmt.Sprint("Replacing changes (merge conflicts) for failed rebase of commit ", commitWithConflicts, ", with changes from associated branch, ", gitLog.Branch))
 	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", "origin/"+util.GetMainBranchOrDie(), gitLog.Branch)
@@ -72,17 +69,9 @@ func getCommitWithConflicts() string {
 	return strings.Fields(statusLines[lastCommandDoneLine])[1]
 }
 
-func checkConfirmed(stdOut io.Writer, confirmed bool, exit func(err any)) {
+func checkConfirmed(appConfig util.AppConfig, confirmed bool) {
 	if confirmed {
 		return
 	}
-
-	fmt.Fprint(stdOut, "This will clear any uncommitted changes, are you sure (y/n)? ")
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	input := strings.ToLower(scanner.Text())
-	slog.Debug(fmt.Sprint("Got input ", input))
-	if input != "y" && input != "yes" {
-		exit(errors.New("Cancelled by user"))
-	}
+	interactive.ConfirmOrDie(appConfig, "This will clear any uncommitted changes, are you sure (y/n)?")
 }

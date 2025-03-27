@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"io"
 	"time"
 
 	"flag"
@@ -82,53 +81,32 @@ func createNewCommand() Command {
 			"   TicketNumber                 Jira ticket as parsed from the commit summary\n" +
 			"   Username                     Name as parsed from git config email.\n" +
 			"   UsernameCleaned              Username with dots (.) converted to dashes (-).\n",
-		OnSelected: func(
-			command Command,
-			stdOut io.Writer,
-			stdErr io.Writer,
-			stdIn io.Reader,
-			sequenceEditorPrefix string,
-			exit func(err any),
-		) {
+		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() > 1 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
-			gitLog := getTargetCommit(flagSet, command, indicatorType, stdIn, exit)
+			selectCommitOptions := interactive.CommitSelectionOptions{
+				Prompt:      "What commit do you want to create a PR from?",
+				CommitType:  interactive.CommitTypeNoPr,
+				MultiSelect: false,
+			}
+			targetCommits := getTargetCommits(appConfig, command, flagSet.Args(), indicatorTypeString, selectCommitOptions)
 			// Note: set the default here rather than via flags to avoid GetMainBranchOrDie being called before OnSelected.
 			if *baseBranch == "" {
 				*baseBranch = util.GetMainBranchOrDie()
 			}
-			createNewPr(*draft, *featureFlag, *baseBranch, gitLog, exit)
+			createNewPr(*draft, *featureFlag, *baseBranch, targetCommits[0])
 			if *reviewers != "" {
-				addReviewersToPr([]string{gitLog.Commit}, templates.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
+				addReviewersToPr(targetCommits, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
 		}}
 }
 
-func getTargetCommit(flagSet *flag.FlagSet, command Command, indicatorType templates.IndicatorType, stdIn io.Reader, exit func(any)) templates.GitLog {
-	if flagSet.NArg() == 0 {
-		var err error
-		targetCommit, err := interactive.GetCommitSingleSelection("What commit do you want to create a PR from?", stdIn)
-		if err != nil {
-			if err == interactive.UserCancelled {
-				exit(nil)
-			} else {
-				commandError(flagSet, err.Error(), command.Usage)
-			}
-		}
-		slog.Info("Target commit: " + fmt.Sprint(targetCommit))
-		return targetCommit
-	} else {
-		return templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
-	}
-}
-
 // Creates a new pull request via Github CLI.
-func createNewPr(draft bool, featureFlag string, baseBranch string, gitLog templates.GitLog, exit func(err any)) {
+func createNewPr(draft bool, featureFlag string, baseBranch string, gitLog templates.GitLog) {
 	util.RequireMainBranch()
 	templates.RequireCommitOnMain(gitLog.Commit)
-	shouldPopStash := util.Stash("sd new " + flag.Arg(0))
+	shouldPopStash := util.Stash("sd new " + gitLog.Commit + " " + gitLog.Subject)
 	rollbackManager := &util.GitRollbackManager{}
 	rollbackManager.SaveState()
 	defer func() {

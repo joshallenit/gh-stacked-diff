@@ -2,7 +2,6 @@ package commands
 
 import (
 	"flag"
-	"io"
 	"log/slog"
 	"strings"
 
@@ -34,59 +33,44 @@ func createUpdateCommand() Command {
 			"   [up,k]     moves cursor up\n" +
 			"   [down,j]   moves cursor down\n" +
 			"   [q,esc]    cancels\n",
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
-			indicatorType := checkIndicatorFlag(command, indicatorTypeString)
-			destCommit := getDestCommit(flagSet, command, indicatorType, stdIn, exit)
-			commitsToCherryPick := getCommitsToCherryPick(flagSet, command, indicatorType, stdIn, exit)
-			updatePr(destCommit, commitsToCherryPick, indicatorType, sequenceEditorPrefix)
+		OnSelected: func(appConfig util.AppConfig, command Command) {
+			destCommit := getDestCommit(appConfig, command, indicatorTypeString)
+			commitsToCherryPick := getCommitsToCherryPick(appConfig, command, indicatorTypeString)
+			updatePr(appConfig, destCommit, commitsToCherryPick)
 			if *reviewers != "" {
-				addReviewersToPr([]string{destCommit.Commit}, templates.IndicatorTypeCommit, true, *silent, *minChecks, *reviewers, 30*time.Second)
+				addReviewersToPr([]templates.GitLog{destCommit}, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
 		}}
 }
 
-func getDestCommit(flagSet *flag.FlagSet, command Command, indicatorType templates.IndicatorType, stdIn io.Reader, exit func(any)) templates.GitLog {
-	if flagSet.NArg() == 0 {
-		var err error
-		destCommit, err := interactive.GetPrSelection("What PR do you want to update?", stdIn)
-		if err != nil {
-			if err == interactive.UserCancelled {
-				exit(nil)
-			} else {
-				commandError(flagSet, err.Error(), command.Usage)
-			}
-		}
-		slog.Info("Destination commit: " + fmt.Sprint(destCommit))
-		return destCommit
-	} else {
-		return templates.GetBranchInfo(flagSet.Arg(0), indicatorType)
+func getDestCommit(appConfig util.AppConfig, command Command, indicatorTypeString *string) templates.GitLog {
+	selectPrOptions := interactive.CommitSelectionOptions{
+		Prompt:      "What PR do you want to update?",
+		CommitType:  interactive.CommitTypePr,
+		MultiSelect: false,
 	}
+	targetCommits := getTargetCommits(appConfig, command, []string{command.FlagSet.Arg(0)}, indicatorTypeString, selectPrOptions)
+	return targetCommits[0]
 }
 
-func getCommitsToCherryPick(flagSet *flag.FlagSet, command Command, indicatorType templates.IndicatorType, stdIn io.Reader, exit func(any)) []string {
-	if flagSet.NArg() < 2 {
-		selectedCommits, err := interactive.GetCommitMultiSelection("What commits do you want to add?", stdIn)
-		if err != nil {
-			if err == interactive.UserCancelled {
-				exit(nil)
-			} else {
-				commandError(flagSet, err.Error(), command.Usage)
-			}
-		}
-		slog.Info("Cherry picking commits: " + fmt.Sprint(selectedCommits))
-		return util.MapSlice(selectedCommits, func(commit templates.GitLog) string {
-			return commit.Commit
-		})
-	} else {
-		return commitIndicatorsToCommitHashes(flagSet.Args()[1:], indicatorType)
+func getCommitsToCherryPick(appConfig util.AppConfig, command Command, indicatorTypeString *string) []templates.GitLog {
+	selectCommitsOptions := interactive.CommitSelectionOptions{
+		Prompt:      "What commits do you want to add?",
+		CommitType:  interactive.CommitTypeNoPr,
+		MultiSelect: true,
 	}
+	var commitsFromCommandLine []string
+	if command.FlagSet.NArg() > 1 {
+		commitsFromCommandLine = command.FlagSet.Args()[1:]
+	}
+	return getTargetCommits(appConfig, command, commitsFromCommandLine, indicatorTypeString, selectCommitsOptions)
 }
 
 // Add commits from main to an existing PR.
-func updatePr(destCommit templates.GitLog, commitsToCherryPick []string, indicatorType templates.IndicatorType, sequenceEditorPrefix string) {
+func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCherryPick []templates.GitLog) {
 	util.RequireMainBranch()
 	templates.RequireCommitOnMain(destCommit.Commit)
-	shouldPopStash := util.Stash("before update-pr " + destCommit.Commit)
+	shouldPopStash := util.Stash("before update-pr " + destCommit.Commit + " " + destCommit.Subject)
 	rollbackManager := &util.GitRollbackManager{}
 	rollbackManager.SaveState()
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", destCommit.Branch)
@@ -115,7 +99,7 @@ func updatePr(destCommit templates.GitLog, commitsToCherryPick []string, indicat
 	cherryPickArgs := make([]string, 1+len(commitsToCherryPick))
 	cherryPickArgs[0] = "cherry-pick"
 	for i, commit := range commitsToCherryPick {
-		cherryPickArgs[i+1] = commit
+		cherryPickArgs[i+1] = commit.Commit
 	}
 	_, cherryPickError := ex.Execute(ex.ExecuteOptions{}, "git", cherryPickArgs...)
 	if cherryPickError != nil {
@@ -141,30 +125,16 @@ func updatePr(destCommit templates.GitLog, commitsToCherryPick []string, indicat
 	slog.Info("Switching back to " + util.GetMainBranchOrDie())
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
 	slog.Info(fmt.Sprint("Rebasing, marking as fixup ", commitsToCherryPick, " for target ", destCommit.Commit))
+	commitHashes := util.MapSlice(commitsToCherryPick, func(commit templates.GitLog) string {
+		return commit.Commit
+	})
 	environmentVariables := []string{
-		"GIT_SEQUENCE_EDITOR=" + sequenceEditorPrefix + "sequence-editor-mark-as-fixup " +
+		"GIT_SEQUENCE_EDITOR=" + appConfig.AppExecutable + " sequence-editor-mark-as-fixup " +
 			destCommit.Commit + " " +
-			strings.Join(commitsToCherryPick, " "),
+			strings.Join(commitHashes, " "),
 	}
 	slog.Debug(fmt.Sprint("Using sequence editor ", environmentVariables))
 	options := ex.ExecuteOptions{EnvironmentVariables: environmentVariables, Output: ex.NewStandardOutput()}
 	ex.ExecuteOrDie(options, "git", "rebase", "-i", destCommit.Commit+"^")
 	rollbackManager.Clear()
-}
-
-func commitIndicatorsToCommitHashes(otherCommits []string, indicatorType templates.IndicatorType) []string {
-	var commitsToCherryPick []string
-	if len(otherCommits) > 0 {
-		if indicatorType == templates.IndicatorTypeGuess || indicatorType == templates.IndicatorTypeList {
-			commitsToCherryPick = util.MapSlice(otherCommits, func(commit string) string {
-				return templates.GetBranchInfo(commit, indicatorType).Commit
-			})
-		} else {
-			commitsToCherryPick = otherCommits
-		}
-	} else {
-		commitsToCherryPick = make([]string, 1)
-		commitsToCherryPick[0] = strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--short", "HEAD"))
-	}
-	return commitsToCherryPick
 }

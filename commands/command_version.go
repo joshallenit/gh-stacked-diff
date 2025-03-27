@@ -3,7 +3,6 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"io"
 	"log/slog"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -17,7 +16,7 @@ func createVersionCommand() Command {
 		Summary:         "Outputs version number",
 		Description:     "Outputs the version number.",
 		Usage:           "sd " + flagSet.Name(),
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
+		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many args", command.Usage)
 			}
@@ -27,6 +26,6 @@ func createVersionCommand() Command {
 			} else {
 				stableSuffix = " (preview)"
 			}
-			fmt.Fprint(stdOut, "Version "+util.CurrentVersion+stableSuffix)
+			fmt.Fprint(appConfig.Io.Out, "Version "+util.CurrentVersion+stableSuffix)
 		}}
 }

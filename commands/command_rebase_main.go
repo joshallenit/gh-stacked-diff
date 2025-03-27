@@ -2,7 +2,6 @@ package commands
 
 import (
 	"flag"
-	"io"
 
 	"fmt"
 	"log/slog"
@@ -28,16 +27,16 @@ func createRebaseMainCommand() Command {
 			"but has slight variation with local main because, for example, a\n" +
 			"change was made with the Github Web UI.",
 		Usage: "sd " + flagSet.Name(),
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
+		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			rebaseMain(sequenceEditorPrefix)
+			rebaseMain(appConfig)
 		}}
 }
 
 // Bring local main branch up to date with remote
-func rebaseMain(sequenceEditorPrefix string) {
+func rebaseMain(appConfig util.AppConfig) {
 	util.RequireMainBranch()
 	shouldPopStash := util.Stash("rebase-main")
 
@@ -52,7 +51,7 @@ func rebaseMain(sequenceEditorPrefix string) {
 	var rebaseError error
 	if len(dropCommits) > 0 {
 		environmentVariables := []string{
-			"GIT_SEQUENCE_EDITOR=" + sequenceEditorPrefix + "sequence-editor-drop-already-merged " +
+			"GIT_SEQUENCE_EDITOR=" + appConfig.AppExecutable + " sequence-editor-drop-already-merged " +
 				strings.Join(util.MapSlice(dropCommits, func(gitLog templates.GitLog) string {
 					return gitLog.Commit
 				}), " ")}

@@ -3,7 +3,6 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"io"
 	"log/slog"
 	"os"
 	"slices"
@@ -25,11 +24,11 @@ func createCodeOwnersCommand() Command {
 			"in the current local branch when compared to the remote main branch",
 		Usage:           "sd " + flagSet.Name(),
 		DefaultLogLevel: slog.LevelError,
-		OnSelected: func(command Command, stdOut io.Writer, stdErr io.Writer, stdIn io.Reader, sequenceEditorPrefix string, exit func(err any)) {
+		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() != 0 {
 				commandError(flagSet, "too many arguments", command.Usage)
 			}
-			fmt.Fprint(stdOut, changedFilesOwnersString())
+			fmt.Fprint(appConfig.Io.Out, changedFilesOwnersString())
 		}}
 }
 
