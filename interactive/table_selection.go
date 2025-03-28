@@ -5,7 +5,7 @@ import (
 
 	"io"
 
-	bubbletable "github.com/charmbracelet/bubbles/table"
+	table "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -32,7 +32,7 @@ var selectedRowStyle = baseStyle.Bold(true)
 var selectedHighlightRowStyle = highlightEnabledStyle.Bold(true)
 
 type model struct {
-	table        bubbletable.Model
+	table        table.Model
 	selectedRows []int
 	multiselect  bool
 	rowEnabled   func(row int) bool
@@ -81,8 +81,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // This needs to be recreated everytime the model changes so that the model reference is updated.
-func (m model) createStyleFunc() func(tableModel bubbletable.Model, row int, col int) lipgloss.Style {
-	return func(tableModel bubbletable.Model, row int, col int) lipgloss.Style {
+func (m model) createStyleFunc() func(tableModel table.Model, row int, col int) lipgloss.Style {
+	return func(tableModel table.Model, row int, col int) lipgloss.Style {
 		switch {
 		case row < 0 || row >= len(tableModel.Rows()):
 			// < 0 is the header row
@@ -119,11 +119,11 @@ func (m model) View() string {
 
 // Returns empty selection if the user cancelled.
 func GetTableSelection(prompt string, columns []string, rows [][]string, multiselect bool, stdIn io.Reader, rowEnabled func(row int) bool) []int {
-	tableColumns := util.MapSlice(columns, func(columnName string) bubbletable.Column {
-		return bubbletable.Column{Title: columnName}
+	tableColumns := util.MapSlice(columns, func(columnName string) table.Column {
+		return table.Column{Title: columnName}
 	})
 
-	tableRows := make([]bubbletable.Row, len(rows))
+	tableRows := make([]table.Row, len(rows))
 	firstEnabledRow := -1
 	for i, rowData := range rows {
 		tableRows[i] = rowData
@@ -131,10 +131,11 @@ func GetTableSelection(prompt string, columns []string, rows [][]string, multise
 			firstEnabledRow = i
 		}
 	}
-	t := bubbletable.New(
-		bubbletable.WithColumns(tableColumns),
-		bubbletable.WithRows(tableRows),
-		bubbletable.WithFocused(true),
+	t := table.New(
+		table.WithColumns(tableColumns),
+		table.WithRows(tableRows),
+		table.WithFocused(true),
+		table.WithWrapCursor(true),
 	)
 	if firstEnabledRow != -1 {
 		t.SetCursor(firstEnabledRow)

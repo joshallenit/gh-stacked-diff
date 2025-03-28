@@ -247,3 +247,41 @@ func TestSdNew_WhenDestinationCommitNotSpecified_CreatesPrWithSelectedCommit(t *
 
 	assert.True(util.RemoteHasBranch(allCommits[1].Branch))
 }
+
+func TestSdNew_WhenDestinationCommitNotSpecified_WrapsCursorUp(t *testing.T) {
+	assert := assert.New(t)
+	testutil.InitTest(t, slog.LevelInfo)
+	testutil.AddCommit("first", "")
+	testutil.AddCommit("second", "")
+	testutil.AddCommit("third", "")
+
+	interactive.SendToProgram(t, 0,
+		interactive.NewMessageKey(tea.KeyUp),
+		interactive.NewMessageKey(tea.KeyEnter),
+	)
+	testParseArguments("new")
+
+	allCommits := templates.GetAllCommits()
+
+	assert.True(util.RemoteHasBranch(allCommits[2].Branch))
+}
+
+func TestSdNew_WhenDestinationCommitNotSpecified_WrapsCursorDown(t *testing.T) {
+	assert := assert.New(t)
+	testutil.InitTest(t, slog.LevelInfo)
+	testutil.AddCommit("first", "")
+	testutil.AddCommit("second", "")
+	testutil.AddCommit("third", "")
+
+	interactive.SendToProgram(t, 0,
+		interactive.NewMessageKey(tea.KeyDown),
+		interactive.NewMessageKey(tea.KeyDown),
+		interactive.NewMessageKey(tea.KeyDown),
+		interactive.NewMessageKey(tea.KeyEnter),
+	)
+	testParseArguments("new")
+
+	allCommits := templates.GetAllCommits()
+
+	assert.True(util.RemoteHasBranch(allCommits[0].Branch))
+}
