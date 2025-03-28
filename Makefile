@@ -11,7 +11,7 @@ export PATH := ${PATH}${PATH_SEPARATOR}${ROOT_DIR}/bin
 
 .PHONY: format
 format:
-	gofmt -w .
+	go fmt ./...
 # Note: Using * instead of + in regex so it works on both Windows and Mac.
 	sed -i 's/gh-stacked-diff\\/v2@v2\.[0-9]*\.[0-9]*/gh-stacked-diff\\/v2@v'${STABLE_VERSION}'/' README.md
 
