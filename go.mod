@@ -37,6 +37,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/charmbracelet/bubbles => github.com/joshallenit/bubbles v0.20.2
+replace github.com/charmbracelet/bubbles => github.com/joshallenit/bubbles v0.20.3
 
 replace github.com/charmbracelet/bubbletea => github.com/joshallenit/bubbletea v1.3.6

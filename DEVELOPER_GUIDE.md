@@ -62,9 +62,8 @@ GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbletea@v$RELEASE_V
 # Update version in go.mod replace, then:
 # Remove go.work and go.work.sum if using them:
 mv go.work ../gh-stacked-diff-go.work
-mv go.work.sum ../gh-stacked-diff-go.work
+mv go.work.sum ../gh-stacked-diff-go.work.sum
 go mod tidy
-
 
 # Same steps for:
 GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbles@v$RELEASE_VERSION
