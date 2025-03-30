@@ -58,11 +58,15 @@ git tag v$RELEASE_VERSION
 git push origin v$RELEASE_VERSION
 # sd rebase-main if required
 GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbletea@v$RELEASE_VERSION
-# Update version in go.mod replace
+# In gh-stacked-diff:
+# Update version in go.mod replace, then:
+# Remove go.work and go.work.sum if using them:
+mv go.work ../gh-stacked-diff-go.work
+mv go.work.sum ../gh-stacked-diff-go.work.sum
 go mod tidy
 
 # Same steps for:
-GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbles@v0.20.1
+GOPROXY=proxy.golang.org go list -m github.com/joshallenit/bubbles@v$RELEASE_VERSION
 ```
 
 
