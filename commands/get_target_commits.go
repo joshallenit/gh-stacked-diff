@@ -23,6 +23,9 @@ func getTargetCommits(
 		return commit != ""
 	})
 	if len(commitsFromCommandLine) == 0 {
+		if !interactive.IsOutputTerminal(appConfig.Io.Out) || !interactive.IsOutputTerminal(appConfig.Io.Err) {
+			commandError(command.FlagSet, "Target commit not specified and cannot ask interactively because not a terminal", command.Usage)
+		}
 		selectedCommits, err := interactive.GetCommitSelection(appConfig.Io, options)
 		if err != nil {
 			commandError(command.FlagSet, err.Error(), command.Usage)
