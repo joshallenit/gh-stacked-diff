@@ -29,6 +29,8 @@ func createBranchNameCommand() Command {
 				MultiSelect: false,
 			}
 			targetCommit := getTargetCommits(appConfig, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
-			fmt.Fprint(appConfig.Io.Out, targetCommit[0].Branch)
+			if _, err := fmt.Fprint(appConfig.Io.Out, targetCommit[0].Branch); err != nil {
+				panic(err)
+			}
 		}}
 }

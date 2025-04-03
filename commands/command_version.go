@@ -26,6 +26,8 @@ func createVersionCommand() Command {
 			} else {
 				stableSuffix = " (preview)"
 			}
-			fmt.Fprint(appConfig.Io.Out, "Version "+util.CurrentVersion+stableSuffix)
+			if _, err := fmt.Fprint(appConfig.Io.Out, "Version "+util.CurrentVersion+stableSuffix); err != nil {
+				panic(err)
+			}
 		}}
 }
