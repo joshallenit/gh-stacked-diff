@@ -20,8 +20,12 @@ build: format
 	mkdir -p bin
 	go build -o bin
 
+.PHONY: lint
+lint: build
+	golangci-lint run
+
 # Example TEST_ARGS:
-# make TEST_ARGS="-timeout 10s -run TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr" test
+# make TEST_ARGS="-timeout 10s -run TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr" -o lint test
 .PHONY: test
-test: build
+test: build lint
 	go test ${TEST_ARGS} ./...
