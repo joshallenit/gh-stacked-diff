@@ -2,7 +2,6 @@ package commands
 
 import (
 	"flag"
-	"fmt"
 	"log/slog"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -26,8 +25,6 @@ func createVersionCommand() Command {
 			} else {
 				stableSuffix = " (preview)"
 			}
-			if _, err := fmt.Fprint(appConfig.Io.Out, "Version "+util.CurrentVersion+stableSuffix); err != nil {
-				panic(err)
-			}
+			util.Fprint(appConfig.Io.Out, "Version "+util.CurrentVersion+stableSuffix)
 		}}
 }

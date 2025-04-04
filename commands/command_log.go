@@ -65,22 +65,18 @@ func printGitLog(out io.Writer) {
 		numberPrefix := getNumberPrefix(i, len(logs))
 		if slices.Contains(checkedBranches, log.Branch) {
 			// Use color for ✅ otherwise in Git Bash on Windows it will appear as black and white.
-			if _, err := fmt.Fprint(out, numberPrefix+color.GreenString("✅ ")); err != nil {
-				panic(err)
-			}
+			util.Fprint(out, numberPrefix+color.GreenString("✅ "))
 		} else {
-			if _, err := fmt.Fprint(out, numberPrefix+"   "); err != nil {
-				panic(err)
-			}
+			util.Fprint(out, numberPrefix+"   ")
 		}
-		fmt.Fprintln(out, color.YellowString(log.Commit)+" "+log.Subject)
+		util.Fprintln(out, color.YellowString(log.Commit)+" "+log.Subject)
 		// find first commit that is not in main branch
 		if slices.Contains(checkedBranches, log.Branch) {
 			branchCommits := templates.GetNewCommits(log.Branch)
 			if len(branchCommits) > 1 {
 				for _, branchCommit := range branchCommits {
 					padding := strings.Repeat(" ", len(numberPrefix))
-					fmt.Fprintln(out, padding+"   - "+branchCommit.Subject)
+					util.Fprintln(out, padding+"   - "+branchCommit.Subject)
 				}
 			}
 		}

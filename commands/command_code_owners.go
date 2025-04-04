@@ -28,9 +28,7 @@ func createCodeOwnersCommand() Command {
 			if flagSet.NArg() != 0 {
 				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
-			if _, err := fmt.Fprint(appConfig.Io.Out, changedFilesOwnersString()); err != nil {
-				panic(err)
-			}
+			util.Fprint(appConfig.Io.Out, changedFilesOwnersString())
 		}}
 }
 

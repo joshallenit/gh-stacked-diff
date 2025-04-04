@@ -2,7 +2,6 @@ package commands
 
 import (
 	"flag"
-	"fmt"
 	"io"
 	"os"
 	"runtime"
@@ -65,7 +64,7 @@ func commandHelp(appConfig util.AppConfig, flagSet *flag.FlagSet, description st
 	} else {
 		out = os.Stdout
 	}
-	fmt.Fprintln(out, description)
+	util.Fprintln(out, description)
 	printUsage(flagSet, usage, out)
 	if isError {
 		appConfig.Exit(1)
@@ -75,23 +74,23 @@ func commandHelp(appConfig util.AppConfig, flagSet *flag.FlagSet, description st
 }
 
 func commandError(appConfig util.AppConfig, flagSet *flag.FlagSet, errMessage string, usage string) {
-	fmt.Fprintln(os.Stderr, color.RedString("error: "+errMessage))
+	util.Fprintln(os.Stderr, color.RedString("error: "+errMessage))
 	printUsage(flagSet, usage, os.Stderr)
 	appConfig.Exit(1)
 }
 
 func printUsage(flagSet *flag.FlagSet, usage string, out io.Writer) {
-	fmt.Fprintln(out, "")
-	fmt.Fprintln(out, "usage: "+usage)
+	util.Fprintln(out, "")
+	util.Fprintln(out, "usage: "+usage)
 	hasFlags := false
 	// There's no other way to get the number of possible flags, so use VisitAll.
 	flagSet.VisitAll(func(flag *flag.Flag) {
 		hasFlags = true
 	})
 	if hasFlags {
-		fmt.Fprintln(out, "")
-		fmt.Fprintln(out, "flags:")
-		fmt.Fprintln(out, "")
+		util.Fprintln(out, "")
+		util.Fprintln(out, "flags:")
+		util.Fprintln(out, "")
 		flagSet.SetOutput(out)
 		flagSet.PrintDefaults()
 		flagSet.SetOutput(io.Discard)

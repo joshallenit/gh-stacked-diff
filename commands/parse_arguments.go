@@ -119,9 +119,9 @@ func parseArguments(appConfig util.AppConfig, commandLine *flag.FlagSet, command
 	defer func() {
 		r := recover()
 		if r != nil {
-			fmt.Fprintln(appConfig.Io.Err, color.RedString(fmt.Sprint("error: ", r)))
+			util.Fprintln(appConfig.Io.Err, color.RedString(fmt.Sprint("error: ", r)))
 			if logLevelVar.Level() <= slog.LevelDebug {
-				fmt.Fprintln(appConfig.Io.Err, string(debug.Stack()))
+				util.Fprintln(appConfig.Io.Err, string(debug.Stack()))
 			}
 			appConfig.Exit(1)
 		}

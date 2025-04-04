@@ -2,7 +2,6 @@ package commands
 
 import (
 	"flag"
-	"fmt"
 	"log/slog"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
@@ -29,8 +28,6 @@ func createBranchNameCommand() Command {
 				MultiSelect: false,
 			}
 			targetCommit := getTargetCommits(appConfig, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
-			if _, err := fmt.Fprint(appConfig.Io.Out, targetCommit[0].Branch); err != nil {
-				panic(err)
-			}
+			util.Fprint(appConfig.Io.Out, targetCommit[0].Branch)
 		}}
 }
