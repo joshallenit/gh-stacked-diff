@@ -39,7 +39,6 @@ import (
 	"strings"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/commands"
-	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func main() {
@@ -51,10 +50,5 @@ func main() {
 	thisExecutable = strings.ReplaceAll(thisExecutable, "\\", "\\\\")
 	// Quote in case the path has a space.
 	thisExecutable = "\"" + thisExecutable + "\""
-	commands.ExecuteCommand(
-		util.StdIo{Out: os.Stdout, Err: os.Stderr, In: os.Stdin},
-		os.Args[1:],
-		thisExecutable,
-		commands.CreateDefaultExit,
-	)
+	commands.ExecuteCommand(os.Args[1:], thisExecutable)
 }

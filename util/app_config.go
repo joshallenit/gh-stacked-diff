@@ -1,6 +1,8 @@
 package util
 
-import "io"
+import (
+	"io"
+)
 
 // Allows unit testing the use of standard i/o.
 type StdIo struct {
@@ -13,6 +15,6 @@ type StdIo struct {
 // For example, it allows testing code paths that would otherwise call os.Exit().
 type AppConfig struct {
 	Io            StdIo
-	AppExecutable string
-	Exit          func(err any)
+	AppExecutable string         // Path of this executable.
+	Exit          func(code int) // Call os.Exit with the given code, or panic during unit tests.
 }

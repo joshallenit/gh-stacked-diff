@@ -1,22 +1,24 @@
 package interactive
 
 import (
-	"io"
-
 	"github.com/charmbracelet/x/term"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-// that means that confirm will also have to return an error? that's not right
-/*
-So the question is do I keep appConfig.Exit and whether to move to using panic for all
-errors with custom error types (preferred)
-*/
-var ErrorNotATerminal string = "not a terminal"
-
-func IsOutputTerminal(out io.Writer) bool {
-	f, isFile := out.(term.File)
-	if !isFile {
-		return false
+func InteractiveEnabled(appConfig util.AppConfig) bool {
+	inFile, isInFile := appConfig.Io.In.(term.File)
+	var isInTerminal bool
+	if !isInFile {
+		isInTerminal = false
+	} else {
+		isInTerminal = term.IsTerminal(inFile.Fd())
 	}
-	return term.IsTerminal(f.Fd())
+	outFile, isOutFile := appConfig.Io.Out.(term.File)
+	var isOutTerminal bool
+	if !isOutFile {
+		isOutTerminal = false
+	} else {
+		isOutTerminal = term.IsTerminal(outFile.Fd())
+	}
+	return (isInTerminal && isOutTerminal) || (!isInTerminal && !isOutTerminal)
 }

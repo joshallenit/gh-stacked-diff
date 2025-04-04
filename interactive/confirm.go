@@ -42,6 +42,6 @@ func ConfirmOrDie(appConfig util.AppConfig, prompt string) {
 		panic(err)
 	}
 	if !finalModel.(confirmModel).confirmed {
-		appConfig.Exit(nil)
+		appConfig.Exit(0)
 	}
 }

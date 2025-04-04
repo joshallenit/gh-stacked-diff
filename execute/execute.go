@@ -4,15 +4,11 @@ Provides a simple way to execute shell commands.
 package execute
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
-
-	"github.com/fatih/color"
 )
 
 // Options for [ExecuteWithOptions].
@@ -84,23 +80,19 @@ func Execute(options ExecuteOptions, programName string, args ...string) (string
 func ExecuteOrDie(options ExecuteOptions, programName string, args ...string) string {
 	out, err := Execute(options, programName, args...)
 	if err != nil {
-		panic(fmt.Sprint(color.RedString("Failed executing ") + getLogMessage(programName, args, out, err)))
+		panic("failed executing " + getLogMessage(programName, args, out, err))
 	}
 	return out
 }
 
 func getLogMessage(programName string, args []string, out string, err error) string {
-	logMessage := programName + " " + strings.Join(args, " ")
-	stringOut := string(out)
-	if strings.TrimSpace(stringOut) != "" {
-		logMessage = logMessage + "\n" + stringOut
-	}
+	var logMessage string
 	if err != nil {
-		logMessage = logMessage + "\nError " + err.Error()
-		var exerr *exec.ExitError
-		if errors.As(err, &exerr) {
-			logMessage = logMessage + " (Exit code " + fmt.Sprint(exerr.ExitCode()) + ")"
-		}
+		logMessage = logMessage + "(" + err.Error() + ") "
+	}
+	logMessage += "\"" + programName + " " + strings.Join(args, " ") + "\""
+	if strings.TrimSpace(out) != "" {
+		logMessage = logMessage + "\nExecution output:\n" + out
 	}
 	return logMessage
 }

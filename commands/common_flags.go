@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/fatih/color"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 )
 
@@ -73,7 +74,7 @@ func commandHelp(flagSet *flag.FlagSet, description string, usage string, isErro
 }
 
 func commandError(flagSet *flag.FlagSet, errMessage string, usage string) {
-	fmt.Fprintln(os.Stderr, "error: "+errMessage)
+	fmt.Fprintln(os.Stderr, color.RedString("error: "+errMessage))
 	printUsage(flagSet, usage, os.Stderr)
 	os.Exit(1)
 }
