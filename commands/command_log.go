@@ -37,7 +37,7 @@ func createLogCommand() Command {
 		DefaultLogLevel: slog.LevelError,
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() != 0 {
-				commandError(flagSet, "too many arguments", command.Usage)
+				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
 			printGitLog(appConfig.Io.Out)
 		}}

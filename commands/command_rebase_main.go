@@ -29,7 +29,7 @@ func createRebaseMainCommand() Command {
 		Usage: "sd " + flagSet.Name(),
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() != 0 {
-				commandError(flagSet, "too many arguments", command.Usage)
+				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
 			rebaseMain(appConfig)
 		}}

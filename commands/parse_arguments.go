@@ -84,20 +84,20 @@ func parseArguments(appConfig util.AppConfig, commandLine *flag.FlagSet, command
 
 	if parseErr != nil {
 		if parseErr == flag.ErrHelp {
-			commandHelp(commandLine, commandLineDescription, commandLineUsage, false)
+			commandHelp(appConfig, commandLine, commandLineDescription, commandLineUsage, false)
 		} else {
-			commandError(commandLine, parseErr.Error(), commandLineUsage)
+			commandError(appConfig, commandLine, parseErr.Error(), commandLineUsage)
 		}
 	}
 
 	if commandLine.NArg() == 0 {
-		commandHelp(commandLine, commandLineDescription, commandLineUsage, true)
+		commandHelp(appConfig, commandLine, commandLineDescription, commandLineUsage, true)
 	}
 	selectedIndex := slices.IndexFunc(commands, func(command Command) bool {
 		return command.FlagSet.Name() == commandLine.Arg(0)
 	})
 	if selectedIndex == -1 {
-		commandError(commandLine, "unknown command "+commandLine.Arg(0), commandLineUsage)
+		commandError(appConfig, commandLine, "unknown command "+commandLine.Arg(0), commandLineUsage)
 	}
 
 	if commands[selectedIndex].FlagSet.ErrorHandling() != flag.ContinueOnError {
@@ -107,9 +107,9 @@ func parseArguments(appConfig util.AppConfig, commandLine *flag.FlagSet, command
 	commands[selectedIndex].FlagSet.SetOutput(io.Discard)
 	if parseErr := commands[selectedIndex].FlagSet.Parse(commandLine.Args()[1:]); parseErr != nil {
 		if parseErr == flag.ErrHelp {
-			commandHelp(commands[selectedIndex].FlagSet, commands[selectedIndex].Description, commands[selectedIndex].Usage, false)
+			commandHelp(appConfig, commands[selectedIndex].FlagSet, commands[selectedIndex].Description, commands[selectedIndex].Usage, false)
 		} else {
-			commandError(commands[selectedIndex].FlagSet, parseErr.Error(), commands[selectedIndex].Usage)
+			commandError(appConfig, commands[selectedIndex].FlagSet, parseErr.Error(), commands[selectedIndex].Usage)
 		}
 	}
 

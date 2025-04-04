@@ -20,7 +20,7 @@ func createMarkAsFixupCommand() Command {
 		Hidden:      true,
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() < 3 {
-				commandError(flagSet, "not enough arguments", command.Usage)
+				commandError(appConfig, flagSet, "not enough arguments", command.Usage)
 			}
 
 			targetCommit := flagSet.Arg(0)

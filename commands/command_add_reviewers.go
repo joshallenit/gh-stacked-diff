@@ -54,27 +54,27 @@ func createAddReviewersCommand() Command {
 			if *reviewers == "" {
 				*reviewers = os.Getenv("PR_REVIEWERS")
 				if *reviewers == "" {
-					commandError(flagSet, "reviewers not specified. Use reviewers flag or set PR_REVIEWERS environment variable", command.Usage)
+					commandError(appConfig, flagSet, "reviewers not specified. Use reviewers flag or set PR_REVIEWERS environment variable", command.Usage)
 				}
 			}
-			addReviewersToPr(targetCommits, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
+			addReviewersToPr(appConfig, targetCommits, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
 		}}
 }
 
 // Adds reviewers to a PR once checks have passed via Github CLI.
-func addReviewersToPr(targetCommits []templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+func addReviewersToPr(appConfig util.AppConfig, targetCommits []templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
 	if reviewers == "" {
 		panic("Reviewers cannot be empty")
 	}
 	var wg sync.WaitGroup
 	for _, targetCommit := range targetCommits {
 		wg.Add(1)
-		go checkBranch(&wg, targetCommit, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
+		go checkBranch(appConfig, &wg, targetCommit, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
 	}
 	wg.Wait()
 }
 
-func checkBranch(wg *sync.WaitGroup, targetCommit templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+func checkBranch(appConfig util.AppConfig, wg *sync.WaitGroup, targetCommit templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
 	if whenChecksPass {
 		for {
 			summary := getChecksStatus(targetCommit.Branch)
@@ -88,7 +88,7 @@ func checkBranch(wg *sync.WaitGroup, targetCommit templates.GitLog, whenChecksPa
 					" | Pending: ", summary.Pending,
 					" | Failed: ", summary.Failing,
 					"\n"))
-				os.Exit(1)
+				appConfig.Exit(1)
 			}
 
 			if summary.Total < minChecks {

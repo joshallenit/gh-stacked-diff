@@ -9,6 +9,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func addIndicatorFlag(flagSet *flag.FlagSet) *string {
@@ -24,10 +25,10 @@ func addIndicatorFlag(flagSet *flag.FlagSet) *string {
 	return flagSet.String("indicator", string(templates.IndicatorTypeGuess), usage)
 }
 
-func checkIndicatorFlag(command Command, indicatorTypeString *string) templates.IndicatorType {
+func checkIndicatorFlag(appConfig util.AppConfig, command Command, indicatorTypeString *string) templates.IndicatorType {
 	indicatorType := templates.IndicatorType(*indicatorTypeString)
 	if !indicatorType.IsValid() {
-		commandError(command.FlagSet, "Invalid indicator type: "+*indicatorTypeString, command.Usage)
+		commandError(appConfig, command.FlagSet, "Invalid indicator type: "+*indicatorTypeString, command.Usage)
 	}
 	return indicatorType
 }
@@ -57,7 +58,7 @@ func addSilentFlag(flagSet *flag.FlagSet, usageUseCase string) *bool {
 	}
 }
 
-func commandHelp(flagSet *flag.FlagSet, description string, usage string, isError bool) {
+func commandHelp(appConfig util.AppConfig, flagSet *flag.FlagSet, description string, usage string, isError bool) {
 	var out io.Writer
 	if isError {
 		out = os.Stderr
@@ -67,16 +68,16 @@ func commandHelp(flagSet *flag.FlagSet, description string, usage string, isErro
 	fmt.Fprintln(out, description)
 	printUsage(flagSet, usage, out)
 	if isError {
-		os.Exit(1)
+		appConfig.Exit(1)
 	} else {
-		os.Exit(0)
+		appConfig.Exit(0)
 	}
 }
 
-func commandError(flagSet *flag.FlagSet, errMessage string, usage string) {
+func commandError(appConfig util.AppConfig, flagSet *flag.FlagSet, errMessage string, usage string) {
 	fmt.Fprintln(os.Stderr, color.RedString("error: "+errMessage))
 	printUsage(flagSet, usage, os.Stderr)
-	os.Exit(1)
+	appConfig.Exit(1)
 }
 
 func printUsage(flagSet *flag.FlagSet, usage string, out io.Writer) {

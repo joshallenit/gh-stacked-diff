@@ -28,7 +28,7 @@ func createReplaceCommitCommand() Command {
 		Usage: "sd " + flagSet.Name() + " [flags] <commitIndicator>",
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() > 1 {
-				commandError(flagSet, "too many arguments", command.Usage)
+				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
 			selectCommitOptions := interactive.CommitSelectionOptions{
 				Prompt:      "What commit do you want to replace with the contents of its associated branch?",

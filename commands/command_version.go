@@ -18,7 +18,7 @@ func createVersionCommand() Command {
 		Usage:           "sd " + flagSet.Name(),
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() != 0 {
-				commandError(flagSet, "too many args", command.Usage)
+				commandError(appConfig, flagSet, "too many args", command.Usage)
 			}
 			var stableSuffix string
 			if util.CurrentVersion == util.StableVersion {
