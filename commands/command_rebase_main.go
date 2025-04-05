@@ -62,9 +62,7 @@ func rebaseMain(appConfig util.AppConfig) {
 		slog.Info("Deleting merged branches...")
 		dropBranches(appConfig.Io, dropCommits)
 	} else {
-		options := util.ExecuteOptions{
-			Io: appConfig.Io,
-		}
+		options := util.ExecuteOptions{Io: appConfig.Io}
 		_, rebaseError = util.Execute(options, "git", "rebase", "origin/"+util.GetMainBranchOrDie())
 	}
 	if rebaseError != nil {

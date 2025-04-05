@@ -31,6 +31,9 @@ func createCheckoutCommand() Command {
 				MultiSelect: false,
 			}
 			targetCommit := getTargetCommits(appConfig, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
-			util.ExecuteOrDie(util.ExecuteOptions{Io: appConfig.Io}, "git", "checkout", targetCommit[0].Branch)
+			util.ExecuteOrDie(
+				util.ExecuteOptions{Io: appConfig.Io},
+				"git", "checkout", targetCommit[0].Branch,
+			)
 		}}
 }
