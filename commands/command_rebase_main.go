@@ -8,7 +8,6 @@ import (
 	"slices"
 	"strings"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
@@ -41,7 +40,7 @@ func rebaseMain(appConfig util.AppConfig) {
 	shouldPopStash := util.Stash("rebase-main")
 
 	slog.Info("Fetching...")
-	ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "fetch")
+	util.ExecuteOrDie(util.ExecuteOptions{Output: util.NewStandardOutput()}, "git", "fetch")
 	slog.Info("Getting merged branches from Github...")
 	mergedBranches := getMergedBranches()
 	slog.Debug(fmt.Sprint("mergedBranches ", mergedBranches))
@@ -55,18 +54,18 @@ func rebaseMain(appConfig util.AppConfig) {
 				strings.Join(util.MapSlice(dropCommits, func(gitLog templates.GitLog) string {
 					return gitLog.Commit
 				}), " ")}
-		options := ex.ExecuteOptions{
+		options := util.ExecuteOptions{
 			EnvironmentVariables: environmentVariables,
-			Output:               ex.NewStandardOutput(),
+			Output:               util.NewStandardOutput(),
 		}
-		_, rebaseError = ex.Execute(options, "git", "rebase", "-i", "origin/"+util.GetMainBranchOrDie())
+		_, rebaseError = util.Execute(options, "git", "rebase", "-i", "origin/"+util.GetMainBranchOrDie())
 		slog.Info("Deleting merged branches...")
 		dropBranches(dropCommits)
 	} else {
-		options := ex.ExecuteOptions{
-			Output: ex.NewStandardOutput(),
+		options := util.ExecuteOptions{
+			Output: util.NewStandardOutput(),
 		}
-		_, rebaseError = ex.Execute(options, "git", "rebase", "origin/"+util.GetMainBranchOrDie())
+		_, rebaseError = util.Execute(options, "git", "rebase", "origin/"+util.GetMainBranchOrDie())
 	}
 	if rebaseError != nil {
 		slog.Warn("Rebase failed, check output ^^ for details. Continue rebase manually.")
@@ -76,7 +75,7 @@ func rebaseMain(appConfig util.AppConfig) {
 }
 
 func getMergedBranches() []string {
-	mergedBranchesRaw := ex.ExecuteOrDie(ex.ExecuteOptions{},
+	mergedBranchesRaw := util.ExecuteOrDie(util.ExecuteOptions{},
 		"gh", "pr", "list", "--author", "@me", "--state", "merged", "--base", util.GetMainBranchOrDie(),
 		"--json", "headRefName,mergeCommit", "--jq", ".[ ] | .headRefName + \" \" +  .mergeCommit.oid")
 	mergedBranchesRawLines := strings.Split(strings.TrimSpace(mergedBranchesRaw), "\n")
@@ -87,7 +86,7 @@ func getMergedBranches() []string {
 			break
 		}
 		// Checking for ancestor is more reliable than filtering on merge date via "gh pr list --search".
-		_, mergeBaseErr := ex.Execute(ex.ExecuteOptions{}, "git", "merge-base", "--is-ancestor", fields[1], "HEAD")
+		_, mergeBaseErr := util.Execute(util.ExecuteOptions{}, "git", "merge-base", "--is-ancestor", fields[1], "HEAD")
 		if mergeBaseErr != nil {
 			// Not an ancestor, so it was merged after the first origin commit.
 			mergedBranches = append(mergedBranches, fields[0])
@@ -124,8 +123,11 @@ func checkUniqueBranches(dropCommits []templates.GitLog) {
 }
 
 func dropBranches(dropCommits []templates.GitLog) {
+	stdOutOptions := util.ExecuteOptions{Output: util.NewStandardOutput()}
 	for _, dropCommit := range dropCommits {
 		// nolint:errcheck
-		ex.Execute(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "branch", "-D", dropCommit.Branch)
+		util.Execute(stdOutOptions, "git", "branch", "-D", dropCommit.Branch)
+		// nolint:errcheck
+		util.Execute(stdOutOptions, "git", "push", "--delete", dropCommit.Branch)
 	}
 }

@@ -1,7 +1,4 @@
-/*
-Provides a simple way to execute shell commands.
-*/
-package execute
+package util
 
 import (
 	"io"
@@ -32,6 +29,7 @@ func NewStandardOutput() *ExecutionOutput {
 	return &ExecutionOutput{Stdout: os.Stdout, Stderr: os.Stderr}
 }
 
+// Provides a simple way to execute shell commands.
 // Allows swapping in a [TestExecutor] via Dependency Injection during tests.
 type Executor interface {
 	Execute(options ExecuteOptions, programName string, args ...string) (string, error)

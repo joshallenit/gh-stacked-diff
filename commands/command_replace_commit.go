@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"strings"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
@@ -51,17 +50,17 @@ func replaceCommit(targetCommit templates.GitLog) {
 
 // Replaces commit `gitLog.Commit“ with the contents of branch `gitLog.Branch`
 func replaceCommitOfBranchInfo(gitLog templates.GitLog) {
-	commitsAfter := strings.Fields(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "log", gitLog.Commit+"..HEAD", "--pretty=format:%h")))
+	commitsAfter := strings.Fields(strings.TrimSpace(util.ExecuteOrDie(util.ExecuteOptions{}, "git", "--no-pager", "log", gitLog.Commit+"..HEAD", "--pretty=format:%h")))
 	reverseArrayInPlace(commitsAfter)
 	commitToDiffFrom := util.FirstOriginMainCommit(gitLog.Branch)
 	slog.Info("Resetting to " + gitLog.Commit + "~1")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", gitLog.Commit+"~1")
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", gitLog.Commit+"~1")
 	slog.Info("Adding diff from commits " + gitLog.Branch)
-	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", commitToDiffFrom, gitLog.Branch)
-	ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff}, "git", "apply")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
-	commitSummary := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", gitLog.Commit)
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "commit", "-m", strings.TrimSpace(commitSummary))
+	diff := util.ExecuteOrDie(util.ExecuteOptions{}, "git", "diff", "--binary", commitToDiffFrom, gitLog.Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{Stdin: &diff}, "git", "apply")
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "add", ".")
+	commitSummary := util.ExecuteOrDie(util.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", gitLog.Commit)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "commit", "-m", strings.TrimSpace(commitSummary))
 	if len(commitsAfter) != 0 {
 		slog.Info(fmt.Sprint("Cherry picking commits back on top ", commitsAfter))
 		cherryPickAndSkipAllEmpty(commitsAfter)
@@ -81,10 +80,10 @@ func cherryPickAndSkipAllEmpty(commits []string) {
 	for i, commit := range commits {
 		cherryPickArgs[i+2] = commit
 	}
-	out, err := ex.Execute(ex.ExecuteOptions{}, "git", cherryPickArgs...)
+	out, err := util.Execute(util.ExecuteOptions{}, "git", cherryPickArgs...)
 	for err != nil {
 		if strings.Contains(out, "git commit --allow-empty") {
-			out, err = ex.Execute(ex.ExecuteOptions{}, "git", "cherry-pick", "--skip")
+			out, err = util.Execute(util.ExecuteOptions{}, "git", "cherry-pick", "--skip")
 		} else {
 			panic(fmt.Sprint("Unexpected cherry-pick error", out, cherryPickArgs, err))
 		}

@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -18,7 +17,7 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "1")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 	testutil.AddCommit("second", "will-be-replaced")
 	testParseArguments("new", "1")
 	testutil.AddCommit("fifth", "5")
@@ -27,12 +26,12 @@ func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing
 
 	testParseArguments("checkout", allCommits[1].Commit)
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
 	testutil.AddCommit("on-second-branch-only", "2")
 	testutil.AddCommit("on-second-branch-only", "3")
 	testutil.AddCommit("on-second-branch-only", "4")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "checkout", util.GetMainBranchOrDie())
 
 	testParseArguments("replace-commit", allCommits[1].Commit)
 
@@ -73,14 +72,14 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 
 	testParseArguments("checkout", allCommits[1].Commit)
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
 	testutil.AddCommit("on-second-branch-only", "2")
 	testutil.AddCommit("on-second-branch-only", "3")
 	testutil.AddCommit("on-second-branch-only", "4")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", allCommits[1].Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", allCommits[1].Branch)
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "checkout", util.GetMainBranchOrDie())
 
 	testParseArguments("replace-commit", allCommits[1].Commit)
 

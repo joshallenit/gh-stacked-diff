@@ -11,7 +11,6 @@ import (
 
 	"slices"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
@@ -31,7 +30,7 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 
 	testParseArguments("update", "2", "1")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[1].Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", commitsOnMain[1].Branch)
 
 	commitsOnBranch := templates.GetAllCommits()
 
@@ -43,7 +42,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	testutil.AddCommit("second", "")
 
@@ -57,7 +56,7 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 	testParseArguments("update", "3", "1")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", commitsOnMain[2].Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", commitsOnMain[2].Branch)
 
 	allCommitsOnBranch := templates.GetAllCommits()
 
@@ -145,15 +144,15 @@ func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n"+
 			"SUCCESS\nSUCCESS\nSUCCESS\n"+
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
-		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
+		nil, "gh", "pr", "view", util.MatchAnyRemainingArgs)
 
 	testParseArguments("update", "--reviewers=mybestie", "2", "1")
 
-	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[1].Branch, "--add-reviewer", "mybestie"}
 		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
 	})
-	assert.True(contains, util.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+	assert.True(contains, util.FilterSlice(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		return next.ProgramName == "gh"
 	}))
 }
@@ -192,21 +191,21 @@ func TestSdUpdate_WhenPushFails_RestoresBranches(t *testing.T) {
 
 	testParseArguments("new", "1")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", firstBranch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", firstBranch)
 	firstCommits := templates.GetAllCommits()
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
 
 	testutil.AddCommit("second", "")
 
 	allCommits := templates.GetAllCommits()
-	testExecutor.SetResponse("", errors.New("Exit code 128"), "git", "push", ex.MatchAnyRemainingArgs)
+	testExecutor.SetResponse("", errors.New("Exit code 128"), "git", "push", util.MatchAnyRemainingArgs)
 	defer func() {
 		r := recover()
 		if r != nil {
 			assert.Equal(util.GetMainBranchOrDie(), util.GetCurrentBranchName())
 			assert.Equal(allCommits, templates.GetAllCommits())
 
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", firstBranch)
+			util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", firstBranch)
 			assert.Equal(firstCommits, templates.GetAllCommits())
 		}
 	}()
@@ -326,7 +325,7 @@ func TestSdUpdate_WhenBranchAlreadyMergedAndUserDoesNotConfirm_Cancels(t *testin
 
 	interactive.SendToProgram(t, 0, interactive.NewMessageRune('n'))
 	testExecutor.SetResponse(allCommits[1].Branch+" fakeMergeCommit",
-		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
 
 	defer func() {
 		r := recover()
@@ -351,7 +350,7 @@ func TestSdUpdate_WhenBranchAlreadyMergedAndUserConfirms_Updates(t *testing.T) {
 
 	allCommits := templates.GetAllCommits()
 	testExecutor.SetResponse(allCommits[1].Branch+" fakeMergeCommit",
-		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
 
 	interactive.SendToProgram(t, 0, interactive.NewMessageRune('y'))
 	testParseArguments("update", "2", "1")

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
@@ -127,30 +127,30 @@ func createNewPr(draft bool, featureFlag string, baseBranch string, gitLog templ
 		commitToBranchFrom = baseBranch
 		slog.Info(fmt.Sprint("Switching to branch ", gitLog.Branch, " based off branch ", baseBranch))
 	}
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "--no-track", gitLog.Branch, commitToBranchFrom)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "branch", "--no-track", gitLog.Branch, commitToBranchFrom)
 	rollbackManager.CreatedBranch(gitLog.Branch)
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", gitLog.Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", gitLog.Branch)
 	slog.Info(fmt.Sprint("Cherry picking ", gitLog.Commit))
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", gitLog.Commit)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "cherry-pick", gitLog.Commit)
 	slog.Info("Pushing to remote")
 	// -u is required because in newer versions of Github CLI the upstream must be set.
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f", "-u")
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "-c", "push.default=current", "push", "-f", "-u")
 	prText := templates.GetPullRequestText(gitLog.Commit, featureFlag)
 	slog.Info("Creating PR via gh")
 	createPrOutput := createPr(prText, baseBranch, draft)
 	slog.Info(fmt.Sprint("Created PR ", createPrOutput))
 	rollbackManager.Clear()
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", "--web")
+	util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "view", "--web")
 	slog.Info(fmt.Sprint("Switching back to " + util.GetMainBranchOrDie()))
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
 
 	/*
 	   This avoids this hint when using `git fetch && git-rebase origin/main` which is not appropriate for stacked diff workflow:
 	   > hint: use --reapply-cherry-picks to include skipped commits
 	   > hint: Disable this message with "git config advice.skippedCherryPicks false",
 	*/
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "advice.skippedCherryPicks", "false")
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "config", "advice.skippedCherryPicks", "false")
 }
 
 func createPr(prText templates.PullRequestText, baseBranch string, draft bool) string {
@@ -159,11 +159,11 @@ func createPr(prText templates.PullRequestText, baseBranch string, draft bool) s
 	if draft {
 		createPrArgs = append(createPrArgs, "--draft")
 	}
-	createPrOutput, createPrErr := ex.Execute(ex.ExecuteOptions{}, "gh", createPrArgs...)
+	createPrOutput, createPrErr := util.Execute(util.ExecuteOptions{}, "gh", createPrArgs...)
 	if createPrErr != nil {
 		if draft && strings.Contains(createPrOutput, "Draft pull requests are not supported") {
 			slog.Warn("Draft PRs not supported, trying again without draft.\nUse \"--draft=false\" to avoid this warning.")
-			return ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", createPrArgsNoDraft...)
+			return util.ExecuteOrDie(util.ExecuteOptions{}, "gh", createPrArgsNoDraft...)
 		} else {
 			panic("Could not create PR: " + createPrOutput + ", " + createPrErr.Error())
 		}

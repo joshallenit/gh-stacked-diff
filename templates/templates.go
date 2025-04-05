@@ -11,7 +11,6 @@ import (
 	"strings"
 	"text/template"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
@@ -84,12 +83,12 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) GitLog {
 	case IndicatorTypePr:
 		slog.Debug("Using commitIndicator as a pull request number " + commitIndicator)
 
-		branchName := ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitIndicator, "--json", "headRefName", "-q", ".headRefName")
+		branchName := util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "view", commitIndicator, "--json", "headRefName", "-q", ".headRefName")
 		// Fetch the branch in case the lastest commit is only on GitHub.
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "fetch", "origin", branchName)
+		util.ExecuteOrDie(util.ExecuteOptions{}, "git", "fetch", "origin", branchName)
 		// Get the first commit of the branch on Github.
-		prCommit := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", commitIndicator, "--json", "commits", "-q", "[.commits[].oid] | first"))
-		gitLogs := newGitLogs(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", newGitLogsFormat, "--abbrev-commit", prCommit))
+		prCommit := strings.TrimSpace(util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "view", commitIndicator, "--json", "commits", "-q", "[.commits[].oid] | first"))
+		gitLogs := newGitLogs(util.ExecuteOrDie(util.ExecuteOptions{}, "git", "show", "--no-patch", newGitLogsFormat, "--abbrev-commit", prCommit))
 		if len(gitLogs) == 0 {
 			panic(fmt.Sprint("Could not find first commit (", prCommit, ") of PR ", commitIndicator))
 		}
@@ -97,7 +96,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) GitLog {
 		slog.Info("Using pull request " + commitIndicator + ", commit " + info.Commit + ", branch " + info.Branch)
 	case IndicatorTypeCommit:
 		slog.Debug("Using commitIndicator as a commit hash " + commitIndicator)
-		gitLogs := newGitLogs(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", newGitLogsFormat, "--abbrev-commit", commitIndicator))
+		gitLogs := newGitLogs(util.ExecuteOrDie(util.ExecuteOptions{}, "git", "show", "--no-patch", newGitLogsFormat, "--abbrev-commit", commitIndicator))
 		if len(gitLogs) == 0 {
 			panic(fmt.Sprint("Could not find commit ", commitIndicator))
 		}
@@ -184,9 +183,9 @@ func runTemplate(configFilename string, defaultTemplateText string, data any) st
 }
 
 func getPullRequestTemplateData(commitHash string, featureFlag string) templateData {
-	commitSummary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", commitHash))
-	commitBody := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%b", commitHash))
-	commitSummaryCleaned := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commitHash))
+	commitSummary := strings.TrimSpace(util.ExecuteOrDie(util.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", commitHash))
+	commitBody := strings.TrimSpace(util.ExecuteOrDie(util.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%b", commitHash))
+	commitSummaryCleaned := strings.TrimSpace(util.ExecuteOrDie(util.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commitHash))
 	expression := regexp.MustCompile(`^(\S+-[[:digit:]]+ )?(.*)`)
 	summaryMatches := expression.FindStringSubmatch(commitSummary)
 	return templateData{

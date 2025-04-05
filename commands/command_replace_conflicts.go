@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"strings"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
@@ -36,18 +35,18 @@ func replaceConflicts(appConfig util.AppConfig, confirmed bool) {
 	commitWithConflicts := getCommitWithConflicts()
 	gitLog := templates.GetBranchInfo(commitWithConflicts, templates.IndicatorTypeCommit)
 	checkConfirmed(appConfig, confirmed)
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
 	slog.Info(fmt.Sprint("Replacing changes (merge conflicts) for failed rebase of commit ", commitWithConflicts, ", with changes from associated branch, ", gitLog.Branch))
-	diff := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "diff", "--binary", "origin/"+util.GetMainBranchOrDie(), gitLog.Branch)
-	ex.ExecuteOrDie(ex.ExecuteOptions{Stdin: &diff}, "git", "apply")
+	diff := util.ExecuteOrDie(util.ExecuteOptions{}, "git", "diff", "--binary", "origin/"+util.GetMainBranchOrDie(), gitLog.Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{Stdin: &diff}, "git", "apply")
 	slog.Info("Adding changes and continuing rebase")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
-	continueOptions := ex.ExecuteOptions{EnvironmentVariables: []string{"GIT_EDITOR=true"}}
-	ex.ExecuteOrDie(continueOptions, "git", "rebase", "--continue")
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "add", ".")
+	continueOptions := util.ExecuteOptions{EnvironmentVariables: []string{"GIT_EDITOR=true"}}
+	util.ExecuteOrDie(continueOptions, "git", "rebase", "--continue")
 }
 
 func getCommitWithConflicts() string {
-	statusLines := strings.Split(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "status"), "\n")
+	statusLines := strings.Split(util.ExecuteOrDie(util.ExecuteOptions{}, "git", "status"), "\n")
 	lastCommandDoneLine := -1
 	inLast := false
 	for i, line := range statusLines {

@@ -8,7 +8,6 @@ import (
 	"slices"
 	"strings"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
 	"github.com/hairyhenderson/go-codeowners"
@@ -88,7 +87,7 @@ Returns changed files against main.
 */
 func getChangedFiles() []string {
 	firstOriginCommit := util.FirstOriginMainCommit(util.GetCurrentBranchName())
-	filenamesRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager",
+	filenamesRaw := util.ExecuteOrDie(util.ExecuteOptions{}, "git", "--no-pager",
 		"log", "--pretty=format:\"\"", "--name-only", firstOriginCommit+"..HEAD")
 	return strings.Split(strings.TrimSpace(filenamesRaw), "\n")
 }

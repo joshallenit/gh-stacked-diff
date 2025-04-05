@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"slices"
-
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 )
 
 type restoreBranchInfo struct {
@@ -19,7 +17,7 @@ type GitRollbackManager struct {
 
 func (rollbackManager *GitRollbackManager) SaveState() {
 	restoreBranch := restoreBranchInfo{
-		commit: ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "log", "-n", "1", "--pretty=format:%H"),
+		commit: ExecuteOrDie(ExecuteOptions{}, "git", "log", "-n", "1", "--pretty=format:%H"),
 		branch: GetCurrentBranchName(),
 	}
 	rollbackManager.restoreBranches = append(rollbackManager.restoreBranches, restoreBranch)
@@ -36,18 +34,18 @@ func (rollbackManager *GitRollbackManager) Restore(err any) {
 	tryAbort("merge")
 	for _, branchInfo := range slices.Backward(rollbackManager.restoreBranches) {
 		slog.Info(fmt.Sprint("Restoring branch ", branchInfo.branch, " to ", branchInfo.commit))
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", branchInfo.branch)
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", branchInfo.commit)
+		ExecuteOrDie(ExecuteOptions{}, "git", "switch", branchInfo.branch)
+		ExecuteOrDie(ExecuteOptions{}, "git", "reset", "--hard", branchInfo.commit)
 	}
 	for _, branch := range rollbackManager.deleteBranches {
 		slog.Info(fmt.Sprint("Deleting created branch ", branch))
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-D", branch)
+		ExecuteOrDie(ExecuteOptions{}, "git", "branch", "-D", branch)
 	}
 }
 
 // Abort the given git command if it is in progress.
 func tryAbort(gitCommand string) {
-	_, err := ex.Execute(ex.ExecuteOptions{}, "git", gitCommand, "--abort")
+	_, err := Execute(ExecuteOptions{}, "git", gitCommand, "--abort")
 	if err == nil {
 		slog.Info(fmt.Sprint("Aborted ", gitCommand))
 	}
