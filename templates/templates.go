@@ -177,7 +177,9 @@ func runTemplate(configFilename string, defaultTemplateText string, data any) st
 		}
 	}
 	var output bytes.Buffer
-	parsed.Execute(&output, data)
+	if err := parsed.Execute(&output, data); err != nil {
+		panic(err)
+	}
 	return output.String()
 }
 

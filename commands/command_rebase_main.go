@@ -125,7 +125,7 @@ func checkUniqueBranches(dropCommits []templates.GitLog) {
 
 func dropBranches(dropCommits []templates.GitLog) {
 	for _, dropCommit := range dropCommits {
-		// Ignore any error.
+		// nolint:errcheck
 		ex.Execute(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "branch", "-D", dropCommit.Branch)
 	}
 }
