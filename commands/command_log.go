@@ -2,7 +2,6 @@ package commands
 
 import (
 	"flag"
-	"io"
 	"log/slog"
 
 	"fmt"
@@ -38,19 +37,19 @@ func createLogCommand() Command {
 			if flagSet.NArg() != 0 {
 				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
-			printGitLog(appConfig.Io.Out)
+			printGitLog(appConfig.Io)
 		}}
 }
 
 // Prints changes in the current branch compared to the main branch to out.
-func printGitLog(out io.Writer) {
+func printGitLog(stdIo util.StdIo) {
 	if util.GetCurrentBranchName() != util.GetMainBranchOrDie() {
 		gitArgs := []string{"--no-pager", "log", "--pretty=oneline", "--abbrev-commit"}
 		if util.RemoteHasBranch(util.GetMainBranchOrDie()) {
 			gitArgs = append(gitArgs, "origin/"+util.GetMainBranchOrDie()+"..HEAD")
 		}
 		gitArgs = append(gitArgs, "--color=always")
-		util.ExecuteOrDie(util.ExecuteOptions{Output: &util.ExecutionOutput{Stdout: out, Stderr: out}}, "git", gitArgs...)
+		util.ExecuteOrDie(util.ExecuteOptions{Io: stdIo}, "git", gitArgs...)
 		return
 	}
 	logs := templates.GetNewCommits("HEAD")
@@ -64,18 +63,18 @@ func printGitLog(out io.Writer) {
 		numberPrefix := getNumberPrefix(i, len(logs))
 		if slices.Contains(checkedBranches, log.Branch) {
 			// Use color for ✅ otherwise in Git Bash on Windows it will appear as black and white.
-			util.Fprint(out, numberPrefix+color.GreenString("✅ "))
+			util.Fprint(stdIo.Out, numberPrefix+color.GreenString("✅ "))
 		} else {
-			util.Fprint(out, numberPrefix+"   ")
+			util.Fprint(stdIo.Out, numberPrefix+"   ")
 		}
-		util.Fprintln(out, color.YellowString(log.Commit)+" "+log.Subject)
+		util.Fprintln(stdIo.Out, color.YellowString(log.Commit)+" "+log.Subject)
 		// find first commit that is not in main branch
 		if slices.Contains(checkedBranches, log.Branch) {
 			branchCommits := templates.GetNewCommits(log.Branch)
 			if len(branchCommits) > 1 {
 				for _, branchCommit := range branchCommits {
 					padding := strings.Repeat(" ", len(numberPrefix))
-					util.Fprintln(out, padding+"   - "+branchCommit.Subject)
+					util.Fprintln(stdIo.Out, padding+"   - "+branchCommit.Subject)
 				}
 			}
 		}

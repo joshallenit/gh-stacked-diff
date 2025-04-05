@@ -28,9 +28,7 @@ func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
 	testParseArguments("new", "1")
 
 	// Check that the PR was created
-	outWriter := testutil.NewWriteRecorder()
-	printGitLog(outWriter)
-	out := outWriter.String()
+	out := testParseArguments("log")
 
 	if !strings.Contains(out, "✅") {
 		t.Errorf("'✅' should be in %s", out)

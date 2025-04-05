@@ -40,7 +40,7 @@ func rebaseMain(appConfig util.AppConfig) {
 	shouldPopStash := util.Stash("rebase-main")
 
 	slog.Info("Fetching...")
-	util.ExecuteOrDie(util.ExecuteOptions{Output: util.NewStandardOutput()}, "git", "fetch")
+	util.ExecuteOrDie(util.ExecuteOptions{Io: appConfig.Io}, "git", "fetch")
 	slog.Info("Getting merged branches from Github...")
 	mergedBranches := getMergedBranches()
 	slog.Debug(fmt.Sprint("mergedBranches ", mergedBranches))
@@ -56,14 +56,14 @@ func rebaseMain(appConfig util.AppConfig) {
 				}), " ")}
 		options := util.ExecuteOptions{
 			EnvironmentVariables: environmentVariables,
-			Output:               util.NewStandardOutput(),
+			Io:                   appConfig.Io,
 		}
 		_, rebaseError = util.Execute(options, "git", "rebase", "-i", "origin/"+util.GetMainBranchOrDie())
 		slog.Info("Deleting merged branches...")
-		dropBranches(dropCommits)
+		dropBranches(appConfig.Io, dropCommits)
 	} else {
 		options := util.ExecuteOptions{
-			Output: util.NewStandardOutput(),
+			Io: appConfig.Io,
 		}
 		_, rebaseError = util.Execute(options, "git", "rebase", "origin/"+util.GetMainBranchOrDie())
 	}
@@ -122,8 +122,8 @@ func checkUniqueBranches(dropCommits []templates.GitLog) {
 	}
 }
 
-func dropBranches(dropCommits []templates.GitLog) {
-	stdOutOptions := util.ExecuteOptions{Output: util.NewStandardOutput()}
+func dropBranches(stdIo util.StdIo, dropCommits []templates.GitLog) {
+	stdOutOptions := util.ExecuteOptions{Io: stdIo}
 	for _, dropCommit := range dropCommits {
 		// nolint:errcheck
 		util.Execute(stdOutOptions, "git", "branch", "-D", dropCommit.Branch)
