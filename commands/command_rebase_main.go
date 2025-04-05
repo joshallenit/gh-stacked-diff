@@ -124,9 +124,9 @@ func dropBranches(stdIo util.StdIo, dropCommits []templates.GitLog) {
 	for _, dropCommit := range dropCommits {
 		// nolint:errcheck
 		util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "branch", "-D", dropCommit.Branch)
-		_, err := util.Execute(util.ExecuteOptions{}, "git", "push", "--delete", "origin", dropCommit.Branch)
+		remoteOut, err := util.Execute(util.ExecuteOptions{}, "git", "push", "--delete", "origin", dropCommit.Branch)
 		if err != nil {
-			slog.Info("Deleted remote branch origin " + dropCommit.Branch)
+			fmt.Fprint(stdIo.Out, remoteOut)
 		}
 	}
 }
