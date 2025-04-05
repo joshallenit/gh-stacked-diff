@@ -121,11 +121,12 @@ func checkUniqueBranches(dropCommits []templates.GitLog) {
 }
 
 func dropBranches(stdIo util.StdIo, dropCommits []templates.GitLog) {
-	stdOutOptions := util.ExecuteOptions{Io: stdIo}
 	for _, dropCommit := range dropCommits {
 		// nolint:errcheck
-		util.Execute(stdOutOptions, "git", "branch", "-D", dropCommit.Branch)
-		// nolint:errcheck
-		util.Execute(stdOutOptions, "git", "push", "--delete", "origin", dropCommit.Branch)
+		util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "branch", "-D", dropCommit.Branch)
+		_, err := util.Execute(util.ExecuteOptions{}, "git", "push", "--delete", "origin", dropCommit.Branch)
+		if err != nil {
+			slog.Info("Deleted remote branch origin " + dropCommit.Branch)
+		}
 	}
 }
