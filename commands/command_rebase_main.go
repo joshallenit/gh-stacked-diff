@@ -126,6 +126,6 @@ func dropBranches(stdIo util.StdIo, dropCommits []templates.GitLog) {
 		// nolint:errcheck
 		util.Execute(stdOutOptions, "git", "branch", "-D", dropCommit.Branch)
 		// nolint:errcheck
-		util.Execute(stdOutOptions, "git", "push", "--delete", dropCommit.Branch)
+		util.Execute(stdOutOptions, "git", "push", "--delete", "origin", dropCommit.Branch)
 	}
 }
