@@ -68,7 +68,7 @@ func InitTest(t *testing.T, logLevel slog.Level) *util.TestExecutor {
 	})
 
 	interactive.AddNewProgramListener(t, func(program *tea.Program) {
-		if !interactive.HasProgramMessagesSet() {
+		if !interactive.HasFakeProgramMessages() {
 			panic("No input setup for interactive ui, use interactive.SendToProgram")
 		}
 	})

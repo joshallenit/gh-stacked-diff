@@ -9,6 +9,7 @@ import (
 )
 
 var programListeners = make([]*func(*tea.Program), 0)
+var hasFakeProgramMessages bool = false
 
 // Call instead of [tea.NewProgram] to support testing hook [SendToProgram].
 func NewProgram(model tea.Model, opts ...tea.ProgramOption) *tea.Program {
@@ -23,6 +24,7 @@ func NewProgram(model tea.Model, opts ...tea.ProgramOption) *tea.Program {
 // programIndex is incremented.
 // This is used instead of using stdin to avoid having to (somehow?) fake keyboard scan codes.
 func SendToProgram(t *testing.T, programIndex int, messages ...tea.Msg) {
+	hasFakeProgramMessages = true
 	currentProgramNumber := 0
 	listener := func(program *tea.Program) {
 		if currentProgramNumber == programIndex {
@@ -35,6 +37,9 @@ func SendToProgram(t *testing.T, programIndex int, messages ...tea.Msg) {
 		currentProgramNumber++
 	}
 	AddNewProgramListener(t, listener)
+	t.Cleanup(func() {
+		hasFakeProgramMessages = false
+	})
 }
 
 func AddNewProgramListener(t *testing.T, listener func(*tea.Program)) {
@@ -46,11 +51,6 @@ func AddNewProgramListener(t *testing.T, listener func(*tea.Program)) {
 	})
 }
 
-// Returns whether [SendToProgram] has been setup.
-func HasProgramMessagesSet() bool {
-	return len(programListeners) > 0
-}
-
 // Convienience method for creating a message for when user typed a key.
 func NewMessageRune(r rune) tea.KeyMsg {
 	return tea.KeyMsg(tea.Key{Type: tea.KeyRunes, Runes: []rune{r}})
@@ -59,4 +59,8 @@ func NewMessageRune(r rune) tea.KeyMsg {
 // Convienience method for creating a message for when user hits a non-rune key like enter or up/down.
 func NewMessageKey(keyType tea.KeyType) tea.KeyMsg {
 	return tea.KeyMsg(tea.Key{Type: keyType})
+}
+
+func HasFakeProgramMessages() bool {
+	return hasFakeProgramMessages
 }
