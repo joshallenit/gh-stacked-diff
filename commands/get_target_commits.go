@@ -23,12 +23,13 @@ func getTargetCommits(
 		return commit != ""
 	})
 	if len(commitsFromCommandLine) == 0 {
+		messageCannotAskPrefix := "Target commit not specified and cannot ask interactively because "
 		if !interactive.InteractiveEnabled(appConfig) {
-			commandError(appConfig, command.FlagSet, "Target commit not specified and cannot ask interactively because not a terminal", command.Usage)
+			commandError(appConfig, command.FlagSet, messageCannotAskPrefix+" not a terminal", command.Usage)
 		}
 		selectedCommits, err := interactive.GetCommitSelection(appConfig.Io, options)
 		if err != nil {
-			commandError(appConfig, command.FlagSet, err.Error(), command.Usage)
+			commandError(appConfig, command.FlagSet, messageCannotAskPrefix+err.Error(), command.Usage)
 		}
 		if len(selectedCommits) == 0 {
 			appConfig.Exit(0)
