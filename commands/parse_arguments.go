@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"os"
 	"runtime/debug"
 	"slices"
 	"strings"
@@ -14,12 +13,10 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-func ExecuteCommand(commandLineArgs []string, appExecutable string) {
+func ExecuteCommand(appConfig util.AppConfig, commandLineArgs []string) {
 	// Unset any color in case a previous terminal command set colors and then was
 	// terminated before it could reset the colors.
 	color.Unset()
-
-	appConfig := util.AppConfig{Io: util.StdIo{Out: os.Stdout, Err: os.Stderr, In: os.Stdin}, AppExecutable: appExecutable, Exit: os.Exit}
 
 	parseArguments(appConfig, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs)
 }

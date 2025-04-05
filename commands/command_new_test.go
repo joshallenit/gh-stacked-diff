@@ -10,7 +10,6 @@ import (
 
 	"errors"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
@@ -44,14 +43,14 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	testutil.AddCommit("second", "")
 	allCommits := templates.GetNewCommits("HEAD")
 
 	testParseArguments("new", "1")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := templates.GetNewCommits("HEAD")
 	assert.Equal(1, len(commitsOnNewBranch))
 	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
@@ -63,7 +62,7 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	testutil.AddCommit("second", "")
 
@@ -72,7 +71,7 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 
 	testParseArguments("new", "1")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", allCommits[0].Branch)
 	commitsOnNewBranch := templates.GetNewCommits("HEAD")
 	assert.Equal(1, len(commitsOnNewBranch))
 	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
@@ -105,17 +104,17 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n"+
 			"SUCCESS\nSUCCESS\nSUCCESS\n"+
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
-		nil, "gh", "pr", "view", ex.MatchAnyRemainingArgs)
+		nil, "gh", "pr", "view", util.MatchAnyRemainingArgs)
 
 	testParseArguments("new", "--reviewers=mybestie", "1")
 
 	allCommits := templates.GetAllCommits()
 
-	contains := slices.ContainsFunc(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
 		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
 	})
-	assert.True(contains, util.FilterSlice(testExecutor.Responses, func(next ex.ExecutedResponse) bool {
+	assert.True(contains, util.FilterSlice(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		return next.ProgramName == "gh"
 	}))
 }
@@ -168,13 +167,13 @@ func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 
 	mainCommits := templates.GetAllCommits()
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", mainCommits[1].Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", mainCommits[1].Branch)
 	firstCommits := templates.GetAllCommits()
 	assert.Equal(2, len(firstCommits))
 	assert.Equal(mainCommits[1].Subject, firstCommits[0].Subject)
 	assert.Equal(testutil.InitialCommitSubject, firstCommits[1].Subject)
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", mainCommits[0].Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", mainCommits[0].Branch)
 	secondCommits := templates.GetAllCommits()
 	assert.Equal(2, len(secondCommits))
 	assert.Equal(mainCommits[0].Subject, secondCommits[0].Subject)
@@ -215,7 +214,7 @@ func TestSdNew_WhenNewPrFails_RestoresBranch(t *testing.T) {
 
 	allCommits := templates.GetAllCommits()
 
-	testExecutor.SetResponse("", errors.New("Exit Code 1"), "gh", "pr", "create", ex.MatchAnyRemainingArgs)
+	testExecutor.SetResponse("", errors.New("Exit Code 1"), "gh", "pr", "create", util.MatchAnyRemainingArgs)
 
 	restoreBranch := util.GetCurrentBranchName()
 	defer func() {

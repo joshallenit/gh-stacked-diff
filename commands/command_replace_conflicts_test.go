@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -19,28 +18,28 @@ func TestSdReplaceConflicts_WhenConflictOnLastCommit_ReplacesCommit(t *testing.T
 
 	testutil.AddCommit("first", "file-with-conflicts")
 	testutil.CommitFileChange("second", "file-with-conflicts", "1")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 	allCommits := templates.GetAllCommits()
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 	testutil.CommitFileChange("third", "file-with-conflicts", "2")
 
 	testParseArguments("new", "1")
 
 	testParseArguments("checkout", "1")
 
-	_, mergeErr := ex.Execute(ex.ExecuteOptions{}, "git", "merge", "origin/"+util.GetMainBranchOrDie())
+	_, mergeErr := util.Execute(util.ExecuteOptions{}, "git", "merge", "origin/"+util.GetMainBranchOrDie())
 	assert.NotNil(mergeErr)
 
 	if writeErr := os.WriteFile("file-with-conflicts", []byte("1\n2"), 0); writeErr != nil {
 		panic(writeErr)
 	}
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "add", ".")
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "add", ".")
 
-	continueOptions := ex.ExecuteOptions{EnvironmentVariables: []string{"GIT_EDITOR=true"}}
-	ex.ExecuteOrDie(continueOptions, "git", "merge", "--continue")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
+	continueOptions := util.ExecuteOptions{EnvironmentVariables: []string{"GIT_EDITOR=true"}}
+	util.ExecuteOrDie(continueOptions, "git", "merge", "--continue")
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
 
-	_, rebaseErr := ex.Execute(ex.ExecuteOptions{}, "git", "rebase", "origin/"+util.GetMainBranchOrDie())
+	_, rebaseErr := util.Execute(util.ExecuteOptions{}, "git", "rebase", "origin/"+util.GetMainBranchOrDie())
 	assert.NotNil(rebaseErr)
 
 	testParseArguments("replace-conflicts", "--confirm=true")

@@ -9,8 +9,6 @@ import (
 
 	"errors"
 	"strings"
-
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 )
 
 type CommitType int
@@ -36,7 +34,7 @@ func GetCommitSelection(stdIo util.StdIo, options CommitSelectionOptions) ([]tem
 	for _, log := range newCommits {
 		gitBranchArgs = append(gitBranchArgs, log.Branch)
 	}
-	prBranches := strings.Fields(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitBranchArgs...))
+	prBranches := strings.Fields(util.ExecuteOrDie(util.ExecuteOptions{}, "git", gitBranchArgs...))
 
 	rows := make([][]string, 0, len(newCommits))
 

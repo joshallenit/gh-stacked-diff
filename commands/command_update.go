@@ -7,7 +7,6 @@ import (
 
 	"fmt"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -75,7 +74,7 @@ func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCh
 	shouldPopStash := util.Stash("before update-pr " + destCommit.Commit + " " + destCommit.Subject)
 	rollbackManager := &util.GitRollbackManager{}
 	rollbackManager.SaveState()
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", destCommit.Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", destCommit.Branch)
 	rollbackManager.SaveState() // Save state again for associated branch.
 	defer func() {
 		r := recover()
@@ -88,11 +87,11 @@ func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCh
 		}
 	}()
 	slog.Info("Fast forwarding in case there were any commits made via github web interface")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "fetch", "origin", destCommit.Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "fetch", "origin", destCommit.Branch)
 	forcePush := false
-	if _, err := ex.Execute(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "merge", "--ff-only", "origin/"+destCommit.Branch); err != nil {
+	if _, err := util.Execute(util.ExecuteOptions{Output: util.NewStandardOutput()}, "git", "merge", "--ff-only", "origin/"+destCommit.Branch); err != nil {
 		slog.Info(fmt.Sprint("Could not fast forward to match origin. Rebasing instead. ", err))
-		ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "rebase", "origin", destCommit.Branch)
+		util.ExecuteOrDie(util.ExecuteOptions{Output: util.NewStandardOutput()}, "git", "rebase", "origin", destCommit.Branch)
 		// As we rebased, a force push may be required.
 		forcePush = true
 	}
@@ -103,29 +102,29 @@ func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCh
 	for i, commit := range commitsToCherryPick {
 		cherryPickArgs[i+1] = commit.Commit
 	}
-	_, cherryPickError := ex.Execute(ex.ExecuteOptions{}, "git", cherryPickArgs...)
+	_, cherryPickError := util.Execute(util.ExecuteOptions{}, "git", cherryPickArgs...)
 	if cherryPickError != nil {
 		slog.Info("First attempt at cherry-pick failed")
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "cherry-pick", "--abort")
+		util.ExecuteOrDie(util.ExecuteOptions{}, "git", "cherry-pick", "--abort")
 		rebaseCommit := util.FirstOriginMainCommit(util.GetMainBranchOrDie())
 		slog.Info(fmt.Sprint("Rebasing with the base commit on "+util.GetMainBranchOrDie()+" branch, ", rebaseCommit,
 			", in case the local "+util.GetMainBranchOrDie()+" was rebased with origin/"+util.GetMainBranchOrDie()))
-		ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "rebase", rebaseCommit)
+		util.ExecuteOrDie(util.ExecuteOptions{Output: util.NewStandardOutput()}, "git", "rebase", rebaseCommit)
 		slog.Info(fmt.Sprint("Cherry picking again ", commitsToCherryPick))
-		ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", cherryPickArgs...)
+		util.ExecuteOrDie(util.ExecuteOptions{Output: util.NewStandardOutput()}, "git", cherryPickArgs...)
 		forcePush = true
 	}
 	slog.Info("Pushing to remote")
 	if forcePush {
-		if _, err := ex.Execute(ex.ExecuteOptions{}, "git", "push", "origin", destCommit.Branch); err != nil {
+		if _, err := util.Execute(util.ExecuteOptions{}, "git", "push", "origin", destCommit.Branch); err != nil {
 			slog.Info("Regular push failed, force pushing instead.")
-			ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "-f", "origin", destCommit.Branch)
+			util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "-f", "origin", destCommit.Branch)
 		}
 	} else {
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", destCommit.Branch)
+		util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", destCommit.Branch)
 	}
 	slog.Info("Switching back to " + util.GetMainBranchOrDie())
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
 	slog.Info(fmt.Sprint("Rebasing, marking as fixup ", commitsToCherryPick, " for target ", destCommit.Commit))
 	commitHashes := util.MapSlice(commitsToCherryPick, func(commit templates.GitLog) string {
 		return commit.Commit
@@ -136,8 +135,8 @@ func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCh
 			strings.Join(commitHashes, " "),
 	}
 	slog.Debug(fmt.Sprint("Using sequence editor ", environmentVariables))
-	options := ex.ExecuteOptions{EnvironmentVariables: environmentVariables, Output: ex.NewStandardOutput()}
-	ex.ExecuteOrDie(options, "git", "rebase", "-i", destCommit.Commit+"^")
+	options := util.ExecuteOptions{EnvironmentVariables: environmentVariables, Output: util.NewStandardOutput()}
+	util.ExecuteOrDie(options, "git", "rebase", "-i", destCommit.Commit+"^")
 	rollbackManager.Clear()
 }
 

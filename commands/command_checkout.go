@@ -3,7 +3,6 @@ package commands
 import (
 	"flag"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
@@ -32,6 +31,6 @@ func createCheckoutCommand() Command {
 				MultiSelect: false,
 			}
 			targetCommit := getTargetCommits(appConfig, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
-			ex.ExecuteOrDie(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "checkout", targetCommit[0].Branch)
+			util.ExecuteOrDie(util.ExecuteOptions{Output: util.NewStandardOutput()}, "git", "checkout", targetCommit[0].Branch)
 		}}
 }

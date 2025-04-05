@@ -4,7 +4,6 @@ import (
 	"slices"
 	"strings"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
@@ -27,7 +26,7 @@ const newGitLogsFormat = "--pretty=format:%h" + formatDelimiter + "%s" + formatD
 // Returns all the commits on the current branch. For use by tests.
 func GetAllCommits() []GitLog {
 	gitArgs := []string{"--no-pager", "log", newGitLogsFormat, "--abbrev-commit"}
-	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
+	logsRaw := util.ExecuteOrDie(util.ExecuteOptions{}, "git", gitArgs...)
 	return newGitLogs(logsRaw)
 }
 
@@ -39,7 +38,7 @@ func GetNewCommits(to string) []GitLog {
 	} else {
 		gitArgs = append(gitArgs, to)
 	}
-	logsRaw := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitArgs...)
+	logsRaw := util.ExecuteOrDie(util.ExecuteOptions{}, "git", gitArgs...)
 	return newGitLogs(logsRaw)
 }
 

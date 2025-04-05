@@ -10,8 +10,6 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
-
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,7 +34,7 @@ func TestPrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	testutil.AddCommit("second", "")
 
@@ -75,9 +73,9 @@ func TestPrintGitLog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "checkout", "-b", "my-branch")
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "checkout", "-b", "my-branch")
 
 	testutil.AddCommit("second", "")
 

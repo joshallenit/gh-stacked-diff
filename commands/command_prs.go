@@ -4,7 +4,6 @@ import (
 	"flag"
 	"log/slog"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
@@ -23,7 +22,7 @@ func createPrsCommand() Command {
 			if flagSet.NArg() != 0 {
 				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
-			ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: appConfig.Io.Out, Stderr: appConfig.Io.Err}},
+			util.ExecuteOrDie(util.ExecuteOptions{Output: &util.ExecutionOutput{Stdout: appConfig.Io.Out, Stderr: appConfig.Io.Err}},
 				"gh", "pr", "list", "--author", "@me")
 		}}
 }

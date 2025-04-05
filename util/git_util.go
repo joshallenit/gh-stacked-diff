@@ -3,8 +3,6 @@ package util
 import (
 	"log/slog"
 	"strings"
-
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 )
 
 // Cached value of main branch name.
@@ -21,12 +19,12 @@ func GetMainBranchOrDie() string {
 	if err == nil {
 		return out
 	}
-	out, err = ex.Execute(ex.ExecuteOptions{}, "git", "rev-parse")
+	out, err = Execute(ExecuteOptions{}, "git", "rev-parse")
 	if err != nil {
 		panic("Not in a git repository. Must be run from a git repository.\n" + out + ": " + err.Error())
 	}
 
-	out, err = ex.Execute(ex.ExecuteOptions{}, "git", "rev-list", "--max-parents=0", "HEAD")
+	out, err = Execute(ExecuteOptions{}, "git", "rev-list", "--max-parents=0", "HEAD")
 	if err != nil {
 		panic("Remote repository is empty.\n" +
 			"Push an initial inconsequential commit to origin/main and try again. \n" +
@@ -61,7 +59,7 @@ func getMainBranchFromGitLog() (string, error) {
 	if mainBranchNameFromGitLog != "" {
 		return mainBranchNameFromGitLog, nil
 	}
-	remoteMainBranch, err := ex.Execute(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "origin/HEAD")
+	remoteMainBranch, err := Execute(ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "origin/HEAD")
 	if err != nil {
 		return remoteMainBranch, err
 	}
@@ -72,7 +70,7 @@ func getMainBranchFromGitLog() (string, error) {
 
 func setRemoteHead() {
 	currentBranch := GetCurrentBranchName()
-	defaultBranch, err := ex.Execute(ex.ExecuteOptions{}, "git", "config", "init.defaultBranch")
+	defaultBranch, err := Execute(ExecuteOptions{}, "git", "config", "init.defaultBranch")
 	if err != nil {
 		// git config init.defaultBranch will fail if default branch is not setup.
 		defaultBranch = "master"
@@ -81,7 +79,7 @@ func setRemoteHead() {
 	}
 	if currentBranch == defaultBranch || currentBranch == "main" {
 		slog.Warn("Setting remote head to " + currentBranch + " because it is not set.")
-		out, err := ex.Execute(ex.ExecuteOptions{}, "git", "remote", "set-head", "origin", currentBranch)
+		out, err := Execute(ExecuteOptions{}, "git", "remote", "set-head", "origin", currentBranch)
 		if err != nil {
 			panic("Remote repository not setup.\n" + out)
 		}
@@ -92,7 +90,7 @@ func setRemoteHead() {
 
 func GetUsername() string {
 	if userEmail == "" {
-		userEmailRaw := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "config", "user.email"))
+		userEmailRaw := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "config", "user.email"))
 		userEmail = userEmailRaw[0:strings.Index(userEmailRaw, "@")]
 	}
 	return userEmail
@@ -103,12 +101,12 @@ func FirstOriginMainCommit(branchName string) string {
 	if !getLocalHasBranchOrDie(branchName) {
 		panic("Branch does not exist " + branchName)
 	}
-	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "merge-base", "origin/"+GetMainBranchOrDie(), branchName))
+	return strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "merge-base", "origin/"+GetMainBranchOrDie(), branchName))
 }
 
 // Returns whether branchName is on remote.
 func RemoteHasBranch(branchName string) bool {
-	remoteBranch := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch", "-r", "--list", "origin/"+branchName))
+	remoteBranch := strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "branch", "-r", "--list", "origin/"+branchName))
 	return remoteBranch != ""
 }
 
@@ -121,7 +119,7 @@ func getLocalHasBranchOrDie(branchName string) bool {
 }
 
 func localHasBranch(branchName string) (bool, error) {
-	out, err := ex.Execute(ex.ExecuteOptions{}, "git", "branch", "--list", branchName)
+	out, err := Execute(ExecuteOptions{}, "git", "branch", "--list", branchName)
 	if err != nil {
 		return false, err
 	}
@@ -137,11 +135,11 @@ func RequireMainBranch() {
 
 // Returns current branch name.
 func GetCurrentBranchName() string {
-	return strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD"))
+	return strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "rev-parse", "--abbrev-ref", "HEAD"))
 }
 
 func Stash(forName string) bool {
-	stashResult := strings.Split(strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName)), "\n")
+	stashResult := strings.Split(strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "stash", "save", "-u", "before "+forName)), "\n")
 	if len(stashResult) > 0 && strings.HasPrefix(stashResult[len(stashResult)-1], "Saved working") {
 		slog.Info(stashResult[len(stashResult)-1])
 		return true
@@ -151,7 +149,7 @@ func Stash(forName string) bool {
 
 func PopStash(popStash bool) {
 	if popStash {
-		ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "stash", "pop")
+		ExecuteOrDie(ExecuteOptions{}, "git", "stash", "pop")
 		slog.Info("Popped stash back")
 	}
 }

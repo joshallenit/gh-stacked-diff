@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
+
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
@@ -80,7 +80,7 @@ func checkBranch(appConfig util.AppConfig, wg *sync.WaitGroup, targetCommit temp
 			summary := getChecksStatus(targetCommit.Branch)
 			if summary.Failing > 0 {
 				if !silent {
-					ex.ExecuteOrDie(ex.ExecuteOptions{}, "say", "Checks failed")
+					util.ExecuteOrDie(util.ExecuteOptions{}, "say", "Checks failed")
 				}
 				slog.Error(fmt.Sprint("Checks failed for ", targetCommit, ". "+
 					"Total: ", summary.Total,
@@ -105,10 +105,10 @@ func checkBranch(appConfig util.AppConfig, wg *sync.WaitGroup, targetCommit temp
 		}
 	}
 	slog.Info("Marking PR as ready for review")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "ready", targetCommit.Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "ready", targetCommit.Branch)
 	slog.Info("Waiting 10 seconds for any automatically assigned reviewers to be added...")
 	util.Sleep(10 * time.Second)
-	prUrl := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "edit", targetCommit.Branch, "--add-reviewer", reviewers))
+	prUrl := strings.TrimSpace(util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "edit", targetCommit.Branch, "--add-reviewer", reviewers))
 	slog.Info(fmt.Sprint("Added reviewers ", reviewers, " to ", prUrl))
 	wg.Done()
 }
@@ -118,7 +118,7 @@ func checkBranch(appConfig util.AppConfig, wg *sync.WaitGroup, targetCommit temp
  */
 func getChecksStatus(branchName string) pullRequestChecksStatus {
 	var summary pullRequestChecksStatus
-	stateString := ex.ExecuteOrDie(ex.ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
+	stateString := util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
 	scanner := bufio.NewScanner(strings.NewReader(strings.TrimSpace(stateString)))
 	for scanner.Scan() {
 		status := scanner.Text()

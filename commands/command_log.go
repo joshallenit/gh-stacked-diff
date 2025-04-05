@@ -11,7 +11,6 @@ import (
 
 	"github.com/fatih/color"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
@@ -51,7 +50,7 @@ func printGitLog(out io.Writer) {
 			gitArgs = append(gitArgs, "origin/"+util.GetMainBranchOrDie()+"..HEAD")
 		}
 		gitArgs = append(gitArgs, "--color=always")
-		ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: out, Stderr: out}}, "git", gitArgs...)
+		util.ExecuteOrDie(util.ExecuteOptions{Output: &util.ExecutionOutput{Stdout: out, Stderr: out}}, "git", gitArgs...)
 		return
 	}
 	logs := templates.GetNewCommits("HEAD")
@@ -60,7 +59,7 @@ func printGitLog(out io.Writer) {
 	for _, log := range logs {
 		gitBranchArgs = append(gitBranchArgs, log.Branch)
 	}
-	checkedBranches := strings.Fields(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", gitBranchArgs...))
+	checkedBranches := strings.Fields(util.ExecuteOrDie(util.ExecuteOptions{}, "git", gitBranchArgs...))
 	for i, log := range logs {
 		numberPrefix := getNumberPrefix(i, len(logs))
 		if slices.Contains(checkedBranches, log.Branch) {

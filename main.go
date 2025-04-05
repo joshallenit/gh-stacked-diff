@@ -39,16 +39,26 @@ import (
 	"strings"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/commands"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func main() {
-	thisExecutable, err := os.Executable()
+	appConfig := util.AppConfig{
+		Io:            util.StdIo{Out: os.Stdout, Err: os.Stderr, In: os.Stdin},
+		AppExecutable: getAppExecutable(),
+		Exit:          os.Exit,
+	}
+
+	commands.ExecuteCommand(appConfig, os.Args[1:])
+}
+
+func getAppExecutable() string {
+	appExecutable, err := os.Executable()
 	if err != nil {
 		panic(fmt.Sprint("Cannot determine executable ", err))
 	}
 	// Escape back slashes so the exectuable works from GitBash on Windows
-	thisExecutable = strings.ReplaceAll(thisExecutable, "\\", "\\\\")
+	appExecutable = strings.ReplaceAll(appExecutable, "\\", "\\\\")
 	// Quote in case the path has a space.
-	thisExecutable = "\"" + thisExecutable + "\""
-	commands.ExecuteCommand(os.Args[1:], thisExecutable)
+	return "\"" + appExecutable + "\""
 }

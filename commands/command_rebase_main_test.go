@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ex "github.com/joshallenit/gh-stacked-diff/v2/execute"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -21,16 +20,16 @@ func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 	testutil.AddCommit("second", "rebase-will-keep-this-file")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	allOriginalCommits := templates.GetAllCommits()
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
 
 	testutil.AddCommit("second", "rebase-will-drop-this-file")
 
 	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
-		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
 
 	testParseArguments("rebase-main")
 
@@ -51,16 +50,16 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "rebase-will-keep-this-file")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	allOriginalCommits := templates.GetAllCommits()
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
 
 	testutil.AddCommit("second", "rebase-will-drop-this-file")
 
 	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
-		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
 
 	testParseArguments("rebase-main")
 
@@ -82,11 +81,11 @@ func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommits(t *testing.T) {
 	testutil.AddCommit("second", "2")
 	testutil.AddCommit("third", "3")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	allOriginalCommits := templates.GetAllCommits()
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[2].Commit)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[2].Commit)
 
 	testutil.AddCommit("second", "2-rebase-will-drop-this-file")
 	testutil.AddCommit("third", "3-rebase-will-drop-this-file")
@@ -95,7 +94,7 @@ func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommits(t *testing.T) {
 	testExecutor.SetResponse(
 		allOriginalCommits[0].Branch+" fakeMergeCommit\n"+
 			allOriginalCommits[1].Branch+" fakeMergeCommit",
-		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
 
 	testParseArguments("rebase-main")
 
@@ -122,7 +121,7 @@ func TestSdRebaseMain_WithDuplicateBranches_Panics(t *testing.T) {
 	allOriginalCommits := templates.GetAllCommits()
 
 	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
-		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
 
 	// Return on panic
 	defer func() { _ = recover() }()
@@ -140,24 +139,24 @@ func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 	testutil.CommitFileChange("second", "change-value-to-avoid-same-hash", "1")
 	testutil.CommitFileChange("third", "file-with-conflicts", "1")
 	testParseArguments("new", "2")
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 
 	allCommits := templates.GetAllCommits()
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", allCommits[2].Commit)
 	// If this runs in the same second then it will generate the same commit hash, so change value.
 	testutil.CommitFileChange("second", "change-value-to-avoid-same-hash", "2")
 	testutil.CommitFileChange("fourth", "file-with-conflicts", "2")
 
 	testExecutor.SetResponse(allCommits[1].Branch+" fakeMergeCommit",
-		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
 
-	branches := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch")
+	branches := util.ExecuteOrDie(util.ExecuteOptions{}, "git", "branch")
 	assert.Contains(branches, "second")
 
 	out := testParseArguments("rebase-main")
 
 	assert.Contains(out, "Rebase failed")
-	branches = ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch")
+	branches = util.ExecuteOrDie(util.ExecuteOptions{}, "git", "branch")
 	assert.NotContains(branches, "second")
 }
 
@@ -169,9 +168,9 @@ func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 	testutil.AddCommit("second", "second-1")
 	testutil.AddCommit("third", "")
 
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
 	allCommits := templates.GetAllCommits()
-	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", allCommits[1].Commit)
 
 	testutil.AddCommit("second", "second-2")
 	testParseArguments("new", "1")
@@ -179,10 +178,10 @@ func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 	// Use the commit of the first "second" commit as the branch
 	// that was merged so that the second "second" commit is not dropped.
 	testExecutor.SetResponse(allCommits[1].Branch+" "+allCommits[1].Commit,
-		nil, "gh", "pr", "list", ex.MatchAnyRemainingArgs)
+		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
 
 	testParseArguments("rebase-main")
 
-	branches := ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "branch")
+	branches := util.ExecuteOrDie(util.ExecuteOptions{}, "git", "branch")
 	assert.Contains(branches, "second")
 }
