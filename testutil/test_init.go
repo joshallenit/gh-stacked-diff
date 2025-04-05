@@ -109,7 +109,9 @@ func cdTestDir(testFunctionName string) {
 	individualTestDir := path.Join(TestWorkingDir, getTestFunctionName())
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "rm", "-rf", individualTestDir)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "mkdir", "-p", individualTestDir)
-	os.Chdir(individualTestDir)
+	if err := os.Chdir(individualTestDir); err != nil {
+		panic(err)
+	}
 }
 
 func setTestExecutor() *ex.TestExecutor {

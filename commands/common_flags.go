@@ -12,7 +12,7 @@ import (
 )
 
 func addIndicatorFlag(flagSet *flag.FlagSet) *string {
-	var usage string = "Indicator type to use to interpret commitIndicator:\n" +
+	usage := "Indicator type to use to interpret commitIndicator:\n" +
 		"   commit   a commit hash, can be abbreviated,\n" +
 		"   pr       a github Pull Request number,\n" +
 		"   list     the order of commit listed in the git log, as indicated\n" +

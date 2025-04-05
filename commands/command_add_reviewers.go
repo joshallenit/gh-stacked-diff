@@ -29,11 +29,11 @@ type pullRequestChecksStatus struct {
 
 func createAddReviewersCommand() Command {
 	flagSet := flag.NewFlagSet("add-reviewers", flag.ContinueOnError)
-	var indicatorTypeString *string = addIndicatorFlag(flagSet)
+	indicatorTypeString := addIndicatorFlag(flagSet)
 
-	var whenChecksPass *bool = flagSet.Bool("when-checks-pass", true, "Poll until all checks pass before adding reviewers")
-	var defaultPollFrequency time.Duration = 30 * time.Second
-	var pollFrequency *time.Duration = flagSet.Duration("poll-frequency", defaultPollFrequency,
+	whenChecksPass := flagSet.Bool("when-checks-pass", true, "Poll until all checks pass before adding reviewers")
+	defaultPollFrequency := 30 * time.Second
+	pollFrequency := flagSet.Duration("poll-frequency", defaultPollFrequency,
 		"Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration")
 	reviewers, silent, minChecks := addReviewersFlags(flagSet, "Falls back to "+color.HiWhiteString("PR_REVIEWERS")+" environment variable.")
 

@@ -65,11 +65,11 @@ func GetCommitSelection(stdIo util.StdIo, options CommitSelectionOptions) ([]tem
 	if !hasEnabledRow {
 		switch options.CommitType {
 		case CommitTypePr:
-			return []templates.GitLog{}, errors.New("No new commits with PRs")
+			return []templates.GitLog{}, errors.New("no new commits with PRs")
 		case CommitTypeNoPr:
-			return []templates.GitLog{}, errors.New("No new commits without PRs")
+			return []templates.GitLog{}, errors.New("no new commits without PRs")
 		case CommitTypeBoth:
-			return []templates.GitLog{}, errors.New("No new commits")
+			return []templates.GitLog{}, errors.New("no new commits")
 		default:
 			panic("Unknown commit type " + fmt.Sprint(options.CommitType))
 		}

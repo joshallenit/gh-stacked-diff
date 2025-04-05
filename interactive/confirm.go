@@ -2,11 +2,8 @@ package interactive
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
-
-var confirmPromptStyle = lipgloss.NewStyle().Bold(true)
 
 type confirmModel struct {
 	prompt    string
