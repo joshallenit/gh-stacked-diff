@@ -38,6 +38,7 @@ func NewProgram(model tea.Model, opts ...tea.ProgramOption) *tea.Program {
 
 // Sends messages to the program. Each time [NewProgram] is called after [SendToProgram]
 // programIndex is incremented.
+// This is used instead of using stdin to avoid having to (somehow?) fake keyboard scan codes.
 func SendToProgram(t *testing.T, programIndex int, messages ...tea.Msg) {
 	programListener := &newProgramListener{messages: messages, currentProgramNumber: -1, targetProgram: programIndex}
 	programListeners = append(programListeners, programListener)

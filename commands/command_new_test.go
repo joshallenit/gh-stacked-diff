@@ -285,3 +285,61 @@ func TestSdNew_WhenDestinationCommitNotSpecified_WrapsCursorDown(t *testing.T) {
 
 	assert.True(util.RemoteHasBranch(allCommits[0].Branch))
 }
+
+func TestSdNew_WhenDestinationCommitNotSpecifiedAndManyCommits_PadsIndex(t *testing.T) {
+	assert := assert.New(t)
+	testutil.InitTest(t, slog.LevelInfo)
+	testutil.AddCommit("first", "")
+	testutil.AddCommit("second", "")
+	testutil.AddCommit("third", "")
+	testutil.AddCommit("fourth", "")
+	testutil.AddCommit("fifth", "")
+	testutil.AddCommit("sixth", "")
+	testutil.AddCommit("seventh", "")
+	testutil.AddCommit("eighth", "")
+	testutil.AddCommit("ninth", "")
+	testutil.AddCommit("tenth", "")
+
+	interactive.SendToProgram(t, 0,
+		interactive.NewMessageRune('q'),
+	)
+	out := testutil.NewWriteRecorder()
+	defer func() {
+		r := recover()
+		if r != nil {
+			assert.Contains(out.String(), "│ 1│")
+		}
+	}()
+	testParseArgumentsWithOut(out, "--log-level=error", "new")
+	assert.Fail("did not panic on cancel")
+}
+
+func TestSdNew_WhenDestinationCommitNotSpecifiedAndManyCommitsAndExistingPr_PadsIndex(t *testing.T) {
+	assert := assert.New(t)
+	testutil.InitTest(t, slog.LevelInfo)
+	testutil.AddCommit("first", "")
+	testParseArguments("new", "1")
+	testutil.AddCommit("second", "")
+	testutil.AddCommit("third", "")
+	testutil.AddCommit("fourth", "")
+	testutil.AddCommit("fifth", "")
+	testutil.AddCommit("sixth", "")
+	testutil.AddCommit("seventh", "")
+	testutil.AddCommit("eighth", "")
+	testutil.AddCommit("ninth", "")
+	testutil.AddCommit("tenth", "")
+
+	interactive.SendToProgram(t, 0,
+		interactive.NewMessageRune('q'),
+	)
+	out := testutil.NewWriteRecorder()
+	defer func() {
+		r := recover()
+		if r != nil {
+			assert.Contains(out.String(), "│ 1    │")
+			assert.Contains(out.String(), "│10 ✅ │")
+		}
+	}()
+	testParseArgumentsWithOut(out, "--log-level=error", "new")
+	assert.Fail("did not panic on cancel")
+}
