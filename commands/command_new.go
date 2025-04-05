@@ -83,7 +83,7 @@ func createNewCommand() Command {
 			"   UsernameCleaned              Username with dots (.) converted to dashes (-).\n",
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() > 1 {
-				commandError(flagSet, "too many arguments", command.Usage)
+				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
 			selectCommitOptions := interactive.CommitSelectionOptions{
 				Prompt:      "What commit do you want to create a PR from?",
@@ -97,7 +97,7 @@ func createNewCommand() Command {
 			}
 			createNewPr(*draft, *featureFlag, *baseBranch, targetCommits[0])
 			if *reviewers != "" {
-				addReviewersToPr(targetCommits, true, *silent, *minChecks, *reviewers, 30*time.Second)
+				addReviewersToPr(appConfig, targetCommits, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
 		}}
 }

@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"runtime/debug"
 	"slices"
 	"strings"
 
@@ -13,33 +14,17 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-func ExecuteCommand(stdIo util.StdIo, commandLineArgs []string, appExecutable string, createExit func(lstdErr io.Writer, logLeveler slog.Leveler) func(err any)) {
+func ExecuteCommand(commandLineArgs []string, appExecutable string) {
 	// Unset any color in case a previous terminal command set colors and then was
 	// terminated before it could reset the colors.
 	color.Unset()
 
-	parseArguments(stdIo, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs, appExecutable, createExit)
+	appConfig := util.AppConfig{Io: util.StdIo{Out: os.Stdout, Err: os.Stderr, In: os.Stdin}, AppExecutable: appExecutable, Exit: os.Exit}
+
+	parseArguments(appConfig, flag.NewFlagSet("sd", flag.ContinueOnError), commandLineArgs)
 }
 
-func CreateDefaultExit(stdErr io.Writer, logLeveler slog.Leveler) func(err any) {
-	return func(err any) {
-		// Show panic stack trace during debug log level.
-		if logLeveler.Level() <= slog.LevelDebug {
-			if err == nil {
-				panic("Cancelled")
-			} else {
-				panic(err)
-			}
-		} else if err != nil {
-			fmt.Fprintln(stdErr, fmt.Sprint("error: ", err))
-			os.Exit(1)
-		} else {
-			os.Exit(0)
-		}
-	}
-}
-
-func parseArguments(stdIo util.StdIo, commandLine *flag.FlagSet, commandLineArgs []string, appExecutable string, createExit func(stdErr io.Writer, logLeveler slog.Leveler) func(err any)) {
+func parseArguments(appConfig util.AppConfig, commandLine *flag.FlagSet, commandLineArgs []string) {
 	if commandLine.ErrorHandling() != flag.ContinueOnError {
 		// Use ContinueOnError so that a description of the command can be included before usage
 		// for help.
@@ -65,7 +50,7 @@ func parseArguments(stdIo util.StdIo, commandLine *flag.FlagSet, commandLineArgs
 		var logLevel slog.Level
 		logLevel, parseErr = stringToLogLevel(*logLevelString)
 		if parseErr == nil {
-			logLevelVar = setSlogLogger(stdIo.Out, logLevel)
+			logLevelVar = setSlogLogger(appConfig.Io.Out, logLevel)
 		}
 	}
 	// parseErr is dealt with below via commandError and commandHelp.
@@ -99,20 +84,20 @@ func parseArguments(stdIo util.StdIo, commandLine *flag.FlagSet, commandLineArgs
 
 	if parseErr != nil {
 		if parseErr == flag.ErrHelp {
-			commandHelp(commandLine, commandLineDescription, commandLineUsage, false)
+			commandHelp(appConfig, commandLine, commandLineDescription, commandLineUsage, false)
 		} else {
-			commandError(commandLine, parseErr.Error(), commandLineUsage)
+			commandError(appConfig, commandLine, parseErr.Error(), commandLineUsage)
 		}
 	}
 
 	if commandLine.NArg() == 0 {
-		commandHelp(commandLine, commandLineDescription, commandLineUsage, true)
+		commandHelp(appConfig, commandLine, commandLineDescription, commandLineUsage, true)
 	}
 	selectedIndex := slices.IndexFunc(commands, func(command Command) bool {
 		return command.FlagSet.Name() == commandLine.Arg(0)
 	})
 	if selectedIndex == -1 {
-		commandError(commandLine, "unknown command "+commandLine.Arg(0), commandLineUsage)
+		commandError(appConfig, commandLine, "unknown command "+commandLine.Arg(0), commandLineUsage)
 	}
 
 	if commands[selectedIndex].FlagSet.ErrorHandling() != flag.ContinueOnError {
@@ -122,25 +107,27 @@ func parseArguments(stdIo util.StdIo, commandLine *flag.FlagSet, commandLineArgs
 	commands[selectedIndex].FlagSet.SetOutput(io.Discard)
 	if parseErr := commands[selectedIndex].FlagSet.Parse(commandLine.Args()[1:]); parseErr != nil {
 		if parseErr == flag.ErrHelp {
-			commandHelp(commands[selectedIndex].FlagSet, commands[selectedIndex].Description, commands[selectedIndex].Usage, false)
+			commandHelp(appConfig, commands[selectedIndex].FlagSet, commands[selectedIndex].Description, commands[selectedIndex].Usage, false)
 		} else {
-			commandError(commands[selectedIndex].FlagSet, parseErr.Error(), commands[selectedIndex].Usage)
+			commandError(appConfig, commands[selectedIndex].FlagSet, parseErr.Error(), commands[selectedIndex].Usage)
 		}
 	}
 
 	if *logLevelString == "" {
 		logLevelVar.Set(commands[selectedIndex].DefaultLogLevel)
 	}
-	exit := createExit(stdIo.Err, logLevelVar)
 	defer func() {
 		r := recover()
 		if r != nil {
-			exit(r)
+			util.Fprintln(appConfig.Io.Err, color.RedString(fmt.Sprint("error: ", r)))
+			if logLevelVar.Level() <= slog.LevelDebug {
+				util.Fprintln(appConfig.Io.Err, string(debug.Stack()))
+			}
+			appConfig.Exit(1)
 		}
 	}()
 	// Note: call GetMainBranchOrDie early as it has useful error messages.
 	slog.Debug(fmt.Sprint("Using main branch " + util.GetMainBranchOrDie()))
-	appConfig := util.AppConfig{Io: stdIo, AppExecutable: appExecutable, Exit: exit}
 	commands[selectedIndex].OnSelected(appConfig, commands[selectedIndex])
 }
 

@@ -29,7 +29,7 @@ func createRebaseMainCommand() Command {
 		Usage: "sd " + flagSet.Name(),
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() != 0 {
-				commandError(flagSet, "too many arguments", command.Usage)
+				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
 			rebaseMain(appConfig)
 		}}
@@ -125,7 +125,7 @@ func checkUniqueBranches(dropCommits []templates.GitLog) {
 
 func dropBranches(dropCommits []templates.GitLog) {
 	for _, dropCommit := range dropCommits {
-		// Ignore any error.
+		// nolint:errcheck
 		ex.Execute(ex.ExecuteOptions{Output: ex.NewStandardOutput()}, "git", "branch", "-D", dropCommit.Branch)
 	}
 }

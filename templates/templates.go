@@ -177,7 +177,9 @@ func runTemplate(configFilename string, defaultTemplateText string, data any) st
 		}
 	}
 	var output bytes.Buffer
-	parsed.Execute(&output, data)
+	if err := parsed.Execute(&output, data); err != nil {
+		panic(err)
+	}
 	return output.String()
 }
 
@@ -185,7 +187,7 @@ func getPullRequestTemplateData(commitHash string, featureFlag string) templateD
 	commitSummary := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%s", commitHash))
 	commitBody := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "--no-pager", "show", "--no-patch", "--format=%b", commitHash))
 	commitSummaryCleaned := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "show", "--no-patch", "--format=%f", commitHash))
-	expression := regexp.MustCompile("^(\\S+-[[:digit:]]+ )?(.*)")
+	expression := regexp.MustCompile(`^(\S+-[[:digit:]]+ )?(.*)`)
 	summaryMatches := expression.FindStringSubmatch(commitSummary)
 	return templateData{
 		Username:                   util.GetUsername(),

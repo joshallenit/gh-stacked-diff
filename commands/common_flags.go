@@ -2,16 +2,17 @@ package commands
 
 import (
 	"flag"
-	"fmt"
 	"io"
 	"os"
 	"runtime"
 
+	"github.com/fatih/color"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 func addIndicatorFlag(flagSet *flag.FlagSet) *string {
-	var usage string = "Indicator type to use to interpret commitIndicator:\n" +
+	usage := "Indicator type to use to interpret commitIndicator:\n" +
 		"   commit   a commit hash, can be abbreviated,\n" +
 		"   pr       a github Pull Request number,\n" +
 		"   list     the order of commit listed in the git log, as indicated\n" +
@@ -23,10 +24,10 @@ func addIndicatorFlag(flagSet *flag.FlagSet) *string {
 	return flagSet.String("indicator", string(templates.IndicatorTypeGuess), usage)
 }
 
-func checkIndicatorFlag(command Command, indicatorTypeString *string) templates.IndicatorType {
+func checkIndicatorFlag(appConfig util.AppConfig, command Command, indicatorTypeString *string) templates.IndicatorType {
 	indicatorType := templates.IndicatorType(*indicatorTypeString)
 	if !indicatorType.IsValid() {
-		commandError(command.FlagSet, "Invalid indicator type: "+*indicatorTypeString, command.Usage)
+		commandError(appConfig, command.FlagSet, "Invalid indicator type: "+*indicatorTypeString, command.Usage)
 	}
 	return indicatorType
 }
@@ -56,40 +57,40 @@ func addSilentFlag(flagSet *flag.FlagSet, usageUseCase string) *bool {
 	}
 }
 
-func commandHelp(flagSet *flag.FlagSet, description string, usage string, isError bool) {
+func commandHelp(appConfig util.AppConfig, flagSet *flag.FlagSet, description string, usage string, isError bool) {
 	var out io.Writer
 	if isError {
 		out = os.Stderr
 	} else {
 		out = os.Stdout
 	}
-	fmt.Fprintln(out, description)
+	util.Fprintln(out, description)
 	printUsage(flagSet, usage, out)
 	if isError {
-		os.Exit(1)
+		appConfig.Exit(1)
 	} else {
-		os.Exit(0)
+		appConfig.Exit(0)
 	}
 }
 
-func commandError(flagSet *flag.FlagSet, errMessage string, usage string) {
-	fmt.Fprintln(os.Stderr, "error: "+errMessage)
+func commandError(appConfig util.AppConfig, flagSet *flag.FlagSet, errMessage string, usage string) {
+	util.Fprintln(os.Stderr, color.RedString("error: "+errMessage))
 	printUsage(flagSet, usage, os.Stderr)
-	os.Exit(1)
+	appConfig.Exit(1)
 }
 
 func printUsage(flagSet *flag.FlagSet, usage string, out io.Writer) {
-	fmt.Fprintln(out, "")
-	fmt.Fprintln(out, "usage: "+usage)
+	util.Fprintln(out, "")
+	util.Fprintln(out, "usage: "+usage)
 	hasFlags := false
 	// There's no other way to get the number of possible flags, so use VisitAll.
 	flagSet.VisitAll(func(flag *flag.Flag) {
 		hasFlags = true
 	})
 	if hasFlags {
-		fmt.Fprintln(out, "")
-		fmt.Fprintln(out, "flags:")
-		fmt.Fprintln(out, "")
+		util.Fprintln(out, "")
+		util.Fprintln(out, "flags:")
+		util.Fprintln(out, "")
 		flagSet.SetOutput(out)
 		flagSet.PrintDefaults()
 		flagSet.SetOutput(io.Discard)

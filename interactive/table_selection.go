@@ -11,9 +11,6 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-var baseStyle = lipgloss.NewStyle()
-
-var promptStyle = baseStyle.Bold(true)
 var highlightEnabledStyle = baseStyle.
 	Foreground(lipgloss.Color("229")).
 	Background(lipgloss.Color("57"))

@@ -6,6 +6,7 @@ The Stacked Diff Workflow CLI (also known as, the `sd` command) is written in go
 
 1. Install [golang](https://go.dev/dl/).
 2. Install make. This is already installed on Mac, but instructions for windows are [here](https://leangaurav.medium.com/how-to-setup-install-gnu-make-on-windows-324480f1da69).
+3. Install lint. [Install instructions](https://golangci-lint.run/welcome/install/#local-installation)
 
 Then run:
 

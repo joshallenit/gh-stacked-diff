@@ -20,7 +20,7 @@ func createMarkAsFixupCommand() Command {
 		Hidden:      true,
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() < 3 {
-				commandError(flagSet, "not enough arguments", command.Usage)
+				commandError(appConfig, flagSet, "not enough arguments", command.Usage)
 			}
 
 			targetCommit := flagSet.Arg(0)
@@ -56,7 +56,7 @@ func markAsFixup(targetCommit string, fixupCommits []string, rebaseFilename stri
 		panic(fmt.Sprint("Could only find ", i, " of ", len(fixupCommits), " fixup commits ", fixupCommits, " in ", lines))
 	}
 	for _, line := range lines {
-		if strings.HasPrefix(line, "pick ") && strings.Index(line, targetCommit) != -1 {
+		if strings.HasPrefix(line, "pick ") && strings.Contains(line, targetCommit) {
 			newText.WriteString(line)
 			newText.WriteString("\n")
 			for _, fixupLine := range fixupLines {
@@ -80,7 +80,7 @@ func isFixupLine(line string, fixupCommits []string) bool {
 		return false
 	}
 	for _, commit := range fixupCommits {
-		if strings.Index(line, commit) != -1 {
+		if strings.Contains(line, commit) {
 			return true
 		}
 	}

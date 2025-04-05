@@ -21,7 +21,7 @@ func createPrsCommand() Command {
 		DefaultLogLevel: slog.LevelError,
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() != 0 {
-				commandError(flagSet, "too many arguments", command.Usage)
+				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
 			ex.ExecuteOrDie(ex.ExecuteOptions{Output: &ex.ExecutionOutput{Stdout: appConfig.Io.Out, Stderr: appConfig.Io.Err}},
 				"gh", "pr", "list", "--author", "@me")

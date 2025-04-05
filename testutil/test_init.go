@@ -97,17 +97,21 @@ func cdTestRepo(testFunctionName string) {
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "init", "--bare", remoteDir)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "git", "clone", remoteDir, repositoryDir)
 
-	os.Chdir(repositoryDir)
+	if err := os.Chdir(repositoryDir); err != nil {
+		panic(err)
+	}
 	// os.Getwd() returns an unusable path ("c:\..."") in windows when running from Git Bash. Instead use "pwd"
 	wd := strings.TrimSpace(ex.ExecuteOrDie(ex.ExecuteOptions{}, "pwd"))
 	slog.Info("Changed to test repository directory:\n" + wd)
 }
 
 func cdTestDir(testFunctionName string) {
-	individualTestDir := path.Join(TestWorkingDir, getTestFunctionName())
+	individualTestDir := path.Join(TestWorkingDir, testFunctionName)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "rm", "-rf", individualTestDir)
 	ex.ExecuteOrDie(ex.ExecuteOptions{}, "mkdir", "-p", individualTestDir)
-	os.Chdir(individualTestDir)
+	if err := os.Chdir(individualTestDir); err != nil {
+		panic(err)
+	}
 }
 
 func setTestExecutor() *ex.TestExecutor {

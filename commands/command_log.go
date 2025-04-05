@@ -37,7 +37,7 @@ func createLogCommand() Command {
 		DefaultLogLevel: slog.LevelError,
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() != 0 {
-				commandError(flagSet, "too many arguments", command.Usage)
+				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
 			printGitLog(appConfig.Io.Out)
 		}}
@@ -65,18 +65,18 @@ func printGitLog(out io.Writer) {
 		numberPrefix := getNumberPrefix(i, len(logs))
 		if slices.Contains(checkedBranches, log.Branch) {
 			// Use color for ✅ otherwise in Git Bash on Windows it will appear as black and white.
-			fmt.Fprint(out, numberPrefix+color.GreenString("✅ "))
+			util.Fprint(out, numberPrefix+color.GreenString("✅ "))
 		} else {
-			fmt.Fprint(out, numberPrefix+"   ")
+			util.Fprint(out, numberPrefix+"   ")
 		}
-		fmt.Fprintln(out, color.YellowString(log.Commit)+" "+log.Subject)
+		util.Fprintln(out, color.YellowString(log.Commit)+" "+log.Subject)
 		// find first commit that is not in main branch
 		if slices.Contains(checkedBranches, log.Branch) {
 			branchCommits := templates.GetNewCommits(log.Branch)
 			if len(branchCommits) > 1 {
 				for _, branchCommit := range branchCommits {
 					padding := strings.Repeat(" ", len(numberPrefix))
-					fmt.Fprintln(out, padding+"   - "+branchCommit.Subject)
+					util.Fprintln(out, padding+"   - "+branchCommit.Subject)
 				}
 			}
 		}

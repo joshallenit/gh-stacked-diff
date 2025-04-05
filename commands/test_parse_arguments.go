@@ -34,14 +34,9 @@ var _ io.Reader = unsupportedReader{}
 
 // Calls [parseArguments] for unit tests.
 func testParseArguments(commandLineArgs ...string) string {
-	slog.Debug(fmt.Sprint("***Testing parse arguments***", strings.Join(commandLineArgs, " ")))
-	createPanicOnExit := func(stdErr io.Writer, logLeveler slog.Leveler) func(err any) {
-		return func(err any) {
-			if err == nil {
-				panic("User cancelled")
-			}
-			panic(err)
-		}
+	slog.Debug(fmt.Sprint("***Testing parse arguments*** ", strings.Join(commandLineArgs, " ")))
+	panicOnExit := func(code int) {
+		panic("Panicking instead of exiting with code " + fmt.Sprint(code))
 	}
 	out := testutil.NewWriteRecorder()
 	// Executable must be on PATH for tests to pass so that sequenceEditorPrefix will execute.
@@ -52,13 +47,12 @@ func testParseArguments(commandLineArgs ...string) string {
 	// "error creating cancelreader: failed to prepare console input: get console mode: The handle is invalid."
 	stdin := unsupportedReader{}
 
+	appConfig := util.AppConfig{Io: util.StdIo{Out: out, Err: out, In: stdin}, AppExecutable: appExecutable, Exit: panicOnExit}
 	parseArguments(
-		util.StdIo{Out: out, Err: out, In: stdin},
+		appConfig,
 		flag.NewFlagSet("sd", flag.ContinueOnError),
 		commandLineArgs,
-		appExecutable,
-		createPanicOnExit,
 	)
-	slog.Debug(fmt.Sprint("***Done running arguments***", strings.Join(commandLineArgs, " ")))
+	slog.Debug(fmt.Sprint("***Done running arguments*** ", strings.Join(commandLineArgs, " ")))
 	return out.String()
 }

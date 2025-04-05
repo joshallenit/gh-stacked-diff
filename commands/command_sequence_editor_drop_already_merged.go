@@ -26,7 +26,7 @@ func createDropAlreadyMergedCommand() Command {
 		Hidden:      true,
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() < 2 {
-				commandError(flagSet, "not enough arguments", command.Usage)
+				commandError(appConfig, flagSet, "not enough arguments", command.Usage)
 			}
 			dropCommits := flagSet.Args()[0 : len(flagSet.Args())-1]
 			rebaseFilename := flagSet.Args()[len(flagSet.Args())-1]

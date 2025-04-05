@@ -39,7 +39,7 @@ func createUpdateCommand() Command {
 			commitsToCherryPick := getCommitsToCherryPick(appConfig, command, indicatorTypeString)
 			updatePr(appConfig, destCommit, commitsToCherryPick)
 			if *reviewers != "" {
-				addReviewersToPr([]templates.GitLog{destCommit}, true, *silent, *minChecks, *reviewers, 30*time.Second)
+				addReviewersToPr(appConfig, []templates.GitLog{destCommit}, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
 		}}
 }

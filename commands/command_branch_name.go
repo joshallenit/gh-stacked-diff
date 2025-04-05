@@ -2,7 +2,6 @@ package commands
 
 import (
 	"flag"
-	"fmt"
 	"log/slog"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
@@ -21,7 +20,7 @@ func createBranchNameCommand() Command {
 		Usage: "sd " + flagSet.Name() + " [flags] <commitIndicator>",
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			if flagSet.NArg() > 1 {
-				commandError(flagSet, "too many arguments", command.Usage)
+				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
 			selectCommitOptions := interactive.CommitSelectionOptions{
 				Prompt:      "What commit do you want the branch name for?",
@@ -29,6 +28,6 @@ func createBranchNameCommand() Command {
 				MultiSelect: false,
 			}
 			targetCommit := getTargetCommits(appConfig, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
-			fmt.Fprint(appConfig.Io.Out, targetCommit[0].Branch)
+			util.Fprint(appConfig.Io.Out, targetCommit[0].Branch)
 		}}
 }
