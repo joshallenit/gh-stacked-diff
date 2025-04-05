@@ -22,7 +22,7 @@ func createPrsCommand() Command {
 			if flagSet.NArg() != 0 {
 				commandError(appConfig, flagSet, "too many arguments", command.Usage)
 			}
-			util.ExecuteOrDie(util.ExecuteOptions{Output: &util.ExecutionOutput{Stdout: appConfig.Io.Out, Stderr: appConfig.Io.Err}},
+			util.ExecuteOrDie(util.ExecuteOptions{Io: appConfig.Io},
 				"gh", "pr", "list", "--author", "@me")
 		}}
 }

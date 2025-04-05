@@ -20,9 +20,7 @@ func TestPrintGitLog_OnEmptyRemote_PrintsLog(t *testing.T) {
 
 	testutil.AddCommit("first", "")
 
-	outWriter := testutil.NewWriteRecorder()
-	printGitLog(outWriter)
-	out := outWriter.String()
+	out := testParseArguments("log")
 
 	if !strings.Contains(out, "first") {
 		t.Errorf("'first' should be in %s", out)
@@ -38,9 +36,7 @@ func TestPrintGitLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 
 	testutil.AddCommit("second", "")
 
-	outWriter := testutil.NewWriteRecorder()
-	printGitLog(outWriter)
-	out := outWriter.String()
+	out := testParseArguments("log")
 
 	if strings.Contains(out, "first") {
 		t.Errorf("'first' should not be in %s", out)
@@ -57,9 +53,7 @@ func TestPrintGitLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t 
 
 	testParseArguments("new", "1")
 
-	outWriter := testutil.NewWriteRecorder()
-	printGitLog(outWriter)
-	out := outWriter.String()
+	out := testParseArguments("log")
 
 	if !strings.Contains(out, "✅") {
 		t.Errorf("'✅' should be in %s", out)
@@ -79,9 +73,7 @@ func TestPrintGitLog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 
 	testutil.AddCommit("second", "")
 
-	outWriter := testutil.NewWriteRecorder()
-	printGitLog(outWriter)
-	out := outWriter.String()
+	out := testParseArguments("log")
 
 	assert.NotContains(out, "first")
 	assert.Contains(out, "second")
@@ -99,9 +91,7 @@ func TestPrintGitLog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) 
 
 	testParseArguments("update", "2", "1")
 
-	outWriter := testutil.NewWriteRecorder()
-	printGitLog(outWriter)
-	out := outWriter.String()
+	out := testParseArguments("log")
 
 	allCommits := templates.GetAllCommits()
 	assert.Equal("1. ✅ "+color.YellowString(allCommits[0].Commit)+" first\n"+

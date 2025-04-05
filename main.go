@@ -48,7 +48,6 @@ func main() {
 		AppExecutable: getAppExecutable(),
 		Exit:          os.Exit,
 	}
-
 	commands.ExecuteCommand(appConfig, os.Args[1:])
 }
 

@@ -3,34 +3,16 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"io"
 	"log/slog"
-	"time"
 
 	"strings"
 
-	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
 // Program name
 const programName string = "gh-stacked-diff"
-
-// io.Reader where Read just sleeps if input is setup to come from [interactive.SendToProgram]
-// or panics (to indicate that the test should not use stdin)
-type unsupportedReader struct{}
-
-func (r unsupportedReader) Read([]byte) (int, error) {
-	if interactive.HasProgramMessagesSet() {
-		time.Sleep(10 * time.Minute)
-		panic("timeout, test should have cancelled read")
-	} else {
-		panic("Use of stdin not expected for this test")
-	}
-}
-
-var _ io.Reader = unsupportedReader{}
 
 // Calls [parseArguments] for unit tests.
 func testParseArguments(commandLineArgs ...string) string {
@@ -50,7 +32,8 @@ func testParseArgumentsWithOut(out *testutil.WriteRecorder, commandLineArgs ...s
 
 	// Set stdin in unit tests to avoid error with bubbletea:
 	// "error creating cancelreader: failed to prepare console input: get console mode: The handle is invalid."
-	stdin := unsupportedReader{}
+	// To fake user input use interactive.SendToProgram.
+	stdin := strings.NewReader("")
 
 	appConfig := util.AppConfig{
 		Io:            util.StdIo{Out: out, Err: out, In: stdin},

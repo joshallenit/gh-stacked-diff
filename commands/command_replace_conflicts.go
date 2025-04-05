@@ -38,7 +38,9 @@ func replaceConflicts(appConfig util.AppConfig, confirmed bool) {
 	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", "HEAD")
 	slog.Info(fmt.Sprint("Replacing changes (merge conflicts) for failed rebase of commit ", commitWithConflicts, ", with changes from associated branch, ", gitLog.Branch))
 	diff := util.ExecuteOrDie(util.ExecuteOptions{}, "git", "diff", "--binary", "origin/"+util.GetMainBranchOrDie(), gitLog.Branch)
-	util.ExecuteOrDie(util.ExecuteOptions{Stdin: &diff}, "git", "apply")
+	util.ExecuteOrDie(util.ExecuteOptions{Io: util.StdIo{In: strings.NewReader(diff), Out: nil, Err: nil}},
+		"git", "apply",
+	)
 	slog.Info("Adding changes and continuing rebase")
 	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "add", ".")
 	continueOptions := util.ExecuteOptions{EnvironmentVariables: []string{"GIT_EDITOR=true"}}

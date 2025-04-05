@@ -1,7 +1,7 @@
 package util
 
 import (
-	"io"
+	"bytes"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -10,23 +10,12 @@ import (
 
 // Options for [ExecuteWithOptions].
 type ExecuteOptions struct {
-	// String to use for stdin. Useful for "git apply".
-	Stdin *string
+	// What to use for input and output. Overriding input is useful for "git apply"
+	// If output is not set then output is returned from Execute.
+	// Any nil In/Err/Out values are ignored.
+	Io StdIo
 	// For example "MY_VAR=some_value"
 	EnvironmentVariables []string
-	// Where to send program output, or nil for [Execute] to return it.
-	Output *ExecutionOutput
-}
-
-// Where output should go for [Execute].
-type ExecutionOutput struct {
-	Stdout io.Writer // For standard out.
-	Stderr io.Writer // For standard error.
-}
-
-// Send outout to stdout and stderr.
-func NewStandardOutput() *ExecutionOutput {
-	return &ExecutionOutput{Stdout: os.Stdout, Stderr: os.Stderr}
 }
 
 // Provides a simple way to execute shell commands.
@@ -51,20 +40,22 @@ func (defaultExecutor DefaultExecutor) Execute(options ExecuteOptions, programNa
 	if options.EnvironmentVariables != nil {
 		cmd.Env = append(os.Environ(), options.EnvironmentVariables...)
 	}
-	if options.Stdin != nil {
-		cmd.Stdin = strings.NewReader(*options.Stdin)
+	if options.Io.In != nil {
+		cmd.Stdin = options.Io.In
 	}
-	var out []byte
-	var err error
-	if options.Output != nil {
-		cmd.Stdout = options.Output.Stdout
-		cmd.Stderr = options.Output.Stderr
-		err = cmd.Run()
+	var b bytes.Buffer
+	if options.Io.Out != nil {
+		cmd.Stdout = options.Io.Out
 	} else {
-		out, err = cmd.CombinedOutput()
+		cmd.Stdout = &b
 	}
-
-	stringOut := string(out)
+	if options.Io.Err != nil {
+		cmd.Stderr = options.Io.Err
+	} else {
+		cmd.Stderr = &b
+	}
+	err := cmd.Run()
+	stringOut := b.String()
 	slog.Debug("Executed " + getLogMessage(programName, args, stringOut, err))
 	return stringOut, err
 }

@@ -89,9 +89,9 @@ func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCh
 	slog.Info("Fast forwarding in case there were any commits made via github web interface")
 	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "fetch", "origin", destCommit.Branch)
 	forcePush := false
-	if _, err := util.Execute(util.ExecuteOptions{Output: util.NewStandardOutput()}, "git", "merge", "--ff-only", "origin/"+destCommit.Branch); err != nil {
+	if _, err := util.Execute(util.ExecuteOptions{Io: appConfig.Io}, "git", "merge", "--ff-only", "origin/"+destCommit.Branch); err != nil {
 		slog.Info(fmt.Sprint("Could not fast forward to match origin. Rebasing instead. ", err))
-		util.ExecuteOrDie(util.ExecuteOptions{Output: util.NewStandardOutput()}, "git", "rebase", "origin", destCommit.Branch)
+		util.ExecuteOrDie(util.ExecuteOptions{Io: appConfig.Io}, "git", "rebase", "origin", destCommit.Branch)
 		// As we rebased, a force push may be required.
 		forcePush = true
 	}
@@ -109,9 +109,9 @@ func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCh
 		rebaseCommit := util.FirstOriginMainCommit(util.GetMainBranchOrDie())
 		slog.Info(fmt.Sprint("Rebasing with the base commit on "+util.GetMainBranchOrDie()+" branch, ", rebaseCommit,
 			", in case the local "+util.GetMainBranchOrDie()+" was rebased with origin/"+util.GetMainBranchOrDie()))
-		util.ExecuteOrDie(util.ExecuteOptions{Output: util.NewStandardOutput()}, "git", "rebase", rebaseCommit)
+		util.ExecuteOrDie(util.ExecuteOptions{Io: appConfig.Io}, "git", "rebase", rebaseCommit)
 		slog.Info(fmt.Sprint("Cherry picking again ", commitsToCherryPick))
-		util.ExecuteOrDie(util.ExecuteOptions{Output: util.NewStandardOutput()}, "git", cherryPickArgs...)
+		util.ExecuteOrDie(util.ExecuteOptions{Io: appConfig.Io}, "git", cherryPickArgs...)
 		forcePush = true
 	}
 	slog.Info("Pushing to remote")
@@ -135,7 +135,7 @@ func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCh
 			strings.Join(commitHashes, " "),
 	}
 	slog.Debug(fmt.Sprint("Using sequence editor ", environmentVariables))
-	options := util.ExecuteOptions{EnvironmentVariables: environmentVariables, Output: util.NewStandardOutput()}
+	options := util.ExecuteOptions{EnvironmentVariables: environmentVariables, Io: appConfig.Io}
 	util.ExecuteOrDie(options, "git", "rebase", "-i", destCommit.Commit+"^")
 	rollbackManager.Clear()
 }

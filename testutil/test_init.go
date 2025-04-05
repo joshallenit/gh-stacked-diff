@@ -14,6 +14,8 @@ import (
 
 	"testing"
 
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
@@ -63,6 +65,12 @@ func InitTest(t *testing.T, logLevel slog.Level) *util.TestExecutor {
 
 	util.SetDefaultSleep(func(d time.Duration) {
 		slog.Debug(fmt.Sprint("Skipping sleep in tests ", d))
+	})
+
+	interactive.AddNewProgramListener(t, func(program *tea.Program) {
+		if !interactive.HasFakeProgramMessages() {
+			panic("No input setup for interactive ui, use interactive.SendToProgram")
+		}
 	})
 	return testExecutor
 }
