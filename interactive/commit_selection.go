@@ -52,6 +52,8 @@ func GetCommitSelection(stdIo util.StdIo, options CommitSelectionOptions) ([]tem
 	for i, commit := range newCommits {
 		hasLocalBranch := slices.Contains(prBranches, commit.Branch)
 		indexString := fmt.Sprint(i + 1)
+		paddingLen := len(fmt.Sprint(len(newCommits))) - len(indexString)
+		indexString = strings.Repeat(" ", paddingLen) + indexString
 		if hasLocalBranch {
 			indexString += " ✅"
 		}
@@ -75,7 +77,7 @@ func GetCommitSelection(stdIo util.StdIo, options CommitSelectionOptions) ([]tem
 		}
 	}
 
-	selected := GetTableSelection(options.Prompt, columns, rows, options.MultiSelect, stdIo.In, rowEnabled)
+	selected := GetTableSelection(options.Prompt, columns, rows, options.MultiSelect, stdIo, rowEnabled)
 
 	selectedCommits := make([]templates.GitLog, 0, len(selected))
 	// reverse the selected indexes to do cherry-picks in order.

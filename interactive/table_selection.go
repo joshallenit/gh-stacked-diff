@@ -3,8 +3,6 @@ package interactive
 import (
 	"slices"
 
-	"io"
-
 	table "github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -115,7 +113,14 @@ func (m model) View() string {
 }
 
 // Returns empty selection if the user cancelled.
-func GetTableSelection(prompt string, columns []string, rows [][]string, multiselect bool, stdIn io.Reader, rowEnabled func(row int) bool) []int {
+func GetTableSelection(
+	prompt string,
+	columns []string,
+	rows [][]string,
+	multiselect bool,
+	stdIo util.StdIo,
+	rowEnabled func(row int) bool,
+) []int {
 	tableColumns := util.MapSlice(columns, func(columnName string) table.Column {
 		return table.Column{Title: columnName}
 	})
@@ -145,7 +150,11 @@ func GetTableSelection(prompt string, columns []string, rows [][]string, multise
 		rowEnabled:   rowEnabled,
 		prompt:       prompt,
 	}
-	finalModel, err := NewProgram(initialModel, tea.WithInput(stdIn)).Run()
+	finalModel, err := NewProgram(
+		initialModel,
+		tea.WithInput(stdIo.In),
+		tea.WithOutput(stdIo.Out),
+	).Run()
 	if err != nil {
 		panic(err)
 	}
