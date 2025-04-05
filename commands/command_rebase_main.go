@@ -123,9 +123,12 @@ func checkUniqueBranches(dropCommits []templates.GitLog) {
 func dropBranches(stdIo util.StdIo, dropCommits []templates.GitLog) {
 	for _, dropCommit := range dropCommits {
 		// nolint:errcheck
-		util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "branch", "-D", dropCommit.Branch)
-		remoteOut, err := util.Execute(util.ExecuteOptions{}, "git", "push", "--delete", "origin", dropCommit.Branch)
-		if err != nil {
+		localOut, localErr := util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "branch", "-D", dropCommit.Branch)
+		if localErr == nil {
+			fmt.Fprint(stdIo.Out, localOut)
+		}
+		remoteOut, remoteErr := util.Execute(util.ExecuteOptions{}, "git", "push", "--delete", "origin", dropCommit.Branch)
+		if remoteErr == nil {
 			fmt.Fprint(stdIo.Out, remoteOut)
 		}
 	}
