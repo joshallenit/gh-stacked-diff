@@ -25,4 +25,4 @@ jobs:
       run: make -o format build
 
     - name: Test
-      run: make -o format test
+      run: make -o format -o lint test
