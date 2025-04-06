@@ -18,7 +18,7 @@ import (
 func TestSdAddReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(t, slog.LevelDebug)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
 
