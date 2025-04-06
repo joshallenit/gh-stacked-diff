@@ -125,7 +125,7 @@ func checkUniqueBranches(dropCommits []templates.GitLog) {
 func deleteBranches(stdIo util.StdIo, dropCommits []templates.GitLog, mergedCommits []templates.GitLog) {
 	for _, dropCommit := range dropCommits {
 		if out, err := util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "branch", "-D", dropCommit.Branch); err == nil {
-			fmt.Fprint(stdIo.Out, out)
+			util.Fprint(stdIo.Out, out)
 		}
 		index := slices.IndexFunc(mergedCommits, func(mergedCommit templates.GitLog) bool {
 			return mergedCommit.Branch == dropCommit.Branch
@@ -136,6 +136,7 @@ func deleteBranches(stdIo util.StdIo, dropCommits []templates.GitLog, mergedComm
 			// Only delete remote branch if it is on the same commit to avoid accidentally deleting
 			// a branch that is not merged.
 			if mergedCommits[index].Commit == getBranchLatestCommit("origin/"+dropCommit.Branch) {
+				// nolint:errcheck
 				util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "push", "--delete", "origin", dropCommit.Branch)
 			}
 		}
