@@ -72,12 +72,12 @@ func rebaseMain(appConfig util.AppConfig) {
 	}
 }
 
-func getMergedBranches() []string {
+func getMergedBranches() []templates.GitLog {
 	mergedBranchesRaw := util.ExecuteOrDie(util.ExecuteOptions{},
 		"gh", "pr", "list", "--author", "@me", "--state", "merged", "--base", util.GetMainBranchOrDie(),
 		"--json", "headRefName,mergeCommit", "--jq", ".[ ] | .headRefName + \" \" +  .mergeCommit.oid")
 	mergedBranchesRawLines := strings.Split(strings.TrimSpace(mergedBranchesRaw), "\n")
-	mergedBranches := make([]string, 0, len(mergedBranchesRawLines))
+	mergedBranches := make([]templates.GitLog, 0, len(mergedBranchesRawLines))
 	for _, mergedBranchRawLine := range mergedBranchesRawLines {
 		fields := strings.Fields(mergedBranchRawLine)
 		if len(fields) != 2 {
@@ -87,17 +87,19 @@ func getMergedBranches() []string {
 		_, mergeBaseErr := util.Execute(util.ExecuteOptions{}, "git", "merge-base", "--is-ancestor", fields[1], "HEAD")
 		if mergeBaseErr != nil {
 			// Not an ancestor, so it was merged after the first origin commit.
-			mergedBranches = append(mergedBranches, fields[0])
+			mergedBranches = append(mergedBranches, templates.GitLog{Branch: fields[0], Commit: fields[1], Summary: ""})
 		}
 	}
 	return mergedBranches
 }
 
-func getDropCommits(localLogs []templates.GitLog, mergedBranches []string) []templates.GitLog {
+func getDropCommits(localLogs []templates.GitLog, mergedBranches []templates.GitLog) []templates.GitLog {
 	// Look for matching summaries between localLogs and mergedBranches
 	var dropCommits []templates.GitLog
 	for _, localLog := range localLogs {
-		if slices.Contains(mergedBranches, localLog.Branch) {
+		if slices.ContainsFunc(mergedBranches, func(mergedBranch templates.GitLog) bool {
+			return mergedBranch.Branch == localLog.Branch
+		}) {
 			slog.Info(fmt.Sprint("Force dropping as it was already merged: ", localLog.Commit, " ", localLog.Subject))
 			dropCommits = append(dropCommits, localLog)
 		}
@@ -120,16 +122,18 @@ func checkUniqueBranches(dropCommits []templates.GitLog) {
 	}
 }
 
-func deleteBranches(stdIo util.StdIo, dropCommits []templates.GitLog) {
+func deleteBranches(stdIo util.StdIo, dropCommits []templates.GitLog, mergedCommits []templates.GitLog) {
 	for _, dropCommit := range dropCommits {
-		localHash := getBranchLatestCommit(dropCommit.Branch)
-		if localHash != "" {
-			// nolint:errcheck
-			util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "branch", "-D", dropCommit.Branch)
+		if out, err := util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "branch", "-D", dropCommit.Branch); err == nil {
+			fmt.Fprint(stdIo.Out, out)
+		}
+		mergedCommitIndex := slices.IndexFunc(mergedCommits, func(mergedCommit templates.GitLog) bool {
+			return mergedCommit.Branch == dropCommit.Branch
+		})
+		if mergedCommitIndex != -1 {
 			// Only delete remote branch if it is on the same commit to avoid accidentally deleting
 			// a branch that is not merged.
-			if localHash == getBranchLatestCommit("origin/"+dropCommit.Branch) {
-				// nolint:errcheck
+			if mergedCommits[mergedCommitIndex].Commit == getBranchLatestCommit("origin/"+dropCommit.Branch) {
 				util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "push", "--delete", "origin", dropCommit.Branch)
 			}
 		}
