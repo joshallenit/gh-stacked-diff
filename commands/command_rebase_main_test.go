@@ -172,7 +172,7 @@ func TestSdRebaseMain_WithDroppedCommits_DropsBranches(t *testing.T) {
 
 	testutil.AddCommit("second", "rebase-will-drop-this-file")
 
-	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
+	testExecutor.SetResponse(allOriginalCommits[0].Branch+" "+getBranchLatestCommit(allOriginalCommits[0].Branch),
 		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
 
 	testParseArguments("rebase-main")
