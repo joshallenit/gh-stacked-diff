@@ -60,7 +60,7 @@ func rebaseMain(appConfig util.AppConfig) {
 		}
 		_, rebaseError = util.Execute(options, "git", "rebase", "-i", "origin/"+util.GetMainBranchOrDie())
 		slog.Info("Deleting merged branches...")
-		deleteBranches(appConfig.Io, dropCommits)
+		deleteBranches(appConfig.Io, dropCommits, mergedBranches)
 	} else {
 		options := util.ExecuteOptions{Io: appConfig.Io}
 		_, rebaseError = util.Execute(options, "git", "rebase", "origin/"+util.GetMainBranchOrDie())
@@ -87,7 +87,7 @@ func getMergedBranches() []templates.GitLog {
 		_, mergeBaseErr := util.Execute(util.ExecuteOptions{}, "git", "merge-base", "--is-ancestor", fields[1], "HEAD")
 		if mergeBaseErr != nil {
 			// Not an ancestor, so it was merged after the first origin commit.
-			mergedBranches = append(mergedBranches, templates.GitLog{Branch: fields[0], Commit: fields[1], Summary: ""})
+			mergedBranches = append(mergedBranches, templates.GitLog{Branch: fields[0], Commit: fields[1], Subject: ""})
 		}
 	}
 	return mergedBranches
@@ -127,13 +127,15 @@ func deleteBranches(stdIo util.StdIo, dropCommits []templates.GitLog, mergedComm
 		if out, err := util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "branch", "-D", dropCommit.Branch); err == nil {
 			fmt.Fprint(stdIo.Out, out)
 		}
-		mergedCommitIndex := slices.IndexFunc(mergedCommits, func(mergedCommit templates.GitLog) bool {
+		index := slices.IndexFunc(mergedCommits, func(mergedCommit templates.GitLog) bool {
 			return mergedCommit.Branch == dropCommit.Branch
 		})
-		if mergedCommitIndex != -1 {
+		println("index ", index)
+		if index != -1 {
+			println(mergedCommits[index].Commit, getBranchLatestCommit("origin/"+dropCommit.Branch))
 			// Only delete remote branch if it is on the same commit to avoid accidentally deleting
 			// a branch that is not merged.
-			if mergedCommits[mergedCommitIndex].Commit == getBranchLatestCommit("origin/"+dropCommit.Branch) {
+			if mergedCommits[index].Commit == getBranchLatestCommit("origin/"+dropCommit.Branch) {
 				util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "push", "--delete", "origin", dropCommit.Branch)
 			}
 		}

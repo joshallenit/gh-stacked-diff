@@ -143,7 +143,9 @@ func updatePr(appConfig util.AppConfig, destCommit templates.GitLog, commitsToCh
 func checkNotMerged(appConfig util.AppConfig, branchName string) {
 	slog.Info("Checking if PR was already merged...")
 	mergedBranches := getMergedBranches()
-	if slices.Contains(mergedBranches, branchName) {
+	if slices.ContainsFunc(mergedBranches, func(mergedBranch templates.GitLog) bool {
+		return mergedBranch.Branch == branchName
+	}) {
 		interactive.ConfirmOrDie(appConfig, "It looks like this PR was already merged. Try running \"sd rebase-main\". Are you sure you want to update this PR?")
 	}
 }

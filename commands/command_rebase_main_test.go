@@ -180,3 +180,37 @@ func TestSdRebaseMain_WithDroppedCommits_DropsBranches(t *testing.T) {
 	assert.False(util.RemoteHasBranch(allOriginalCommits[0].Branch))
 	assert.False(util.GetLocalHasBranchOrDie(allOriginalCommits[0].Branch))
 }
+
+func TestSdRebaseMain_WithSquashedMerge_DropsBranches(t *testing.T) {
+	assert := assert.New(t)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+
+	testutil.AddCommit("first", "")
+	testutil.AddCommit("second", "rebase-will-keep-this-file")
+
+	testParseArguments("new", "1")
+
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+
+	allOriginalCommits := templates.GetAllCommits()
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", allOriginalCommits[0].Branch)
+
+	beforeSquash := templates.GetAllCommits()
+	testutil.AddCommit("fake squash commit", "")
+	squashedCommit := getBranchLatestCommit("HEAD")
+
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", allOriginalCommits[0].Branch)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", beforeSquash[0].Commit)
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "switch", util.GetMainBranchOrDie())
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
+
+	testutil.AddCommit("second", "rebase-will-drop-this-file")
+
+	testExecutor.SetResponse(allOriginalCommits[0].Branch+" "+squashedCommit,
+		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
+
+	testParseArguments("rebase-main")
+
+	assert.False(util.RemoteHasBranch(allOriginalCommits[0].Branch))
+	assert.False(util.GetLocalHasBranchOrDie(allOriginalCommits[0].Branch))
+}
