@@ -98,7 +98,7 @@ func GetUsername() string {
 
 // Returns most recent commit of the given branch that is on origin/main.
 func FirstOriginMainCommit(branchName string) string {
-	if !getLocalHasBranchOrDie(branchName) {
+	if !GetLocalHasBranchOrDie(branchName) {
 		panic("Branch does not exist " + branchName)
 	}
 	return strings.TrimSpace(ExecuteOrDie(ExecuteOptions{}, "git", "merge-base", "origin/"+GetMainBranchOrDie(), branchName))
@@ -110,7 +110,7 @@ func RemoteHasBranch(branchName string) bool {
 	return remoteBranch != ""
 }
 
-func getLocalHasBranchOrDie(branchName string) bool {
+func GetLocalHasBranchOrDie(branchName string) bool {
 	hasBranch, err := localHasBranch(branchName)
 	if err != nil {
 		panic(err)
