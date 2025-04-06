@@ -60,7 +60,7 @@ func rebaseMain(appConfig util.AppConfig) {
 		}
 		_, rebaseError = util.Execute(options, "git", "rebase", "-i", "origin/"+util.GetMainBranchOrDie())
 		slog.Info("Deleting merged branches...")
-		dropBranches(appConfig.Io, dropCommits)
+		deleteBranches(appConfig.Io, dropCommits)
 	} else {
 		options := util.ExecuteOptions{Io: appConfig.Io}
 		_, rebaseError = util.Execute(options, "git", "rebase", "origin/"+util.GetMainBranchOrDie())
@@ -120,16 +120,28 @@ func checkUniqueBranches(dropCommits []templates.GitLog) {
 	}
 }
 
-func dropBranches(stdIo util.StdIo, dropCommits []templates.GitLog) {
+func deleteBranches(stdIo util.StdIo, dropCommits []templates.GitLog) {
 	for _, dropCommit := range dropCommits {
-		// nolint:errcheck
-		localOut, localErr := util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "branch", "-D", dropCommit.Branch)
-		if localErr == nil {
-			fmt.Fprint(stdIo.Out, localOut)
+		localHash := getBranchLatestCommit(dropCommit.Branch)
+		if localHash != "" {
+			// nolint:errcheck
+			util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "branch", "-D", dropCommit.Branch)
+			// Only delete remote branch if it is on the same commit to avoid accidentally deleting
+			// a branch that is not merged.
+			if localHash == getBranchLatestCommit("origin/"+dropCommit.Branch) {
+				// nolint:errcheck
+				util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "push", "--delete", "origin", dropCommit.Branch)
+			}
 		}
-		remoteOut, remoteErr := util.Execute(util.ExecuteOptions{}, "git", "push", "--delete", "origin", dropCommit.Branch)
-		if remoteErr == nil {
-			fmt.Fprint(stdIo.Out, remoteOut)
-		}
+	}
+}
+
+// Returns full commit hash of branch with name of branchName, or "" if no such branch.
+func getBranchLatestCommit(branchName string) string {
+	out, err := util.Execute(util.ExecuteOptions{}, "git", "log", "-n", "1", "--pretty=format:%H", branchName)
+	if err != nil {
+		return ""
+	} else {
+		return strings.TrimSpace(out)
 	}
 }

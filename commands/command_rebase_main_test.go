@@ -12,37 +12,6 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-func Test_RebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
-	assert := assert.New(t)
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
-
-	testutil.AddCommit("first", "")
-
-	testutil.AddCommit("second", "rebase-will-keep-this-file")
-
-	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
-
-	allOriginalCommits := templates.GetAllCommits()
-
-	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
-
-	testutil.AddCommit("second", "rebase-will-drop-this-file")
-
-	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
-		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
-
-	testParseArguments("rebase-main")
-
-	dirEntries, err := os.ReadDir(".")
-	if err != nil {
-		panic("Could not read dir: " + err.Error())
-	}
-	assert.Equal(3, len(dirEntries))
-	assert.Equal(".git", dirEntries[0].Name())
-	assert.Equal("first", dirEntries[1].Name())
-	assert.Equal("rebase-will-keep-this-file", dirEntries[2].Name())
-}
-
 func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
 	testExecutor := testutil.InitTest(t, slog.LevelInfo)
@@ -184,4 +153,30 @@ func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 
 	branches := util.ExecuteOrDie(util.ExecuteOptions{}, "git", "branch")
 	assert.Contains(branches, "second")
+}
+
+func TestSdRebaseMain_WithDroppedCommits_DropsBranches(t *testing.T) {
+	assert := assert.New(t)
+	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+
+	testutil.AddCommit("first", "")
+	testutil.AddCommit("second", "rebase-will-keep-this-file")
+
+	testParseArguments("new", "1")
+
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
+
+	allOriginalCommits := templates.GetAllCommits()
+
+	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "reset", "--hard", allOriginalCommits[1].Commit)
+
+	testutil.AddCommit("second", "rebase-will-drop-this-file")
+
+	testExecutor.SetResponse(allOriginalCommits[0].Branch+" fakeMergeCommit",
+		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
+
+	testParseArguments("rebase-main")
+
+	assert.False(util.RemoteHasBranch(allOriginalCommits[0].Branch))
+	assert.False(util.GetLocalHasBranchOrDie(allOriginalCommits[0].Branch))
 }
