@@ -10,17 +10,12 @@ import (
 	"github.com/fatih/color"
 )
 
-// Options for [PrettyHandler].
-type PrettyHandlerOptions struct {
-	SlogOpts slog.HandlerOptions
-}
-
 // Handler for [slog] that uses diffdrent ANSI colors for each level (DEBUG, INFO, etc.).
 //
 // Modified from https://betterstack.com/community/guides/logging/logging-in-go/
 type PrettyHandler struct {
-	slog.Handler
-	l *log.Logger
+	slog.Handler // delegate all Handler methods to this object, except Handle which is overridden.
+	l            *log.Logger
 }
 
 // Verify that [PrettyHandler] implements [slog.Handler].
@@ -65,12 +60,11 @@ func (h *PrettyHandler) Handle(ctx context.Context, r slog.Record) error {
 // Create a new [PrettyHandler].
 func NewPrettyHandler(
 	out io.Writer,
-	opts PrettyHandlerOptions,
+	opts slog.HandlerOptions,
 ) *PrettyHandler {
 	h := &PrettyHandler{
-		Handler: slog.NewJSONHandler(out, &opts.SlogOpts),
+		Handler: slog.NewJSONHandler(out, &opts),
 		l:       log.New(out, "", 0),
 	}
-
 	return h
 }

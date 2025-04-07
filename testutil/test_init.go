@@ -40,12 +40,7 @@ func init() {
 // CD into repository directory and set any global DI variables (slog, sleep, and executor).
 func InitTest(t *testing.T, logLevel slog.Level) *util.TestExecutor {
 	startTime := time.Now()
-	opts := util.PrettyHandlerOptions{
-		SlogOpts: slog.HandlerOptions{
-			Level: logLevel,
-		},
-	}
-	handler := util.NewPrettyHandler(os.Stdout, opts)
+	handler := util.NewPrettyHandler(os.Stdout, slog.HandlerOptions{Level: logLevel})
 	slog.SetDefault(slog.New(handler))
 	testFunctionName := getTestFunctionName()
 	slog.Info("Running test " + testFunctionName + "\n")
