@@ -8,6 +8,8 @@ import (
 
 	"strings"
 
+	"context"
+
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
@@ -32,14 +34,12 @@ func testParseArgumentsWithOut(out *testutil.WriteRecorder, commandLineArgs ...s
 	appExecutable := programName
 
 	// Use debug log level if currently set to debug
-	if prettyHandler, ok := slog.Default().Handler().(*util.PrettyHandler); ok {
-		if prettyHandler.Opts.Level == slog.LevelDebug {
-			appExecutable += " --log-level=debug"
-			if !slices.ContainsFunc(commandLineArgs, func(next string) bool {
-				return strings.HasPrefix(next, "--log-level")
-			}) {
-				commandLineArgs = slices.Insert(commandLineArgs, 0, "--log-level=debug")
-			}
+	if slog.Default().Handler().Enabled(context.Background(), slog.LevelDebug) {
+		appExecutable += " --log-level=debug"
+		if !slices.ContainsFunc(commandLineArgs, func(next string) bool {
+			return strings.HasPrefix(next, "--log-level")
+		}) {
+			commandLineArgs = slices.Insert(commandLineArgs, 0, "--log-level=debug")
 		}
 	}
 

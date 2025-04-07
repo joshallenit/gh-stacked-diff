@@ -15,7 +15,6 @@ import (
 // Modified from https://betterstack.com/community/guides/logging/logging-in-go/
 type PrettyHandler struct {
 	slog.Handler // delegate all Handler methods to this object, except Handle which is overridden.
-	Opts         slog.HandlerOptions
 	l            *log.Logger
 }
 
@@ -65,7 +64,6 @@ func NewPrettyHandler(
 ) *PrettyHandler {
 	h := &PrettyHandler{
 		Handler: slog.NewJSONHandler(out, &opts),
-		Opts:    opts,
 		l:       log.New(out, "", 0),
 	}
 	return h
