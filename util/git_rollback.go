@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"slices"
+	"strings"
 )
 
 type restoreBranchInfo struct {
@@ -28,7 +29,8 @@ func (rollbackManager *GitRollbackManager) Restore(err any) {
 		// Nothing to restore.
 		return
 	}
-	slog.Error(fmt.Sprint(err))
+	firstErrorLine := strings.Split(fmt.Sprint(err), "\n")[0]
+	slog.Error("Restoring to original state because of error: " + firstErrorLine)
 	tryAbort("cherry-pick")
 	tryAbort("rebase")
 	tryAbort("merge")
