@@ -81,7 +81,7 @@ func getLogMessage(programName string, args []string, out string, err error) str
 	}
 	logMessage += "\"" + programName + " " + strings.Join(args, " ") + "\""
 	if strings.TrimSpace(out) != "" {
-		logMessage = logMessage + "\nExecution output:\n" + out
+		logMessage = logMessage + "\n\n" + strings.TrimSuffix(out, "\n")
 	}
 	return logMessage
 }
