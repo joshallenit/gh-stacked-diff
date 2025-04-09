@@ -15,29 +15,11 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
-	"strings"
-
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func Test_NewPr_OnNewRepo_CreatesPr(t *testing.T) {
-	testutil.InitTest(t, slog.LevelInfo)
-
-	testutil.AddCommit("first", "")
-
-	testParseArguments("new", "1")
-
-	// Check that the PR was created
-	out := testParseArguments("log")
-
-	if !strings.Contains(out, "✅") {
-		t.Errorf("'✅' should be in %s", out)
-	}
-}
-
-func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
+func TestSdNew_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
-
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
@@ -54,9 +36,8 @@ func Test_NewPr_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	assert.Equal(allCommits[0].Subject, commitsOnNewBranch[0].Subject)
 }
 
-func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
+func TestSdNew_WithMiddleCommit_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
-
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
@@ -77,7 +58,6 @@ func Test_NewPr_WithMiddleCommit_CreatesPr(t *testing.T) {
 
 func TestSdNew_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
-
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
@@ -119,7 +99,6 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 
 func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 	assert := assert.New(t)
-
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
@@ -154,7 +133,6 @@ func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 
 func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 	assert := assert.New(t)
-
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
@@ -180,7 +158,6 @@ func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 
 func TestSdNew_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 	assert := assert.New(t)
-
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
