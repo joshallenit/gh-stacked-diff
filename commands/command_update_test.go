@@ -17,7 +17,7 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
+func TestSdUpdate_OnRootCommit_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
 	testutil.InitTest(t, slog.LevelInfo)
 	testutil.AddCommit("first", "")
@@ -37,7 +37,7 @@ func Test_UpdatePr_OnRootCommit_UpdatesPr(t *testing.T) {
 	assert.Equal(3, len(commitsOnBranch))
 }
 
-func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
+func TestSdUpdate_OnExistingRoot_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
 	testutil.InitTest(t, slog.LevelInfo)
 
@@ -75,7 +75,6 @@ func Test_UpdatePr_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 func TestSdUpdate_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
@@ -97,7 +96,6 @@ func TestSdUpdate_UpdatesPr(t *testing.T) {
 
 func TestSdUpdate_WithListIndicators_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")
@@ -159,7 +157,6 @@ func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 
 func TestSdUpdate_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 	assert := assert.New(t)
-
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "")

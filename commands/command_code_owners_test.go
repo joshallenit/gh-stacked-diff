@@ -13,7 +13,6 @@ import (
 
 func TestSdCodeOwners_OutputsOwnersOfChangedFiles(t *testing.T) {
 	assert := assert.New(t)
-
 	testutil.InitTest(t, slog.LevelInfo)
 
 	testutil.AddCommit("first", "first-not-changed")
