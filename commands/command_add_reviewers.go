@@ -12,6 +12,7 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -108,8 +109,19 @@ func checkBranch(appConfig util.AppConfig, wg *sync.WaitGroup, targetCommit temp
 	util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "ready", targetCommit.Branch)
 	slog.Info("Waiting 10 seconds for any automatically assigned reviewers to be added...")
 	util.Sleep(10 * time.Second)
-	prUrl := strings.TrimSpace(util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "edit", targetCommit.Branch, "--add-reviewer", reviewers))
-	slog.Info(fmt.Sprint("Added reviewers ", reviewers, " to ", prUrl))
+	slog.Info("Checking if user has already been reviewed")
+	approvingUsers, nonApprovingUsers := getNonApprovingUsers(targetCommit, reviewers)
+	if nonApprovingUsers != reviewers {
+		slog.Warn(fmt.Sprint("Skipping reviewers that have already approved: " + approvingUsers))
+	}
+	if len(nonApprovingUsers) > 0 {
+		prUrl := strings.TrimSpace(
+			util.ExecuteOrDie(util.ExecuteOptions{},
+				"gh", "pr", "edit", targetCommit.Branch, "--add-reviewer", nonApprovingUsers,
+			),
+		)
+		slog.Info(fmt.Sprint("Added reviewers ", nonApprovingUsers, " to ", prUrl))
+	}
 	wg.Done()
 }
 
@@ -144,4 +156,68 @@ func getChecksStatus(branchName string) pullRequestChecksStatus {
 		summary.Total++
 	}
 	return summary
+}
+
+func getNonApprovingUsers(commit templates.GitLog, reviewers string) (string, string) {
+	allApprovingUsers := getAllApprovingUsers(commit)
+	approvingUsers := make([]string, 0)
+	nonApprovingUsers := make([]string, 0)
+	for _, reviewer := range strings.Split(reviewers, ",") {
+		if slices.Contains(allApprovingUsers, reviewer) {
+			println("here we are CONTAINS " + reviewer)
+			approvingUsers = append(approvingUsers, reviewer)
+		} else {
+			println("here we are NOT CONTAINS " + reviewer)
+			nonApprovingUsers = append(nonApprovingUsers, reviewer)
+		}
+	}
+	return strings.Join(approvingUsers, ","), strings.Join(nonApprovingUsers, ",")
+}
+
+/*
+Returns users that have already approved latest commit.
+
+Example output of gh pr view:
+
+$ gh pr view mybranch --json "reviews"
+
+	{
+	  "reviews": [
+	    {
+	      "id": "PRR_kwDODeVIac6f37Qq",
+	      "author": {
+	        "login": "mybestie"
+	      },
+	      "authorAssociation": "MEMBER",
+	      "body": "",
+	      "submittedAt": "2025-03-13T14:47:31Z",
+	      "includesCreatedEdit": false,
+	      "reactionGroups": [],
+	      "state": "COMMENTED",
+	      "commit": {
+	        "oid": "af01bdf8eb5649956096a608717f7de5eeb97e45"
+	      }
+	    },
+	    {
+	      "id": "PRR_kwDODeVIac6f5jeG",
+	      "author": {
+	        "login": "myfave"
+	      },
+	      "authorAssociation": "MEMBER",
+	      "body": "",
+	      "submittedAt": "2025-03-13T16:32:44Z",
+	      "includesCreatedEdit": false,
+	      "reactionGroups": [],
+	      "state": "APPROVED",
+	      "commit": {
+	        "oid": "af01bdf8eb5649956096a608717f7de5eeb97e45"
+	      }
+	    }
+	  ]
+	}
+*/
+func getAllApprovingUsers(commit templates.GitLog) []string {
+	jq := ".reviews[] | select(.state == \"APPROVED\" and .commit.oid == \"" + commit.Commit + "\") | .author.login"
+	approvedUsers := util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "view", commit.Branch, "--json", "reviews", "--jq", jq)
+	return strings.Fields(approvedUsers)
 }
