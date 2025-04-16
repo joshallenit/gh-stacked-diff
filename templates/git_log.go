@@ -11,6 +11,8 @@ import (
 type GitLog struct {
 	// Abbreviated commit hash.
 	Commit string
+	// Full commit hash.
+	CommitFull string
 	// Commit subject.
 	Subject string
 	// Associated branch name. Branch might not exist.
@@ -21,7 +23,7 @@ type GitLog struct {
 const formatDelimiter = "|stackeddiff-delim|"
 
 // Format sent to "git log" for use by [newGitLogs].
-const newGitLogsFormat = "--pretty=format:%h" + formatDelimiter + "%s" + formatDelimiter + "%f"
+const newGitLogsFormat = "--pretty=format:%h" + formatDelimiter + "%H" + formatDelimiter + "%s" + formatDelimiter + "%f"
 
 // Returns all the commits on the current branch. For use by tests.
 func GetAllCommits() []GitLog {
@@ -47,11 +49,11 @@ func newGitLogs(logsRaw string) []GitLog {
 	var logs []GitLog
 	for _, logLine := range logLines {
 		components := strings.Split(logLine, formatDelimiter)
-		if len(components) != 3 {
+		if len(components) != 4 {
 			// No git logs.
 			continue
 		}
-		logs = append(logs, GitLog{Commit: components[0], Subject: components[1], Branch: getBranchForSantizedSubject(components[2])})
+		logs = append(logs, GitLog{Commit: components[0], CommitFull: components[1], Subject: components[2], Branch: getBranchForSantizedSubject(components[3])})
 	}
 	return logs
 }

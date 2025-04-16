@@ -217,7 +217,7 @@ $ gh pr view mybranch --json "reviews"
 	}
 */
 func getAllApprovingUsers(commit templates.GitLog) []string {
-	jq := ".reviews[] | select(.state == \"APPROVED\" and .commit.oid == \"" + commit.Commit + "\") | .author.login"
+	jq := ".reviews[] | select(.state == \"APPROVED\" and .commit.oid == \"" + commit.CommitFull + "\") | .author.login"
 	approvedUsers := util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "view", commit.Branch, "--json", "reviews", "--jq", jq)
 	return strings.Fields(approvedUsers)
 }
