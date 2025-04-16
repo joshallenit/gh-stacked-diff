@@ -134,6 +134,11 @@ func guessIndicatorType(commitIndicator string) IndicatorType {
 			return IndicatorTypePr
 		}
 	}
+	if strings.ContainsFunc(strings.ToUpper(commitIndicator), func(r rune) bool {
+		return r < '0' || r > '9' && r < 'A' || r > 'F'
+	}) {
+		panic("Invalid commit indicator: " + commitIndicator)
+	}
 	return IndicatorTypeCommit
 }
 
