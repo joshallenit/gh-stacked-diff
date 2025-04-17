@@ -55,6 +55,8 @@ func (defaultExecutor DefaultExecutor) Execute(options ExecuteOptions, programNa
 		cmd.Stderr = &b
 	}
 	err := cmd.Run()
+	// Note: while it is tempting to trim the trailing \n here, some code flows require it,
+	//       namely `git diff | git apply`.`
 	stringOut := b.String()
 	slog.Debug("Executed " + getLogMessage(programName, args, stringOut, err))
 	return stringOut, err
