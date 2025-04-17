@@ -135,7 +135,7 @@ func TestSdAddReviewers_WhenUserAlreadyApproved_DoesNotRequestReview(t *testing.
 			slices.Contains(args, "reviews")
 	})
 
-	out := testParseArguments("add-reviewers", "--reviewers=alreadyapproved2,mybestie,alreadyapproved1", "1")
+	out := testParseArguments("--log-level=info", "add-reviewers", "--reviewers=alreadyapproved2,mybestie,alreadyapproved1", "1")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
