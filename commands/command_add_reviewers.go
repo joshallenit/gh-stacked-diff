@@ -164,10 +164,8 @@ func getNonApprovingUsers(commit templates.GitLog, reviewers string) (string, st
 	nonApprovingUsers := make([]string, 0)
 	for _, reviewer := range strings.Split(reviewers, ",") {
 		if slices.Contains(allApprovingUsers, reviewer) {
-			println("here we are CONTAINS " + reviewer)
 			approvingUsers = append(approvingUsers, reviewer)
 		} else {
-			println("here we are NOT CONTAINS " + reviewer)
 			nonApprovingUsers = append(nonApprovingUsers, reviewer)
 		}
 	}
