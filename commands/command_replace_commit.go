@@ -86,7 +86,7 @@ func cherryPickAndSkipAllEmpty(commits []string) {
 	out, err := util.Execute(util.ExecuteOptions{}, "git", cherryPickArgs...)
 	for err != nil {
 		if strings.Contains(out, "git commit --allow-empty") {
-			out, err = util.Execute(util.ExecuteOptions{}, "git", "cherry-pick", "--skip")
+			util.ExecuteOrDie(util.ExecuteOptions{}, "git", "cherry-pick", "--skip")
 		} else {
 			panic(fmt.Sprint("Unexpected cherry-pick error", out, cherryPickArgs, err))
 		}
