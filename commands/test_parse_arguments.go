@@ -4,8 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
+	"slices"
 
 	"strings"
+
+	"context"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/testutil"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -28,7 +31,17 @@ func testParseArgumentsWithOut(out *testutil.WriteRecorder, commandLineArgs ...s
 	}
 	// Executable must be on PATH for tests to pass so that sequenceEditorPrefix will execute.
 	// PATH is set in ../Makefile
-	appExecutable := programName + " --log-level=INFO "
+	appExecutable := programName
+
+	// Use debug log level if currently set to debug
+	if slog.Default().Handler().Enabled(context.Background(), slog.LevelDebug) {
+		appExecutable += " --log-level=debug"
+		if !slices.ContainsFunc(commandLineArgs, func(next string) bool {
+			return strings.HasPrefix(next, "--log-level")
+		}) {
+			commandLineArgs = slices.Insert(commandLineArgs, 0, "--log-level=debug")
+		}
+	}
 
 	// Set stdin in unit tests to avoid error with bubbletea:
 	// "error creating cancelreader: failed to prepare console input: get console mode: The handle is invalid."

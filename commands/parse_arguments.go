@@ -150,12 +150,7 @@ func getCommandSummaries(commands []Command) []string {
 func setSlogLogger(stdOut io.Writer, logLevel slog.Level) *slog.LevelVar {
 	var levelVar slog.LevelVar
 	levelVar.Set(logLevel)
-	opts := util.PrettyHandlerOptions{
-		SlogOpts: slog.HandlerOptions{
-			Level: &levelVar,
-		},
-	}
-	handler := util.NewPrettyHandler(stdOut, opts)
+	handler := util.NewPrettyHandler(stdOut, slog.HandlerOptions{Level: &levelVar})
 	slog.SetDefault(slog.New(handler))
 	return &levelVar
 }

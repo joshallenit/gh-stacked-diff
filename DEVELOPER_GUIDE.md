@@ -27,7 +27,9 @@ The main entry point to the Stacked Diff Workflow CLI ("sd") is [main.go]. The c
 
 ## How to Debug Unit Tests
 
-If one of the command*_test fails you can pass "--log-level=debug" to `parseArguments` for more detailed logging. For more detailed logging up until the `parseArguments` call use `testutil.InitTest(t, slog.LevelDebug)`
+If one of the command*_test fails you can use `testutil.InitTest(t, slog.LevelDebug)` for more detailed logging. This will cause `testParseArguments` to add a `"--log-level=debug` to the command line arguments.
+
+You can use TEST_ARGS to run only one test from the command line, see [Makefile]. 
 
 ## Making a Release
 
