@@ -14,7 +14,7 @@ import (
 
 func TestSdLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -30,7 +30,7 @@ func TestSdLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 
 func TestSdLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -43,7 +43,7 @@ func TestSdLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *testi
 
 func TestSdLog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -61,7 +61,7 @@ func TestSdLog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
 
 func TestSdLog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -82,7 +82,7 @@ func TestSdLog_WhenCommitHasBranch_PrintsExtraBranchCommits(t *testing.T) {
 
 func TestSdLog_LogsOutput(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -93,7 +93,7 @@ func TestSdLog_LogsOutput(t *testing.T) {
 
 func TestSdLog_WhenManyCommits_PadsFirstCommits(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")
@@ -114,7 +114,7 @@ func TestSdLog_WhenManyCommits_PadsFirstCommits(t *testing.T) {
 
 func TestSdLog_WhenMultiplePrs_MatchesAllPrs(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")

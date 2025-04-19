@@ -20,7 +20,7 @@ import (
 
 func TestSdNew_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
@@ -38,7 +38,7 @@ func TestSdNew_OnRepoWithPreviousCommit_CreatesPr(t *testing.T) {
 
 func TestSdNew_WithMiddleCommit_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
@@ -58,7 +58,7 @@ func TestSdNew_WithMiddleCommit_CreatesPr(t *testing.T) {
 
 func TestSdNew_CreatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -72,7 +72,7 @@ func TestSdNew_CreatesPr(t *testing.T) {
 func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -99,7 +99,7 @@ func TestSdNew_WithReviewers_AddReviewers(t *testing.T) {
 
 func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")
@@ -116,7 +116,7 @@ func TestSdNew_WhenUsingListIndex_UsesCorrectList(t *testing.T) {
 func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -133,7 +133,7 @@ func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 
 func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")
@@ -158,7 +158,7 @@ func TestSdNew_WhenTwoPrsOnRoot_CreatesFromRoot(t *testing.T) {
 
 func TestSdNew_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -183,7 +183,7 @@ func TestSdNew_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 func TestSdNew_WhenNewPrFails_RestoresBranch(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -207,7 +207,7 @@ func TestSdNew_WhenNewPrFails_RestoresBranch(t *testing.T) {
 
 func TestSdNew_WhenDestinationCommitNotSpecified_CreatesPrWithSelectedCommit(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")
 
@@ -224,7 +224,7 @@ func TestSdNew_WhenDestinationCommitNotSpecified_CreatesPrWithSelectedCommit(t *
 
 func TestSdNew_WhenDestinationCommitNotSpecified_WrapsCursorUp(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")
 	testutil.AddCommit("third", "")
@@ -242,7 +242,7 @@ func TestSdNew_WhenDestinationCommitNotSpecified_WrapsCursorUp(t *testing.T) {
 
 func TestSdNew_WhenDestinationCommitNotSpecified_WrapsCursorDown(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")
 	testutil.AddCommit("third", "")
@@ -262,7 +262,7 @@ func TestSdNew_WhenDestinationCommitNotSpecified_WrapsCursorDown(t *testing.T) {
 
 func TestSdNew_WhenDestinationCommitNotSpecifiedAndManyCommits_PadsIndex(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")
 	testutil.AddCommit("third", "")
@@ -290,7 +290,7 @@ func TestSdNew_WhenDestinationCommitNotSpecifiedAndManyCommits_PadsIndex(t *test
 
 func TestSdNew_WhenDestinationCommitNotSpecifiedAndManyCommitsAndExistingPr_PadsIndex(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "")
 	testParseArguments("new", "1")
 	testutil.AddCommit("second", "")

@@ -14,7 +14,7 @@ import (
 
 func TestSdReplaceCommit_WithMultipleCommits_ReplacesCommitWithBranch(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "1")
 	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
@@ -61,7 +61,7 @@ func TestSdReplaceCommit_WhenPrPushed_ReplacesCommitWithBranch(t *testing.T) {
 		return
 	}
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "1")
 	testutil.AddCommit("second", "will-be-replaced")
