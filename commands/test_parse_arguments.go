@@ -42,8 +42,9 @@ func testParseArgumentsWithOut(out *testutil.WriteRecorder, commandLineArgs ...s
 		for _, level := range levels {
 			if slog.Default().Handler().Enabled(context.Background(), level) {
 				if level != slog.LevelInfo {
-					appExecutable += " --log-level=" + level.String()
-					commandLineArgs = slices.Insert(commandLineArgs, 0, "--log-level=debug")
+					loglevelFlag := "--log-level=" + level.String()
+					appExecutable += " " + loglevelFlag
+					commandLineArgs = slices.Insert(commandLineArgs, 0, loglevelFlag)
 				}
 				break
 			}
