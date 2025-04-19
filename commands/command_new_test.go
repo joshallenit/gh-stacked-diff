@@ -125,7 +125,7 @@ func TestSdNew_WhenDraftNotSupported_TriesAgainWithoutDraft(t *testing.T) {
 		return programName == "gh" && args[0] == "pr" && args[1] == "create" && slices.Contains(args, "--draft")
 	})
 
-	out := testParseArguments("new", "1")
+	out := testParseArguments("--log-level=info", "new", "1")
 
 	assert.Contains(out, "Use \"--draft=false\" to avoid this warning")
 	assert.Contains(out, "Created PR ")
