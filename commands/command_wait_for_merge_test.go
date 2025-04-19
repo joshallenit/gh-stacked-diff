@@ -14,13 +14,13 @@ import (
 func TestSdWaitForMerge_WaitsForMerge(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	allCommits := templates.GetAllCommits()
 	testExecutor.SetResponse("2025-01-01", nil, "gh", "pr", "view", util.MatchAnyRemainingArgs)
 
-	out := testParseArguments("wait-for-merge", allCommits[0].Commit)
+	out := testParseArguments("--log-level=info", "wait-for-merge", allCommits[0].Commit)
 
 	assert.Contains(out, "Merged!")
 }

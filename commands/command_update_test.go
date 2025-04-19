@@ -19,7 +19,7 @@ import (
 
 func TestSdUpdate_OnRootCommit_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "")
 
 	testParseArguments("new", "1")
@@ -39,7 +39,7 @@ func TestSdUpdate_OnRootCommit_UpdatesPr(t *testing.T) {
 
 func TestSdUpdate_OnExistingRoot_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	util.ExecuteOrDie(util.ExecuteOptions{}, "git", "push", "origin", util.GetMainBranchOrDie())
@@ -75,7 +75,7 @@ func TestSdUpdate_OnExistingRoot_UpdatesPr(t *testing.T) {
 
 func TestSdUpdate_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -96,7 +96,7 @@ func TestSdUpdate_UpdatesPr(t *testing.T) {
 
 func TestSdUpdate_WithListIndicators_UpdatesPr(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -126,7 +126,7 @@ func TestSdUpdate_WithListIndicators_UpdatesPr(t *testing.T) {
 func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 
@@ -157,7 +157,7 @@ func TestSdUpdate_WithReviewers_AddReviewers(t *testing.T) {
 
 func TestSdUpdate_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	testParseArguments("new", "1")
@@ -181,7 +181,7 @@ func TestSdUpdate_WhenCherryPickFails_RestoresBranch(t *testing.T) {
 func TestSdUpdate_WhenPushFails_RestoresBranches(t *testing.T) {
 	assert := assert.New(t)
 
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	firstBranch := templates.GetAllCommits()[0].Branch
@@ -213,7 +213,7 @@ func TestSdUpdate_WhenPushFails_RestoresBranches(t *testing.T) {
 
 func TestSdUpdate_WhenCherryPickCommitsNotSpecifiedAndUserQuits_NoOp(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "")
 
 	testParseArguments("new", "1")
@@ -237,7 +237,7 @@ func TestSdUpdate_WhenCherryPickCommitsNotSpecifiedAndUserQuits_NoOp(t *testing.
 
 func TestSdUpdate_WhenCherryPickCommitsNotSpecified_CherryPicsUserSelection(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "")
 
 	testParseArguments("new", "1")
@@ -256,7 +256,7 @@ func TestSdUpdate_WhenCherryPickCommitsNotSpecified_CherryPicsUserSelection(t *t
 
 func TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "")
 
 	testParseArguments("new", "1")
@@ -276,7 +276,7 @@ func TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr(t *testing
 
 func TestSdUpdate_WhenDestinationCommitNotSpecifiedAndMultiplePossibleValues_UpdatesSelectedPr(t *testing.T) {
 	assert := assert.New(t)
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "destination")
 	testParseArguments("new", "1")
 	testutil.AddCommit("second", "")
@@ -311,7 +311,7 @@ func TestSdUpdate_WhenDestinationCommitNotSpecifiedAndMultiplePossibleValues_Upd
 
 func TestSdUpdate_WhenBranchAlreadyMergedAndUserDoesNotConfirm_Cancels(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "")
 
 	testParseArguments("new", "1")
@@ -338,7 +338,7 @@ func TestSdUpdate_WhenBranchAlreadyMergedAndUserDoesNotConfirm_Cancels(t *testin
 
 func TestSdUpdate_WhenBranchAlreadyMergedAndUserConfirms_Updates(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 	testutil.AddCommit("first", "")
 
 	testParseArguments("new", "1")

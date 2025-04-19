@@ -40,12 +40,12 @@ func init() {
 // CD into repository directory and set any global DI variables (slog, sleep, and executor).
 func InitTest(t *testing.T, logLevel slog.Level) *util.TestExecutor {
 	startTime := time.Now()
-	handler := util.NewPrettyHandler(os.Stdout, slog.HandlerOptions{Level: slog.LevelError})
+	handler := util.NewPrettyHandler(os.Stdout, slog.HandlerOptions{Level: logLevel})
 	slog.SetDefault(slog.New(handler))
 	testFunctionName := getTestFunctionName()
-	slog.Info("Running test " + testFunctionName + "\n")
+	println("Running test", testFunctionName, "\n")
 	t.Cleanup(func() {
-		slog.Info(fmt.Sprint("Running test "+testFunctionName+" took ", time.Since(startTime), "\n"))
+		println("Running test "+testFunctionName+" took ", time.Since(startTime), "\n")
 	})
 
 	// Set new TestExecutor in case previous test has faked any of the git responses.
