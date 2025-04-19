@@ -33,20 +33,20 @@ func testParseArgumentsWithOut(out *testutil.WriteRecorder, commandLineArgs ...s
 	// PATH is set in ../Makefile
 	appExecutable := programName
 
-	// Use current log level if it set to something other than Info.
-	// Find the lowest log level supported.
-	levels := []slog.Level{slog.LevelDebug, slog.LevelInfo, slog.LevelWarn, slog.LevelError}
-	for _, level := range levels {
-		if slog.Default().Handler().Enabled(context.Background(), level) {
-			if level != slog.LevelInfo {
-				appExecutable += " --log-level=" + level.String()
-				if !slices.ContainsFunc(commandLineArgs, func(next string) bool {
-					return strings.HasPrefix(next, "--log-level")
-				}) {
+	if !slices.ContainsFunc(commandLineArgs, func(next string) bool {
+		return strings.HasPrefix(next, "--log-level")
+	}) {
+		// Use current log level if it set to something other than Info.
+		// Find the lowest log level supported.
+		levels := []slog.Level{slog.LevelDebug, slog.LevelInfo, slog.LevelWarn, slog.LevelError}
+		for _, level := range levels {
+			if slog.Default().Handler().Enabled(context.Background(), level) {
+				if level != slog.LevelInfo {
+					appExecutable += " --log-level=" + level.String()
 					commandLineArgs = slices.Insert(commandLineArgs, 0, "--log-level=debug")
 				}
+				break
 			}
-			break
 		}
 	}
 
