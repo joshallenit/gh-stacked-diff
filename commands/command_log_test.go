@@ -24,7 +24,7 @@ func TestSdLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 
 	out := testParseArguments("log")
 
-	assert.Contains(out, "first")
+	assert.NotContains(out, "first")
 	assert.Contains(out, "second")
 }
 
