@@ -89,7 +89,6 @@ func (m *userSelectionModel) setSuggestions() {
 		}))
 	} else {
 		m.textInput.SetSuggestions(m.suggestions)
-
 	}
 }
 
@@ -168,8 +167,4 @@ func normalizeReviewers(selected string) string {
 	expression := regexp.MustCompile("#+")
 	selected = expression.ReplaceAllString(selected, ",")
 	return selected
-}
-
-func getReviewers() {
-
 }
