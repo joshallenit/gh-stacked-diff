@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
-	"os"
 
 	"github.com/fatih/color"
 
@@ -53,10 +52,15 @@ func createAddReviewersCommand() Command {
 			}
 			targetCommits := getTargetCommits(appConfig, command, flagSet.Args(), indicatorTypeString, selectPrsOptions)
 			if *reviewers == "" {
-				*reviewers = os.Getenv("PR_REVIEWERS")
+				*reviewers = interactive.UserSelection(appConfig)
 				if *reviewers == "" {
-					commandError(appConfig, flagSet, "reviewers not specified. Use reviewers flag or set PR_REVIEWERS environment variable", command.Usage)
+					commandError(
+						appConfig,
+						flagSet,
+						"reviewers not specified.",
+						command.Usage)
 				}
+				slog.Info("Using reviewers " + *reviewers)
 			}
 			addReviewersToPr(appConfig, targetCommits, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
 		}}

@@ -1,6 +1,8 @@
 package interactive
 
 import (
+	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -63,7 +65,7 @@ func (m userSelectionModel) View() string {
 		"   up/down   history\n" +
 		"   tab       select auto-complete\n" +
 		"   enter     confirm\n" +
-		"   esc       quit\n"
+		"   esc       quit\n" + fmt.Sprint(m.textInput.AvailableSuggestions())
 }
 
 func (m *userSelectionModel) setSuggestions() {
@@ -130,16 +132,8 @@ func UserSelection(appConfig util.AppConfig) string {
 	input.Width = 100
 	input.Placeholder = "None"
 	input.ShowSuggestions = true
-	history := []string{
-		"danm200,ankit223",
-		"slack-jallen,ankit223",
-		"ankit299,himanshu",
-		"himanshu,andy",
-	}
-	suggestions := []string{
-		"danm200", "ankit223", "slack-jallen", "himanshu", "andy",
-	}
-	slices.Sort(suggestions)
+	history := readHistory()
+	suggestions := allUsersFromHistory(history)
 	input.SetSuggestions(suggestions)
 	initialModel := userSelectionModel{
 		history:       history,
@@ -161,5 +155,21 @@ func UserSelection(appConfig util.AppConfig) string {
 	if !finalSelectionModel.confirmed {
 		appConfig.Exit(0)
 	}
-	return finalSelectionModel.textInput.Value()
+	selected := finalSelectionModel.textInput.Value()
+	if selected != "" {
+		addToHistory(history, selected)
+	}
+	return normalizeReviewers(selected)
+}
+
+func normalizeReviewers(selected string) string {
+	selected = strings.ReplaceAll(selected, " ", "#")
+	selected = strings.ReplaceAll(selected, ",", "#")
+	expression := regexp.MustCompile("#+")
+	selected = expression.ReplaceAllString(selected, ",")
+	return selected
+}
+
+func getReviewers() {
+
 }
