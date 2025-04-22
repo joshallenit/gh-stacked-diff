@@ -25,8 +25,8 @@ func createUpdateCommand() Command {
 		Description: "Add commits from local " + util.GetMainBranchForHelp() + " branch to an existing PR.\n" +
 			"\n" +
 			"Can also add reviewers once PR checks have passed, see \"--reviewers\" flag.",
-		Usage: "sd " + flagSet.Name() + " [flags] [PR commitIndicator [fixup commitIndicator (defaults to head commit) [fixup commitIndicator...]]]\n" +
-			"\nIf commitIndicator are missing then you will be prompted to select commits:\n" +
+		Usage: "sd " + flagSet.Name() + " [flags] [PR commitIndicator [fixup commitIndicator [fixup commitIndicator...]]]\n" +
+			"\nIf commitIndicators are missing then you will be prompted to select commits:\n" +
 			"\n" +
 			"   [enter]    confirms selection\n" +
 			"   [space]    adds to selection when selecting commits to add\n" +
@@ -36,6 +36,12 @@ func createUpdateCommand() Command {
 		OnSelected: func(appConfig util.AppConfig, command Command) {
 			destCommit := getDestCommit(appConfig, command, indicatorTypeString)
 			commitsToCherryPick := getCommitsToCherryPick(appConfig, command, indicatorTypeString)
+			if *reviewers == "" && flagSet.NArg() < 2 {
+				*reviewers = interactive.UserSelection(appConfig)
+				if *reviewers != "" {
+					slog.Info("Using reviewers " + *reviewers)
+				}
+			}
 			updatePr(appConfig, destCommit, commitsToCherryPick)
 			if *reviewers != "" {
 				addReviewersToPr(appConfig, []templates.GitLog{destCommit}, true, *silent, *minChecks, *reviewers, 30*time.Second)

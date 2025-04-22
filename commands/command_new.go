@@ -95,12 +95,13 @@ func createNewCommand() Command {
 			if *baseBranch == "" {
 				*baseBranch = util.GetMainBranchOrDie()
 			}
+			if *reviewers == "" && flagSet.NArg() == 0 {
+				*reviewers = interactive.UserSelection(appConfig)
+				if *reviewers != "" {
+					slog.Info("Using reviewers " + *reviewers)
+				}
+			}
 			createNewPr(*draft, *featureFlag, *baseBranch, targetCommits[0])
-			// if *reviewers == "" {
-			// 	*reviewers = askForReviewers
-			// but before I do that... I need to figure out a way that I can
-			// figure out if the PR has already been approved
-			// }
 			if *reviewers != "" {
 				addReviewersToPr(appConfig, targetCommits, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
