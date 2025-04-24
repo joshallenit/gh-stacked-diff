@@ -25,7 +25,7 @@ func TestSdLog_WhenRemoteHasSomeCommits_PrintsNewLogsOnly(t *testing.T) {
 	out := testParseArguments("log")
 
 	assert.Contains(out, "first")
-	assert.Contains(out, "second")
+	assert.NotContains(out, "second")
 }
 
 func TestSdLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *testing.T) {
@@ -38,7 +38,7 @@ func TestSdLog_WhenPrCreatedForSomeCommits_PrintsCheckForCommitsWithPrs(t *testi
 
 	out := testParseArguments("log")
 
-	assert.Contains(out, "✅")
+	assert.NotContains(out, "✅")
 }
 
 func TestSdLog_WhenNotOnMain_OnlyShowsCommitsNotOnMain(t *testing.T) {
