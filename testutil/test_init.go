@@ -45,7 +45,7 @@ func InitTest(t *testing.T, logLevel slog.Level) *util.TestExecutor {
 	testFunctionName := getTestFunctionName()
 	println("Running test", testFunctionName, "\n")
 	t.Cleanup(func() {
-		println("Running test "+testFunctionName+" took ", time.Since(startTime), "\n")
+		println(fmt.Sprint("Running test "+testFunctionName+" took ", time.Since(startTime), "\n"))
 	})
 
 	// Set new TestExecutor in case previous test has faked any of the git responses.
