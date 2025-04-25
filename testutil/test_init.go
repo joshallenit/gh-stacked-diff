@@ -14,7 +14,6 @@ import (
 
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
@@ -35,18 +34,15 @@ func init() {
 		panic("Cannot find UserCacheDir: " + err.Error())
 	}
 	TestWorkingDir = path.Join(userCacheDir, "gh-stacked-diff-tests")
+	// nolint:errcheck
+	os.Mkdir(TestWorkingDir, os.ModePerm)
 }
 
 // CD into repository directory and set any global DI variables (slog, sleep, and executor).
 func InitTest(t *testing.T, logLevel slog.Level) *util.TestExecutor {
-	startTime := time.Now()
 	handler := util.NewPrettyHandler(os.Stdout, slog.HandlerOptions{Level: logLevel})
 	slog.SetDefault(slog.New(handler))
 	testFunctionName := getTestFunctionName()
-	slog.Info("Running test " + testFunctionName + "\n")
-	t.Cleanup(func() {
-		slog.Info(fmt.Sprint("Running test "+testFunctionName+" took ", time.Since(startTime), "\n"))
-	})
 
 	// Set new TestExecutor in case previous test has faked any of the git responses.
 	testExecutor := setTestExecutor()
@@ -62,11 +58,7 @@ func InitTest(t *testing.T, logLevel slog.Level) *util.TestExecutor {
 		slog.Debug(fmt.Sprint("Skipping sleep in tests ", d))
 	})
 
-	interactive.AddNewProgramListener(t, func(program *tea.Program) {
-		if !interactive.HasFakeProgramMessages() {
-			panic("No input setup for interactive ui, use interactive.SendToProgram")
-		}
-	})
+	interactive.RequireInput(t)
 	return testExecutor
 }
 
@@ -110,7 +102,9 @@ func cdTestRepo(testFunctionName string) {
 func cdTestDir(testFunctionName string) {
 	individualTestDir := path.Join(TestWorkingDir, testFunctionName)
 	util.ExecuteOrDie(util.ExecuteOptions{}, "rm", "-rf", individualTestDir)
-	util.ExecuteOrDie(util.ExecuteOptions{}, "mkdir", "-p", individualTestDir)
+	// Note: Using "mkdir -p" hangs sometimes on Windows, so use os.Mkdir instead.
+	// nolint:errcheck
+	os.Mkdir(individualTestDir, os.ModePerm)
 	if err := os.Chdir(individualTestDir); err != nil {
 		panic(err)
 	}

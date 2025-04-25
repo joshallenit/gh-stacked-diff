@@ -95,6 +95,12 @@ func createNewCommand() Command {
 			if *baseBranch == "" {
 				*baseBranch = util.GetMainBranchOrDie()
 			}
+			if *reviewers == "" && flagSet.NArg() == 0 {
+				*reviewers = interactive.UserSelection(appConfig)
+				if *reviewers != "" {
+					slog.Info("Using reviewers " + *reviewers)
+				}
+			}
 			createNewPr(*draft, *featureFlag, *baseBranch, targetCommits[0])
 			if *reviewers != "" {
 				addReviewersToPr(appConfig, targetCommits, true, *silent, *minChecks, *reviewers, 30*time.Second)

@@ -83,7 +83,7 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) GitLog {
 	case IndicatorTypePr:
 		slog.Debug("Using commitIndicator as a pull request number " + commitIndicator)
 
-		branchName := util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "view", commitIndicator, "--json", "headRefName", "-q", ".headRefName")
+		branchName := strings.TrimSpace(util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "view", commitIndicator, "--json", "headRefName", "-q", ".headRefName"))
 		// Fetch the branch in case the lastest commit is only on GitHub.
 		util.ExecuteOrDie(util.ExecuteOptions{}, "git", "fetch", "origin", branchName)
 		// Get the first commit of the branch on Github.
@@ -93,6 +93,8 @@ func GetBranchInfo(commitIndicator string, indicatorType IndicatorType) GitLog {
 			panic(fmt.Sprint("Could not find first commit (", prCommit, ") of PR ", commitIndicator))
 		}
 		info = gitLogs[0]
+		// Set the branch name in case it differs because the PR was created manually.
+		info.Branch = branchName
 		slog.Info("Using pull request " + commitIndicator + ", commit " + info.Commit + ", branch " + info.Branch)
 	case IndicatorTypeCommit:
 		slog.Debug("Using commitIndicator as a commit hash " + commitIndicator)
@@ -133,6 +135,11 @@ func guessIndicatorType(commitIndicator string) IndicatorType {
 		if len(commitIndicator) < 7 {
 			return IndicatorTypePr
 		}
+	}
+	if strings.ContainsFunc(strings.ToUpper(commitIndicator), func(r rune) bool {
+		return r < '0' || r > '9' && r < 'A' || r > 'F'
+	}) {
+		panic("Invalid commit indicator: " + commitIndicator)
 	}
 	return IndicatorTypeCommit
 }

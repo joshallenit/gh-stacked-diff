@@ -12,8 +12,7 @@ import (
 
 func TestSdCheckout_ChecksOutBranch(t *testing.T) {
 	assert := assert.New(t)
-
-	testutil.InitTest(t, slog.LevelInfo)
+	testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 

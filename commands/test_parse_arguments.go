@@ -3,9 +3,11 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"slices"
 
+	"bytes"
 	"strings"
 
 	"context"
@@ -19,12 +21,18 @@ const programName string = "gh-stacked-diff"
 
 // Calls [parseArguments] for unit tests.
 func testParseArguments(commandLineArgs ...string) string {
-	out := testutil.NewWriteRecorder()
-	testParseArgumentsWithOut(out, commandLineArgs...)
-	return out.String()
+	if slog.Default().Handler().Enabled(context.Background(), slog.LevelInfo) {
+		out := testutil.NewWriteRecorder()
+		testParseArgumentsWithOut(out, commandLineArgs...)
+		return out.String()
+	} else {
+		out := new(bytes.Buffer)
+		testParseArgumentsWithOut(out, commandLineArgs...)
+		return out.String()
+	}
 }
 
-func testParseArgumentsWithOut(out *testutil.WriteRecorder, commandLineArgs ...string) {
+func testParseArgumentsWithOut(out io.Writer, commandLineArgs ...string) {
 	slog.Debug(fmt.Sprint("***Testing parse arguments*** ", strings.Join(commandLineArgs, " ")))
 	panicOnExit := func(code int) {
 		panic("Panicking instead of exiting with code " + fmt.Sprint(code))
@@ -33,13 +41,15 @@ func testParseArgumentsWithOut(out *testutil.WriteRecorder, commandLineArgs ...s
 	// PATH is set in ../Makefile
 	appExecutable := programName
 
-	// Use debug log level if currently set to debug
-	if slog.Default().Handler().Enabled(context.Background(), slog.LevelDebug) {
-		appExecutable += " --log-level=debug"
-		if !slices.ContainsFunc(commandLineArgs, func(next string) bool {
-			return strings.HasPrefix(next, "--log-level")
-		}) {
-			commandLineArgs = slices.Insert(commandLineArgs, 0, "--log-level=debug")
+	if !slices.ContainsFunc(commandLineArgs, func(next string) bool {
+		return strings.HasPrefix(next, "--log-level")
+	}) {
+		// Use current log level if it set to something other than Info.
+		level := lowestSupportedLogLevel()
+		if level != slog.LevelInfo {
+			loglevelFlag := "--log-level=" + level.String()
+			appExecutable += " " + loglevelFlag
+			commandLineArgs = slices.Insert(commandLineArgs, 0, loglevelFlag)
 		}
 	}
 
@@ -59,4 +69,14 @@ func testParseArgumentsWithOut(out *testutil.WriteRecorder, commandLineArgs ...s
 		commandLineArgs,
 	)
 	slog.Debug(fmt.Sprint("***Done running arguments*** ", strings.Join(commandLineArgs, " ")))
+}
+
+func lowestSupportedLogLevel() slog.Level {
+	levels := []slog.Level{slog.LevelDebug, slog.LevelInfo, slog.LevelWarn}
+	for _, level := range levels {
+		if slog.Default().Handler().Enabled(context.Background(), level) {
+			return level
+		}
+	}
+	return slog.LevelError
 }

@@ -14,7 +14,7 @@ import (
 
 func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "rebase-will-keep-this-file")
@@ -44,7 +44,7 @@ func TestSdRebaseMain_WithDifferentCommits_DropsCommits(t *testing.T) {
 
 func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "1")
 	testutil.AddCommit("second", "2")
@@ -81,7 +81,7 @@ func TestSdRebaseMain_WithMulitpleMergedBranches_DropsCommits(t *testing.T) {
 
 func TestSdRebaseMain_WithDuplicateBranches_Panics(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "1")
 	testutil.AddCommit("second", "2.1")
@@ -102,7 +102,7 @@ func TestSdRebaseMain_WithDuplicateBranches_Panics(t *testing.T) {
 
 func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(t, slog.LevelDebug)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "file-with-conflicts")
 	testutil.CommitFileChange("second", "change-value-to-avoid-same-hash", "1")
@@ -122,7 +122,7 @@ func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 	branches := util.ExecuteOrDie(util.ExecuteOptions{}, "git", "branch")
 	assert.Contains(branches, "second")
 
-	out := testParseArguments("rebase-main")
+	out := testParseArguments("--log-level=info", "rebase-main")
 
 	assert.Contains(out, "Rebase failed")
 	branches = util.ExecuteOrDie(util.ExecuteOptions{}, "git", "branch")
@@ -131,7 +131,7 @@ func TestSdRebaseMain_WhenRebaseFails_DropsBranches(t *testing.T) {
 
 func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "second-1")
@@ -157,7 +157,7 @@ func TestSdRebaseMain_WithMergedPrAlreadyRebased_KeepsCommits(t *testing.T) {
 
 func TestSdRebaseMain_WithDroppedCommits_DropsBranches(t *testing.T) {
 	assert := assert.New(t)
-	testExecutor := testutil.InitTest(t, slog.LevelInfo)
+	testExecutor := testutil.InitTest(t, slog.LevelError)
 
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "rebase-will-keep-this-file")
