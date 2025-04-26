@@ -3,6 +3,8 @@ package interactive
 import (
 	"strings"
 
+	"slices"
+
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
@@ -39,7 +41,7 @@ func getRecentReviewers() []string {
 	jq := ".[] | .reviews[] | .author.login"
 	out := util.ExecuteOrDie(util.ExecuteOptions{},
 		"gh", "pr", "list", "--author", "@me", "--state", "all", "--json", "reviews", "--jq", jq)
-	return strings.Fields(out)
+	return removeCurrentUser(strings.Fields(out))
 }
 
 /*
@@ -119,5 +121,11 @@ func getAllCollaborators() []string {
 	nameWithOwner = strings.TrimSpace(nameWithOwner)
 	out := util.ExecuteOrDie(util.ExecuteOptions{},
 		"gh", "api", "repos/"+nameWithOwner+"/collaborators", "--jq", jq)
-	return strings.Fields(out)
+	return removeCurrentUser(strings.Fields(out))
+}
+
+func removeCurrentUser(users []string) []string {
+	return slices.DeleteFunc(users, func(next string) bool {
+		return next == util.GetUsername()
+	})
 }
