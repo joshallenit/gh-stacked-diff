@@ -113,7 +113,7 @@ func checkBranch(appConfig util.AppConfig, wg *sync.WaitGroup, targetCommit temp
 	util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "ready", targetCommit.Branch)
 	slog.Info("Waiting 10 seconds for any automatically assigned reviewers to be added...")
 	util.Sleep(10 * time.Second)
-	slog.Info("Checking if user has already been reviewed")
+	slog.Info("Checking if user has already approved latest commit")
 	approvingUsers, nonApprovingUsers := getNonApprovingUsers(targetCommit, reviewers)
 	if nonApprovingUsers != reviewers {
 		slog.Warn(fmt.Sprint("Skipping reviewers that have already approved: " + approvingUsers))
