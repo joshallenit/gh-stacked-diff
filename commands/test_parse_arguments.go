@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"os"
+	"path"
 	"slices"
 
 	"bytes"
@@ -58,10 +60,14 @@ func testParseArgumentsWithOut(out io.Writer, commandLineArgs ...string) {
 	// To fake user input use interactive.SendToProgram.
 	stdin := strings.NewReader("")
 
+	userCacheDir := path.Join(testutil.TestWorkingDir, "user-cache")
+	// nolint:errcheck
+	os.Mkdir(userCacheDir, os.ModePerm)
 	appConfig := util.AppConfig{
 		Io:            util.StdIo{Out: out, Err: out, In: stdin},
 		AppExecutable: appExecutable,
 		Exit:          panicOnExit,
+		UserCacheDir:  userCacheDir,
 	}
 	parseArguments(
 		appConfig,

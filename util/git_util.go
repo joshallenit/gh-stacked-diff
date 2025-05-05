@@ -13,6 +13,9 @@ var mainBranchNameFromGitLog string
 // Cached value of user email.
 var userEmail string
 
+// Cached repository name.
+var repoName string
+
 // Returns name of main branch, or panics if cannot be determined.
 func GetMainBranchOrDie() string {
 	out, err := getMainBranchFromGitLog()
@@ -152,4 +155,14 @@ func PopStash(popStash bool) {
 		ExecuteOrDie(ExecuteOptions{}, "git", "stash", "pop")
 		slog.Info("Popped stash back")
 	}
+}
+
+// Returns "repository-owner/repository-name".
+func GetRepoName() string {
+	if repoName == "" {
+		nameWithOwner := ExecuteOrDie(ExecuteOptions{},
+			"gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner")
+		repoName = strings.TrimSpace(nameWithOwner)
+	}
+	return repoName
 }

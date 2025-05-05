@@ -17,4 +17,5 @@ type AppConfig struct {
 	Io            StdIo
 	AppExecutable string         // Path of this executable.
 	Exit          func(code int) // Call os.Exit with the given code, or panic during unit tests.
+	UserCacheDir  string         // os.UserCacheDir or TestWorkingDir + "/user-cache" in unit tests.
 }
