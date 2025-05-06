@@ -61,9 +61,9 @@ func createAddReviewersCommand() Command {
 				}
 				slog.Info("Using reviewers " + *reviewers)
 			} else {
-				util.SetHistory(appConfig, interactive.USER_HISTORY_FILE,
+				util.SetHistory(appConfig, interactive.REVIEWERS_HISTORY_FILE,
 					util.AddToHistory(
-						util.ReadHistory(appConfig, interactive.USER_HISTORY_FILE), *reviewers))
+						util.ReadHistory(appConfig, interactive.REVIEWERS_HISTORY_FILE), *reviewers))
 			}
 			addReviewersToPr(appConfig, targetCommits, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
 		}}
