@@ -46,8 +46,8 @@ func RequireInput(t *testing.T) {
 		panic("RequireInput already called for this test")
 	}
 	sendMessageProgramListener = func(program *tea.Program) {
-		var programMessages []tea.Msg = fakeMessages[currentProgramIndex]
-		if programMessages == nil || len(programMessages) == 0 {
+		programMessages := fakeMessages[currentProgramIndex]
+		if len(programMessages) == 0 {
 			panic(fmt.Sprint(
 				"no input setup for interactive ui program number ",
 				currentProgramIndex,

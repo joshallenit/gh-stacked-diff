@@ -94,6 +94,6 @@ func getTestAppCacheDir() string {
 	parentDir, _ := filepath.Split(wd)
 	userCacheDir := filepath.Join(parentDir, "user-cache")
 	// nolint:errcheck
-	err = os.Mkdir(userCacheDir, os.ModePerm)
+	os.Mkdir(userCacheDir, os.ModePerm)
 	return userCacheDir
 }
