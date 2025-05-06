@@ -2,21 +2,25 @@ package interactive
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
-	"slices"
-
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-var programListeners = make([]*func(*tea.Program), 0)
-var hasFakeProgramMessages = map[int]bool{}
+var sendMessageProgramListener func(program *tea.Program)
+var fakeMessages = map[int][]tea.Msg{}
 
 // Call instead of [tea.NewProgram] to support testing hook [SendToProgram].
-func NewProgram(model tea.Model, opts ...tea.ProgramOption) *tea.Program {
-	program := tea.NewProgram(model, opts...)
-	for _, listener := range programListeners {
-		(*listener)(program) //.onNewProgram(program)
+func NewProgram(model tea.Model, stdIo util.StdIo) *tea.Program {
+	program := tea.NewProgram(
+		model,
+		tea.WithInput(stdIo.In),
+		tea.WithOutput(stdIo.Out),
+	)
+	if sendMessageProgramListener != nil {
+		go sendMessageProgramListener(program)
 	}
 	return program
 }
@@ -24,46 +28,39 @@ func NewProgram(model tea.Model, opts ...tea.ProgramOption) *tea.Program {
 // Sends messages to the program. Each time [NewProgram] is called after [SendToProgram]
 // programIndex is incremented.
 // This is used instead of using stdin to avoid having to (somehow?) fake keyboard scan codes.
-func SendToProgram(t *testing.T, programIndex int, messages ...tea.Msg) {
-	hasFakeProgramMessages[programIndex] = true
-	currentProgramNumber := 0
-	listener := func(program *tea.Program) {
-		if currentProgramNumber == programIndex {
-			go func() {
-				for _, msg := range messages {
-					program.Send(msg)
-				}
-			}()
-		}
-		currentProgramNumber++
+func SendToProgram(programIndex int, messages ...tea.Msg) {
+	if sendMessageProgramListener == nil {
+		panic("RequireInput must be called by test init")
 	}
-	AddNewProgramListener(t, listener)
-	t.Cleanup(func() {
-		hasFakeProgramMessages = map[int]bool{}
-	})
+	programMessages := fakeMessages[programIndex]
+	if programMessages == nil {
+		programMessages = []tea.Msg{}
+	}
+	programMessages = slices.AppendSeq(programMessages, slices.Values(messages))
+	fakeMessages[programIndex] = programMessages
 }
 
 func RequireInput(t *testing.T) {
-	currentProgramNumber := 0
-	listener := func(program *tea.Program) {
-		if !hasFakeProgramMessages[currentProgramNumber] {
+	currentProgramIndex := 0
+	if sendMessageProgramListener != nil {
+		panic("RequireInput already called for this test")
+	}
+	sendMessageProgramListener = func(program *tea.Program) {
+		var programMessages []tea.Msg = fakeMessages[currentProgramIndex]
+		if programMessages == nil || len(programMessages) == 0 {
 			panic(fmt.Sprint(
 				"no input setup for interactive ui program number ",
-				currentProgramNumber,
+				currentProgramIndex,
 				", use interactive.SendToProgram"))
 		}
-		currentProgramNumber++
+		currentProgramIndex++
+		for _, msg := range programMessages {
+			program.Send(msg)
+		}
 	}
-	AddNewProgramListener(t, listener)
-
-}
-
-func AddNewProgramListener(t *testing.T, listener func(*tea.Program)) {
-	programListeners = append(programListeners, &listener)
 	t.Cleanup(func() {
-		programListeners = slices.DeleteFunc(programListeners, func(next *func(*tea.Program)) bool {
-			return next == &listener
-		})
+		sendMessageProgramListener = nil
+		fakeMessages = map[int][]tea.Msg{}
 	})
 }
 

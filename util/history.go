@@ -2,7 +2,7 @@ package util
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"slices"
 	"strings"
 )
@@ -38,16 +38,12 @@ func SetHistory(appConfig AppConfig, historyFileName string, history []string) {
 	}
 	data := strings.Join(history, "\n")
 	if writeErr := os.WriteFile(getHistoryFile(appConfig, historyFileName), []byte(data), os.ModePerm); writeErr != nil {
-		panic(writeErr)
+		panic("Could not write file: " + writeErr.Error())
 	}
 }
 
 func getHistoryFile(appConfig AppConfig, historyFilename string) string {
-	appCacheDir := path.Join(appConfig.UserCacheDir, "gh-stacked-diff")
-	// nolint:errcheck
-	os.Mkdir(appCacheDir, os.ModePerm)
-	appCacheDir = path.Join(appCacheDir, GetRepoName())
-	// nolint:errcheck
-	os.Mkdir(appCacheDir, os.ModePerm)
-	return path.Join(appCacheDir, historyFilename)
+	appCacheDir := filepath.Join(appConfig.UserCacheDir, "gh-stacked-diff", GetRepoName())
+	ExecuteOrDie(ExecuteOptions{}, "mkdir", "-p", appCacheDir)
+	return filepath.Join(appCacheDir, historyFilename)
 }

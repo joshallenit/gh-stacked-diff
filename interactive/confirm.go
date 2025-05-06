@@ -34,11 +34,7 @@ func (m confirmModel) View() string {
 
 func ConfirmOrDie(appConfig util.AppConfig, prompt string) {
 	initialModel := confirmModel{prompt: prompt}
-	finalModel, err := NewProgram(
-		initialModel,
-		tea.WithInput(appConfig.Io.In),
-		tea.WithOutput(appConfig.Io.Out),
-	).Run()
+	finalModel, err := NewProgram(initialModel, appConfig.Io).Run()
 	if err != nil {
 		panic(err)
 	}

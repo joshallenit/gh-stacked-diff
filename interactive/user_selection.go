@@ -5,14 +5,12 @@ import (
 	"slices"
 	"strings"
 
-	"fmt"
-
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-const USER_HISTORY_FILE = "user-selection-history"
+const USER_HISTORY_FILE = "user-selection.history"
 
 type userSelectionModel struct {
 	textInput     textinput.Model
@@ -72,7 +70,7 @@ func (m userSelectionModel) View() string {
 		"   up/down   history\n" +
 		"   tab       select auto-complete\n" +
 		"   enter     confirm\n" +
-		"   esc       quit\n" + fmt.Sprint(m.textInput.AvailableSuggestions())
+		"   esc       quit\n"
 }
 
 func (m *userSelectionModel) setSuggestions() {
@@ -155,11 +153,7 @@ func UserSelection(appConfig util.AppConfig) string {
 		suggestions:   suggestions,
 		breakingChars: []rune{',', ' '},
 	}
-	program := NewProgram(
-		initialModel,
-		tea.WithInput(appConfig.Io.In),
-		tea.WithOutput(appConfig.Io.Out),
-	)
+	program := NewProgram(initialModel, appConfig.Io)
 	go updateSuggestions(program)
 	finalModel, err := program.Run()
 	if err != nil {
