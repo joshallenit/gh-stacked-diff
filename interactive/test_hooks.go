@@ -50,8 +50,7 @@ func RequireInput(t *testing.T) {
 		if len(programMessages) == 0 {
 			panic(fmt.Sprint(
 				"no input setup for interactive ui program number ",
-				currentProgramIndex,
-				", use interactive.SendToProgram"))
+				currentProgramIndex, ", use interactive.SendToProgram"))
 		}
 		currentProgramIndex++
 		for _, msg := range programMessages {
