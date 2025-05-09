@@ -14,8 +14,6 @@ import (
 )
 
 func ExecuteCommand(appConfig util.AppConfig, commandLineArgs []string) {
-	// Populate cache as this can take a few seconds.
-	go util.GetRepoName()
 	// Unset any color in case a previous terminal command set colors and then was
 	// terminated before it could reset the colors.
 	color.Unset()
@@ -115,7 +113,7 @@ func parseArguments(appConfig util.AppConfig, commandLine *flag.FlagSet, command
 	if *logLevelString == "" {
 		logLevelVar.Set(commands[selectedIndex].DefaultLogLevel)
 	}
-	defer func() {
+	recoverFunc := func() {
 		r := recover()
 		if r != nil {
 			util.Fprintln(appConfig.Io.Err, color.RedString(fmt.Sprint("error: ", r)))
@@ -124,7 +122,9 @@ func parseArguments(appConfig util.AppConfig, commandLine *flag.FlagSet, command
 			}
 			appConfig.Exit(1)
 		}
-	}()
+	}
+	go loadCache(recoverFunc)
+	defer recoverFunc()
 	// Note: call GetMainBranchOrDie early as it has useful error messages.
 	slog.Debug(fmt.Sprint("Using main branch " + util.GetMainBranchOrDie()))
 	commands[selectedIndex].OnSelected(appConfig, commands[selectedIndex])
@@ -167,4 +167,11 @@ func stringToLogLevel(logLevelString string) (slog.Level, error) {
 		return 0, unmarshallErr
 	}
 	return logLevel, nil
+}
+
+// Populate cache as this can take a few seconds.
+func loadCache(recoverFunc func()) {
+	defer recoverFunc()
+	util.GetRepoName()
+	util.GetLoggedInUsername()
 }
