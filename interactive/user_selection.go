@@ -29,6 +29,7 @@ func (m userSelectionModel) Init() tea.Cmd {
 
 func (m userSelectionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	tea.Println()
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -72,10 +73,10 @@ func (m userSelectionModel) View() string {
 		// more lenient than m.textInput.MatchingSuggestions
 		return strings.Contains(strings.ToUpper(next), strings.ToUpper(m.textInput.Value()))
 	})
-	const USER_PREFIX = "   users    "
+	const USER_PREFIX = "   users     "
 	users := strings.Join(matchingSuggestions, " ")
-	if len(users)-len(USER_PREFIX) > m.windowWidth {
-		users = users[0 : m.windowWidth-len(USER_PREFIX)]
+	if len(users)+len(USER_PREFIX) > m.windowWidth {
+		users = users[0:min(max(0, m.windowWidth-len(USER_PREFIX)), len(users))]
 	}
 	users = USER_PREFIX + users + "\n"
 	return promptStyle.Render("Reviewers to add when checks pass?") + "\n" +
@@ -170,9 +171,9 @@ func UserSelection(appConfig util.AppConfig) string {
 		suggestions:   suggestions,
 		breakingChars: []rune{',', ' '},
 	}
-	program := NewProgram(initialModel, appConfig.Io)
+	program := newProgram(initialModel, appConfig.Io)
 	go updateSuggestions(appConfig, program)
-	finalModel, err := program.Run()
+	finalModel, err := runProgram(appConfig.Io, program)
 	if err != nil {
 		panic(err)
 	}

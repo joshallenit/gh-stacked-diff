@@ -34,7 +34,7 @@ func (m confirmModel) View() string {
 
 func ConfirmOrDie(appConfig util.AppConfig, prompt string) {
 	initialModel := confirmModel{prompt: prompt}
-	finalModel, err := NewProgram(initialModel, appConfig.Io).Run()
+	finalModel, err := runProgram(appConfig.Io, newProgram(initialModel, appConfig.Io))
 	if err != nil {
 		panic(err)
 	}

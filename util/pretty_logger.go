@@ -21,6 +21,10 @@ type PrettyHandler struct {
 // Verify that [PrettyHandler] implements [slog.Handler].
 var _ slog.Handler = new(PrettyHandler)
 
+func (h *PrettyHandler) SetOut(out io.Writer) {
+	h.l = log.New(out, "", 0)
+}
+
 // Print a log record.
 func (h *PrettyHandler) Handle(ctx context.Context, r slog.Record) error {
 	level := r.Level.String()

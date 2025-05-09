@@ -2,6 +2,8 @@ package interactive
 
 import (
 	"fmt"
+	"io"
+	"log/slog"
 	"slices"
 	"testing"
 
@@ -12,8 +14,19 @@ import (
 var sendMessageProgramListener func(program *tea.Program)
 var fakeMessages = map[int][]tea.Msg{}
 
+type programWriter struct {
+	program *tea.Program
+}
+
+var _ io.Writer = programWriter{}
+
+func (w programWriter) Write(p []byte) (n int, err error) {
+	w.program.Printf("%s", string(p))
+	return len(p), nil
+}
+
 // Call instead of [tea.NewProgram] to support testing hook [SendToProgram].
-func NewProgram(model tea.Model, stdIo util.StdIo) *tea.Program {
+func newProgram(model tea.Model, stdIo util.StdIo) *tea.Program {
 	program := tea.NewProgram(
 		model,
 		tea.WithInput(stdIo.In),
@@ -23,6 +36,16 @@ func NewProgram(model tea.Model, stdIo util.StdIo) *tea.Program {
 		go sendMessageProgramListener(program)
 	}
 	return program
+}
+
+func runProgram(stdIo util.StdIo, program *tea.Program) (tea.Model, error) {
+	prettyHandler := slog.Default().Handler().(*util.PrettyHandler)
+	defer func() {
+		prettyHandler.SetOut(stdIo.Out)
+	}()
+	prettyHandler.SetOut(programWriter{program: program})
+	model, err := program.Run()
+	return model, err
 }
 
 // Sends messages to the program. Each time [NewProgram] is called after [SendToProgram]

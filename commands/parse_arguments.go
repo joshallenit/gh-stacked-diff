@@ -14,6 +14,8 @@ import (
 )
 
 func ExecuteCommand(appConfig util.AppConfig, commandLineArgs []string) {
+	// Populate cache as this can take a few seconds.
+	go util.GetRepoName()
 	// Unset any color in case a previous terminal command set colors and then was
 	// terminated before it could reset the colors.
 	color.Unset()
