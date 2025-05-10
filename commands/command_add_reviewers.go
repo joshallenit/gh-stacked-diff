@@ -19,7 +19,6 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 )
 
-// Next `gh pr view 83824 --json latestReviews` and ensure developer is already not approved so that the review is not dismissed
 type pullRequestChecksStatus struct {
 	Pending int
 	Failing int
@@ -61,6 +60,10 @@ func createAddReviewersCommand() Command {
 						command.Usage)
 				}
 				slog.Info("Using reviewers " + *reviewers)
+			} else {
+				util.SetHistory(appConfig, interactive.USER_HISTORY_FILE,
+					util.AddToHistory(
+						util.ReadHistory(appConfig, interactive.USER_HISTORY_FILE), *reviewers))
 			}
 			addReviewersToPr(appConfig, targetCommits, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
 		}}

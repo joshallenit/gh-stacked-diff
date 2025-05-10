@@ -211,12 +211,12 @@ func TestSdNew_WhenDestinationCommitNotSpecified_CreatesPrWithSelectedCommit(t *
 	testutil.AddCommit("first", "")
 	testutil.AddCommit("second", "")
 
-	interactive.SendToProgram(t, 0,
+	interactive.SendToProgram(0,
 		// What commit do you want to create a PR from?
 		interactive.NewMessageKey(tea.KeyDown),
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
-	interactive.SendToProgram(t, 1,
+	interactive.SendToProgram(1,
 		// Reviewers to add when checks pass?
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
@@ -234,12 +234,12 @@ func TestSdNew_WhenDestinationCommitNotSpecified_WrapsCursorUp(t *testing.T) {
 	testutil.AddCommit("second", "")
 	testutil.AddCommit("third", "")
 
-	interactive.SendToProgram(t, 0,
+	interactive.SendToProgram(0,
 		// What commit do you want to create a PR from?
 		interactive.NewMessageKey(tea.KeyUp),
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
-	interactive.SendToProgram(t, 1,
+	interactive.SendToProgram(1,
 		// Reviewers to add when checks pass?
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
@@ -257,14 +257,14 @@ func TestSdNew_WhenDestinationCommitNotSpecified_WrapsCursorDown(t *testing.T) {
 	testutil.AddCommit("second", "")
 	testutil.AddCommit("third", "")
 
-	interactive.SendToProgram(t, 0,
+	interactive.SendToProgram(0,
 		// What commit do you want to create a PR from?
 		interactive.NewMessageKey(tea.KeyDown),
 		interactive.NewMessageKey(tea.KeyDown),
 		interactive.NewMessageKey(tea.KeyDown),
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
-	interactive.SendToProgram(t, 1,
+	interactive.SendToProgram(1,
 		// Reviewers to add when checks pass?
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
@@ -289,7 +289,7 @@ func TestSdNew_WhenDestinationCommitNotSpecifiedAndManyCommits_PadsIndex(t *test
 	testutil.AddCommit("ninth", "")
 	testutil.AddCommit("tenth", "")
 
-	interactive.SendToProgram(t, 0,
+	interactive.SendToProgram(0,
 		// What commit do you want to create a PR from?
 		interactive.NewMessageRune('q'),
 	)
@@ -319,7 +319,7 @@ func TestSdNew_WhenDestinationCommitNotSpecifiedAndManyCommitsAndExistingPr_Pads
 	testutil.AddCommit("ninth", "")
 	testutil.AddCommit("tenth", "")
 
-	interactive.SendToProgram(t, 0,
+	interactive.SendToProgram(0,
 		// What commit do you want to create a PR from?
 		interactive.NewMessageRune('q'),
 	)

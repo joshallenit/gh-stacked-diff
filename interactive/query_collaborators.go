@@ -116,11 +116,8 @@ Example output from: gh repo view --json nameWithOwner
 
 func getAllCollaborators() []string {
 	jq := ".[] | .login"
-	nameWithOwner := util.ExecuteOrDie(util.ExecuteOptions{},
-		"gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner")
-	nameWithOwner = strings.TrimSpace(nameWithOwner)
 	out := util.ExecuteOrDie(util.ExecuteOptions{},
-		"gh", "api", "repos/"+nameWithOwner+"/collaborators", "--jq", jq)
+		"gh", "api", "repos/"+util.GetRepoName()+"/collaborators", "--jq", jq)
 	return removeCurrentUser(strings.Fields(out))
 }
 

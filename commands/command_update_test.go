@@ -229,7 +229,7 @@ func TestSdUpdate_WhenCherryPickCommitsNotSpecifiedAndUserQuits_NoOp(t *testing.
 		}
 	}()
 	// What commits do you want to add?
-	interactive.SendToProgram(t, 0, interactive.NewMessageRune('q'))
+	interactive.SendToProgram(0, interactive.NewMessageRune('q'))
 	testParseArguments("update", "2")
 
 	assert.Fail("did not panic on quit")
@@ -245,9 +245,9 @@ func TestSdUpdate_WhenCherryPickCommitsNotSpecified_CherryPicsUserSelection(t *t
 	testutil.AddCommit("second", "")
 
 	// What commits do you want to add?
-	interactive.SendToProgram(t, 0, interactive.NewMessageKey(tea.KeyEnter))
+	interactive.SendToProgram(0, interactive.NewMessageKey(tea.KeyEnter))
 	// Reviewers to add when checks pass?
-	interactive.SendToProgram(t, 1, interactive.NewMessageKey(tea.KeyEnter))
+	interactive.SendToProgram(1, interactive.NewMessageKey(tea.KeyEnter))
 	testParseArguments("update", "2")
 
 	allCommits := templates.GetAllCommits()
@@ -267,11 +267,11 @@ func TestSdUpdate_WhenDestinationCommitNotSpecified_UpdatesSelectedPr(t *testing
 	testutil.AddCommit("second", "")
 
 	// What PR do you want to update?
-	interactive.SendToProgram(t, 0, interactive.NewMessageKey(tea.KeyEnter))
+	interactive.SendToProgram(0, interactive.NewMessageKey(tea.KeyEnter))
 	// What commits do you want to add?
-	interactive.SendToProgram(t, 1, interactive.NewMessageKey(tea.KeyEnter))
+	interactive.SendToProgram(1, interactive.NewMessageKey(tea.KeyEnter))
 	// Reviewers to add when checks pass?
-	interactive.SendToProgram(t, 2, interactive.NewMessageKey(tea.KeyEnter))
+	interactive.SendToProgram(2, interactive.NewMessageKey(tea.KeyEnter))
 	testParseArguments("update")
 
 	allCommits := templates.GetAllCommits()
@@ -294,19 +294,19 @@ func TestSdUpdate_WhenDestinationCommitNotSpecifiedAndMultiplePossibleValues_Upd
 	testutil.AddCommit("sixth", "")
 
 	// What PR do you want to update?
-	interactive.SendToProgram(t, 0,
+	interactive.SendToProgram(0,
 		interactive.NewMessageKey(tea.KeyDown),
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
 	// What commits do you want to add?
-	interactive.SendToProgram(t, 1,
+	interactive.SendToProgram(1,
 		interactive.NewMessageKey(tea.KeyDown),
 		interactive.NewMessageRune(' '),
 		interactive.NewMessageKey(tea.KeyDown),
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
 	// Reviewers to add when checks pass?
-	interactive.SendToProgram(t, 2, interactive.NewMessageKey(tea.KeyEnter))
+	interactive.SendToProgram(2, interactive.NewMessageKey(tea.KeyEnter))
 	testParseArguments("update")
 
 	allCommits := templates.GetAllCommits()
@@ -332,7 +332,7 @@ func TestSdUpdate_WhenBranchAlreadyMergedAndUserDoesNotConfirm_Cancels(t *testin
 	allCommits := templates.GetAllCommits()
 
 	// Are you sure you want to update this PR?
-	interactive.SendToProgram(t, 0, interactive.NewMessageRune('n'))
+	interactive.SendToProgram(0, interactive.NewMessageRune('n'))
 	testExecutor.SetResponse(allCommits[1].Branch+" fakeMergeCommit",
 		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
 
@@ -362,7 +362,7 @@ func TestSdUpdate_WhenBranchAlreadyMergedAndUserConfirms_Updates(t *testing.T) {
 		nil, "gh", "pr", "list", util.MatchAnyRemainingArgs)
 
 	// Are you sure you want to update this PR?
-	interactive.SendToProgram(t, 0, interactive.NewMessageRune('y'))
+	interactive.SendToProgram(0, interactive.NewMessageRune('y'))
 	testParseArguments("update", "2", "1")
 
 	assert.Equal(2, len(templates.GetAllCommits()))

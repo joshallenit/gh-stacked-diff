@@ -150,11 +150,7 @@ func GetTableSelection(
 		rowEnabled:   rowEnabled,
 		prompt:       prompt,
 	}
-	finalModel, err := NewProgram(
-		initialModel,
-		tea.WithInput(stdIo.In),
-		tea.WithOutput(stdIo.Out),
-	).Run()
+	finalModel, err := NewProgram(initialModel, stdIo).Run()
 	if err != nil {
 		panic(err)
 	}

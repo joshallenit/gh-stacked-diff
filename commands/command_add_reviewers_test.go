@@ -91,9 +91,7 @@ func TestSdAddReviewers_WhenOmittingCommitIndicator_AsksForSelection(t *testing.
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", util.MatchAnyRemainingArgs)
 
-	interactive.SendToProgram(t, 0,
-		interactive.NewMessageKey(tea.KeyEnter),
-	)
+	interactive.SendToProgram(0, interactive.NewMessageKey(tea.KeyEnter))
 	testParseArguments("add-reviewers", "--indicator=list", "--reviewers=mybestie")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
@@ -146,4 +144,96 @@ func TestSdAddReviewers_WhenUserAlreadyApproved_DoesNotRequestReview(t *testing.
 	}))
 
 	assert.Contains(out, "alreadyapproved2,alreadyapproved1")
+}
+
+func TestSdAddReviewers_UserChoosesHistory_ChoosesSameReviewers(t *testing.T) {
+	assert := assert.New(t)
+
+	testExecutor := testutil.InitTest(t, slog.LevelError)
+
+	testutil.AddCommit("first", "")
+
+	testParseArguments("new", "1")
+
+	allCommits := templates.GetAllCommits()
+	checksSuccess := // There has to be at least 4 checks, each with 3 values: status, conclusion, and state.
+		"SUCCESS\nSUCCESS\nSUCCESS\n" +
+			"SUCCESS\nSUCCESS\nSUCCESS\n" +
+			"SUCCESS\nSUCCESS\nSUCCESS\n" +
+			"SUCCESS\nSUCCESS\nSUCCESS\n"
+	testExecutor.SetResponseFunc(checksSuccess, nil, func(programName string, args ...string) bool {
+		return programName == "gh" &&
+			args[0] == "pr" &&
+			args[1] == "view" &&
+			slices.Contains(args, "statusCheckRollup")
+	})
+
+	testParseArguments("add-reviewers", "--reviewers=mybestie", "1")
+
+	// Clear responses.
+	testExecutor.Responses = []util.ExecutedResponse{}
+	// What reviewers?
+	interactive.SendToProgram(0,
+		// History
+		interactive.NewMessageKey(tea.KeyUp),
+		interactive.NewMessageKey(tea.KeyEnter),
+	)
+	testParseArguments("add-reviewers", "1")
+
+	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
+		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
+		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
+	})
+	assert.True(contains, util.FilterSlice(testExecutor.Responses, func(next util.ExecutedResponse) bool {
+		return next.ProgramName == "gh"
+	}))
+}
+
+func TestSdAddReviewers_UserChoosesHistoryFromTyped_ChoosesSameReviewers(t *testing.T) {
+	assert := assert.New(t)
+
+	testExecutor := testutil.InitTest(t, slog.LevelError)
+
+	testutil.AddCommit("first", "")
+
+	testParseArguments("new", "1")
+
+	allCommits := templates.GetAllCommits()
+	checksSuccess := // There has to be at least 4 checks, each with 3 values: status, conclusion, and state.
+		"SUCCESS\nSUCCESS\nSUCCESS\n" +
+			"SUCCESS\nSUCCESS\nSUCCESS\n" +
+			"SUCCESS\nSUCCESS\nSUCCESS\n" +
+			"SUCCESS\nSUCCESS\nSUCCESS\n"
+	testExecutor.SetResponseFunc(checksSuccess, nil, func(programName string, args ...string) bool {
+		return programName == "gh" &&
+			args[0] == "pr" &&
+			args[1] == "view" &&
+			slices.Contains(args, "statusCheckRollup")
+	})
+
+	// What reviewers?
+	interactive.SendToProgram(0,
+		interactive.NewMessageRune('m'),
+		interactive.NewMessageRune('y'),
+		interactive.NewMessageKey(tea.KeyEnter),
+	)
+	testParseArguments("add-reviewers", "1")
+
+	// Clear responses.
+	testExecutor.Responses = []util.ExecutedResponse{}
+	// What reviewers?
+	interactive.SendToProgram(1,
+		// History
+		interactive.NewMessageKey(tea.KeyUp),
+		interactive.NewMessageKey(tea.KeyEnter),
+	)
+	testParseArguments("add-reviewers", "1")
+
+	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
+		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "my"}
+		return next.ProgramName == "gh" && slices.Equal(next.Args, ghExpectedArgs)
+	})
+	assert.True(contains, util.FilterSlice(testExecutor.Responses, func(next util.ExecutedResponse) bool {
+		return next.ProgramName == "gh"
+	}))
 }

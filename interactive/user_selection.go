@@ -5,12 +5,12 @@ import (
 	"slices"
 	"strings"
 
-	"fmt"
-
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
+
+const USER_HISTORY_FILE = "user-selection.history"
 
 type userSelectionModel struct {
 	textInput     textinput.Model
@@ -70,7 +70,7 @@ func (m userSelectionModel) View() string {
 		"   up/down   history\n" +
 		"   tab       select auto-complete\n" +
 		"   enter     confirm\n" +
-		"   esc       quit\n" + fmt.Sprint(m.textInput.AvailableSuggestions())
+		"   esc       quit\n"
 }
 
 func (m *userSelectionModel) setSuggestions() {
@@ -142,7 +142,7 @@ func UserSelection(appConfig util.AppConfig) string {
 	input.Width = 100
 	input.Placeholder = "None"
 	input.ShowSuggestions = true
-	history := readHistory()
+	history := util.ReadHistory(appConfig, USER_HISTORY_FILE)
 	suggestions := allUsersFromHistory(history)
 	input.SetSuggestions(suggestions)
 	initialModel := userSelectionModel{
@@ -153,11 +153,7 @@ func UserSelection(appConfig util.AppConfig) string {
 		suggestions:   suggestions,
 		breakingChars: []rune{',', ' '},
 	}
-	program := NewProgram(
-		initialModel,
-		tea.WithInput(appConfig.Io.In),
-		tea.WithOutput(appConfig.Io.Out),
-	)
+	program := NewProgram(initialModel, appConfig.Io)
 	go updateSuggestions(program)
 	finalModel, err := program.Run()
 	if err != nil {
@@ -169,7 +165,7 @@ func UserSelection(appConfig util.AppConfig) string {
 	}
 	selected := finalSelectionModel.textInput.Value()
 	if selected != "" {
-		addToHistory(history, selected)
+		util.SetHistory(appConfig, USER_HISTORY_FILE, util.AddToHistory(history, selected))
 	}
 	return normalizeReviewers(selected)
 }
@@ -188,4 +184,20 @@ func updateSuggestions(program *tea.Program) {
 	program.Send(setSuggestionsMsg{suggestions: suggestions})
 	suggestions = slices.AppendSeq(suggestions, slices.Values(getAllCollaborators()))
 	program.Send(setSuggestionsMsg{suggestions: suggestions})
+}
+
+func allUsersFromHistory(history []string) []string {
+	allUsers := make([]string, 0, len(history))
+	for _, next := range history {
+		users := strings.FieldsFunc(next, func(next rune) bool {
+			return slices.Contains(getBreakingChars(), next)
+		})
+		allUsers = slices.AppendSeq(allUsers, slices.Values(users))
+	}
+	slices.Sort(allUsers)
+	return slices.Compact(allUsers)
+}
+
+func getBreakingChars() []rune {
+	return []rune{' ', ','}
 }

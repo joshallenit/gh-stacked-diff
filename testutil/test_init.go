@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -33,7 +33,7 @@ func init() {
 	if err != nil {
 		panic("Cannot find UserCacheDir: " + err.Error())
 	}
-	TestWorkingDir = path.Join(userCacheDir, "gh-stacked-diff-tests")
+	TestWorkingDir = filepath.Join(userCacheDir, "gh-stacked-diff-tests")
 	// nolint:errcheck
 	os.Mkdir(TestWorkingDir, os.ModePerm)
 }
@@ -94,13 +94,13 @@ func cdTestRepo(testFunctionName string) {
 	if err := os.Chdir(repositoryDir); err != nil {
 		panic(err)
 	}
-	// os.Getwd() returns an unusable path ("c:\..."") in windows when running from Git Bash. Instead use "pwd"
+	// os.Getwd() returns an unusable path ("c:\..."") in windows when running from Git Bash. Instead log "pwd"
 	wd := strings.TrimSpace(util.ExecuteOrDie(util.ExecuteOptions{}, "pwd"))
 	slog.Info("Changed to test repository directory:\n" + wd)
 }
 
 func cdTestDir(testFunctionName string) {
-	individualTestDir := path.Join(TestWorkingDir, testFunctionName)
+	individualTestDir := filepath.Join(TestWorkingDir, testFunctionName)
 	util.ExecuteOrDie(util.ExecuteOptions{}, "rm", "-rf", individualTestDir)
 	// Note: Using "mkdir -p" hangs sometimes on Windows, so use os.Mkdir instead.
 	// nolint:errcheck

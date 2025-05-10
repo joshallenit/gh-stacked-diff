@@ -43,10 +43,15 @@ import (
 )
 
 func main() {
+	userCacheDir, err := os.UserCacheDir()
+	if err != nil {
+		panic("Cannot find user cache dir: " + err.Error())
+	}
 	appConfig := util.AppConfig{
 		Io:            util.StdIo{Out: os.Stdout, Err: os.Stderr, In: os.Stdin},
 		AppExecutable: getAppExecutable(),
 		Exit:          os.Exit,
+		UserCacheDir:  userCacheDir,
 	}
 	commands.ExecuteCommand(appConfig, os.Args[1:])
 }

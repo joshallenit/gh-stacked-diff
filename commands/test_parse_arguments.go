@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"slices"
 
 	"bytes"
@@ -62,6 +64,7 @@ func testParseArgumentsWithOut(out io.Writer, commandLineArgs ...string) {
 		Io:            util.StdIo{Out: out, Err: out, In: stdin},
 		AppExecutable: appExecutable,
 		Exit:          panicOnExit,
+		UserCacheDir:  getTestAppCacheDir(),
 	}
 	parseArguments(
 		appConfig,
@@ -79,4 +82,18 @@ func lowestSupportedLogLevel() slog.Level {
 		}
 	}
 	return slog.LevelError
+}
+
+func getTestAppCacheDir() string {
+	// okay I need it as a C:\\ in order to use WriteFile/ReadFile
+	// but all of the path stuff uses /
+	wd, err := os.Getwd()
+	if err != nil {
+		panic("cannot get wd: " + err.Error())
+	}
+	parentDir, _ := filepath.Split(wd)
+	userCacheDir := filepath.Join(parentDir, "user-cache")
+	// nolint:errcheck
+	os.Mkdir(userCacheDir, os.ModePerm)
+	return userCacheDir
 }
