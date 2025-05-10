@@ -188,7 +188,7 @@ func GetRepoName() string {
 			_, repoName = filepath.Split(strings.TrimSpace(out))
 		})
 	}
-	return repoNameWithOwner
+	return repoName
 }
 
 func GetLoggedInUsername() string {
