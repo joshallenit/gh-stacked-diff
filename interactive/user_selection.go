@@ -1,7 +1,6 @@
 package interactive
 
 import (
-	"fmt"
 	"regexp"
 	"slices"
 	"strings"
@@ -21,6 +20,7 @@ type userSelectionModel struct {
 	breakingChars []rune
 	historyIndex  int
 	confirmed     bool
+	windowWidth   int
 }
 
 func (m userSelectionModel) Init() tea.Cmd {
@@ -48,6 +48,9 @@ func (m userSelectionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.suggestions = msg.suggestions
 		m.setSuggestions()
 		return m, nil
+	case tea.WindowSizeMsg:
+		m.windowWidth = msg.Width
+		return m, nil
 	}
 
 	m.setSuggestions()
@@ -69,6 +72,12 @@ func (m userSelectionModel) View() string {
 		// more lenient than m.textInput.MatchingSuggestions
 		return strings.Contains(strings.ToUpper(next), strings.ToUpper(m.textInput.Value()))
 	})
+	const USER_PREFIX = "   users    "
+	users := strings.Join(matchingSuggestions, " ")
+	if len(users)-len(USER_PREFIX) > m.windowWidth {
+		users = users[0 : m.windowWidth-len(USER_PREFIX)]
+	}
+	users = USER_PREFIX + users + "\n"
 	return promptStyle.Render("Reviewers to add when checks pass?") + "\n" +
 		m.textInput.View() + "\n" +
 		"\n" +
@@ -77,7 +86,7 @@ func (m userSelectionModel) View() string {
 		"   tab       select auto-complete\n" +
 		"   enter     confirm\n" +
 		"   esc       quit\n" +
-		"   users    " + fmt.Sprint(matchingSuggestions) + "\n"
+		users
 }
 
 // Sets suggestions so users can be added to an existing comma delimited string.
