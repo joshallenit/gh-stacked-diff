@@ -10,7 +10,8 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-const USER_HISTORY_FILE = "user-selection.history"
+const REVIEWERS_HISTORY_FILE = "reviewers.history"
+const all_collaborators_file = "all-collaborators.cache"
 
 type userSelectionModel struct {
 	textInput     textinput.Model
@@ -73,6 +74,7 @@ func (m userSelectionModel) View() string {
 		"   esc       quit\n"
 }
 
+// Sets suggestions so users can be added to an existing comma delimited string.
 func (m *userSelectionModel) setSuggestions() {
 	lastBreakingChar := -1
 	valueRunes := []rune(m.textInput.Value())
@@ -142,8 +144,8 @@ func UserSelection(appConfig util.AppConfig) string {
 	input.Width = 100
 	input.Placeholder = "None"
 	input.ShowSuggestions = true
-	history := util.ReadHistory(appConfig, USER_HISTORY_FILE)
-	suggestions := allUsersFromHistory(history)
+	history := util.ReadHistory(appConfig, REVIEWERS_HISTORY_FILE)
+	suggestions := util.ReadHistory(appConfig, all_collaborators_file)
 	input.SetSuggestions(suggestions)
 	initialModel := userSelectionModel{
 		history:       history,
@@ -154,7 +156,7 @@ func UserSelection(appConfig util.AppConfig) string {
 		breakingChars: []rune{',', ' '},
 	}
 	program := NewProgram(initialModel, appConfig.Io)
-	go updateSuggestions(program)
+	go updateSuggestions(appConfig, program)
 	finalModel, err := program.Run()
 	if err != nil {
 		panic(err)
@@ -165,7 +167,7 @@ func UserSelection(appConfig util.AppConfig) string {
 	}
 	selected := finalSelectionModel.textInput.Value()
 	if selected != "" {
-		util.SetHistory(appConfig, USER_HISTORY_FILE, util.AddToHistory(history, selected))
+		util.SetHistory(appConfig, REVIEWERS_HISTORY_FILE, util.AddToHistory(history, selected))
 	}
 	return normalizeReviewers(selected)
 }
@@ -178,24 +180,10 @@ func normalizeReviewers(selected string) string {
 	return selected
 }
 
-func updateSuggestions(program *tea.Program) {
-	// Add recent reviewers first so they are auto-completed first.
-	suggestions := getRecentReviewers()
-	program.Send(setSuggestionsMsg{suggestions: suggestions})
-	suggestions = slices.AppendSeq(suggestions, slices.Values(getAllCollaborators()))
-	program.Send(setSuggestionsMsg{suggestions: suggestions})
-}
-
-func allUsersFromHistory(history []string) []string {
-	allUsers := make([]string, 0, len(history))
-	for _, next := range history {
-		users := strings.FieldsFunc(next, func(next rune) bool {
-			return slices.Contains(getBreakingChars(), next)
-		})
-		allUsers = slices.AppendSeq(allUsers, slices.Values(users))
-	}
-	slices.Sort(allUsers)
-	return slices.Compact(allUsers)
+func updateSuggestions(appConfig util.AppConfig, program *tea.Program) {
+	allCollaborators := getAllCollaborators()
+	program.Send(setSuggestionsMsg{suggestions: allCollaborators})
+	util.SetHistory(appConfig, all_collaborators_file, allCollaborators)
 }
 
 func getBreakingChars() []rune {
