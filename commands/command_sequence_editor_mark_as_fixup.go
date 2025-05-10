@@ -18,9 +18,9 @@ func createMarkAsFixupCommand() Command {
 		Description: "For use as a sequence editor during an interactive git rebase. Marks commits as fixup commits.",
 		Usage:       "sd " + flagSet.Name() + " targetCommit fixupCommit1 [fixupCommit2...] rebaseFilename",
 		Hidden:      true,
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() < 3 {
-				commandError(appConfig, flagSet, "not enough arguments", command.Usage)
+				commandError(asyncConfig.App, flagSet, "not enough arguments", command.Usage)
 			}
 
 			targetCommit := flagSet.Arg(0)

@@ -123,11 +123,11 @@ func parseArguments(appConfig util.AppConfig, commandLine *flag.FlagSet, command
 			appConfig.Exit(1)
 		}
 	}
-	go loadCache(recoverFunc)
 	defer recoverFunc()
 	// Note: call GetMainBranchOrDie early as it has useful error messages.
 	slog.Debug(fmt.Sprint("Using main branch " + util.GetMainBranchOrDie()))
-	commands[selectedIndex].OnSelected(appConfig, commands[selectedIndex])
+	asyncConfig := util.AsyncAppConfig{App: appConfig, GracefulRecover: recoverFunc}
+	commands[selectedIndex].OnSelected(asyncConfig, commands[selectedIndex])
 }
 
 func getCommandSummaries(commands []Command) []string {
@@ -167,11 +167,4 @@ func stringToLogLevel(logLevelString string) (slog.Level, error) {
 		return 0, unmarshallErr
 	}
 	return logLevel, nil
-}
-
-// Populate cache as this can take a few seconds.
-func loadCache(recoverFunc func()) {
-	defer recoverFunc()
-	util.GetRepoName()
-	util.GetLoggedInUsername()
 }

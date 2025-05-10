@@ -21,18 +21,18 @@ func createCheckoutCommand() Command {
 			"\n" +
 			"After modifying the branch you can use \"sd replace-commit\" to sync local " + util.GetMainBranchForHelp() + ".",
 		Usage: "sd " + flagSet.Name() + " [flags] <commitIndicator>",
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() > 1 {
-				commandError(appConfig, flagSet, "too many arguments", command.Usage)
+				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
 			selectCommitOptions := interactive.CommitSelectionOptions{
 				Prompt:      "What commit do you want to checkout the associated branch for?",
 				CommitType:  interactive.CommitTypePr,
 				MultiSelect: false,
 			}
-			targetCommit := getTargetCommits(appConfig, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
+			targetCommit := getTargetCommits(asyncConfig.App, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
 			util.ExecuteOrDie(
-				util.ExecuteOptions{Io: appConfig.Io},
+				util.ExecuteOptions{Io: asyncConfig.App.Io},
 				"git", "checkout", targetCommit[0].Branch,
 			)
 		}}

@@ -169,14 +169,14 @@ type setSuggestionsMsg struct {
 
 var _ tea.Msg = setSuggestionsMsg{}
 
-func UserSelection(appConfig util.AppConfig) string {
+func UserSelection(asyncConfig util.AsyncAppConfig) string {
 	input := textinput.New()
 	input.Focus()
 	input.Width = 100
 	input.Placeholder = "None"
 	input.ShowSuggestions = true
-	history := util.ReadHistory(appConfig, REVIEWERS_HISTORY_FILE)
-	suggestions := util.ReadHistory(appConfig, all_collaborators_file)
+	history := util.ReadHistory(asyncConfig.App, REVIEWERS_HISTORY_FILE)
+	suggestions := util.ReadHistory(asyncConfig.App, all_collaborators_file)
 	input.SetSuggestions(suggestions)
 	initialModel := userSelectionModel{
 		history:       history,
@@ -186,19 +186,19 @@ func UserSelection(appConfig util.AppConfig) string {
 		suggestions:   suggestions,
 		breakingChars: []rune{',', ' '},
 	}
-	program := newProgram(initialModel, appConfig.Io)
-	go updateSuggestions(appConfig, program)
-	finalModel, err := runProgram(appConfig.Io, program)
+	program := newProgram(initialModel, asyncConfig.App.Io)
+	go updateSuggestions(asyncConfig, program)
+	finalModel, err := runProgram(asyncConfig.App.Io, program)
 	if err != nil {
 		panic(err)
 	}
 	finalSelectionModel := finalModel.(userSelectionModel)
 	if !finalSelectionModel.confirmed {
-		appConfig.Exit(0)
+		asyncConfig.App.Exit(0)
 	}
 	selected := finalSelectionModel.textInput.Value()
 	if selected != "" {
-		util.SetHistory(appConfig, REVIEWERS_HISTORY_FILE, util.AddToHistory(history, selected))
+		util.SetHistory(asyncConfig.App, REVIEWERS_HISTORY_FILE, util.AddToHistory(history, selected))
 	}
 	return normalizeReviewers(selected)
 }
@@ -212,8 +212,9 @@ func normalizeReviewers(selected string) string {
 }
 
 // Updates suggestions with results from API collaborators call.
-func updateSuggestions(appConfig util.AppConfig, program *tea.Program) {
+func updateSuggestions(asyncConfig util.AsyncAppConfig, program *tea.Program) {
+	defer asyncConfig.GracefulRecover()
 	allCollaborators := getAllCollaborators()
 	program.Send(setSuggestionsMsg{suggestions: allCollaborators})
-	util.SetHistory(appConfig, all_collaborators_file, allCollaborators)
+	util.SetHistory(asyncConfig.App, all_collaborators_file, allCollaborators)
 }

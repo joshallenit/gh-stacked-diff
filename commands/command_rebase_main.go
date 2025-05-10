@@ -26,11 +26,11 @@ func createRebaseMainCommand() Command {
 			"but has slight variation with local main because, for example, a\n" +
 			"change was made with the Github Web UI.",
 		Usage: "sd " + flagSet.Name(),
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() != 0 {
-				commandError(appConfig, flagSet, "too many arguments", command.Usage)
+				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
-			rebaseMain(appConfig)
+			rebaseMain(asyncConfig.App)
 		}}
 }
 

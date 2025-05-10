@@ -15,9 +15,9 @@ func createVersionCommand() Command {
 		Summary:         "Outputs version number",
 		Description:     "Outputs the version number.",
 		Usage:           "sd " + flagSet.Name(),
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() != 0 {
-				commandError(appConfig, flagSet, "too many args", command.Usage)
+				commandError(asyncConfig.App, flagSet, "too many args", command.Usage)
 			}
 			var stableSuffix string
 			if util.CurrentVersion == util.StableVersion {
@@ -25,6 +25,6 @@ func createVersionCommand() Command {
 			} else {
 				stableSuffix = " (preview)"
 			}
-			util.Fprint(appConfig.Io.Out, "Version "+util.CurrentVersion+stableSuffix)
+			util.Fprint(asyncConfig.App.Io.Out, "Version "+util.CurrentVersion+stableSuffix)
 		}}
 }

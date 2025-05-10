@@ -10,7 +10,7 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
 
-type OnSelectedFunc func(appConfig util.AppConfig, command Command)
+type OnSelectedFunc func(asyncConfig util.AsyncAppConfig, command Command)
 
 // sd program command.
 type Command struct {
