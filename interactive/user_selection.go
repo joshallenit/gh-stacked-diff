@@ -29,7 +29,6 @@ func (m userSelectionModel) Init() tea.Cmd {
 
 func (m userSelectionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	tea.Println()
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
