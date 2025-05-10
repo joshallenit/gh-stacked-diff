@@ -1,6 +1,7 @@
 package interactive
 
 import (
+	"fmt"
 	"regexp"
 	"slices"
 	"strings"
@@ -64,6 +65,10 @@ func (m userSelectionModel) View() string {
 	if m.confirmed {
 		return ""
 	}
+	matchingSuggestions := util.FilterSlice(m.suggestions, func(next string) bool {
+		// more lenient than m.textInput.MatchingSuggestions
+		return strings.Contains(strings.ToUpper(next), strings.ToUpper(m.textInput.Value()))
+	})
 	return promptStyle.Render("Reviewers to add when checks pass?") + "\n" +
 		m.textInput.View() + "\n" +
 		"\n" +
@@ -71,7 +76,8 @@ func (m userSelectionModel) View() string {
 		"   up/down   history\n" +
 		"   tab       select auto-complete\n" +
 		"   enter     confirm\n" +
-		"   esc       quit\n"
+		"   esc       quit\n" +
+		"   users    " + fmt.Sprint(matchingSuggestions) + "\n"
 }
 
 // Sets suggestions so users can be added to an existing comma delimited string.
