@@ -33,11 +33,11 @@ func createLogCommand() Command {
 			"their associated commit summary).",
 		Usage:           "sd " + flagSet.Name(),
 		DefaultLogLevel: slog.LevelError,
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() != 0 {
-				commandError(appConfig, flagSet, "too many arguments", command.Usage)
+				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
-			printGitLog(appConfig.Io)
+			printGitLog(asyncConfig.App.Io)
 		}}
 }
 

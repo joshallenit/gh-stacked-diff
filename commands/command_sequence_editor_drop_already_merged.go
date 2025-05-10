@@ -24,9 +24,9 @@ func createDropAlreadyMergedCommand() Command {
 		Description: "Drops any commits passed as arguments.",
 		Usage:       "sd " + flagSet.Name() + " dropCommit1 [dropCommit2...] rebaseFilename",
 		Hidden:      true,
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() < 2 {
-				commandError(appConfig, flagSet, "not enough arguments", command.Usage)
+				commandError(asyncConfig.App, flagSet, "not enough arguments", command.Usage)
 			}
 			dropCommits := flagSet.Args()[0 : len(flagSet.Args())-1]
 			rebaseFilename := flagSet.Args()[len(flagSet.Args())-1]

@@ -43,46 +43,47 @@ func createAddReviewersCommand() Command {
 			"\n" +
 			"If PR is marked as a Draft, it is first marked as \"Ready for Review\".",
 		Usage: "sd " + flagSet.Name() + " [flags] [commitIndicator [commitIndicator]...]",
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			selectPrsOptions := interactive.CommitSelectionOptions{
 				Prompt:      "What PR do you want to add reviewers too?",
 				CommitType:  interactive.CommitTypePr,
 				MultiSelect: true,
 			}
-			targetCommits := getTargetCommits(appConfig, command, flagSet.Args(), indicatorTypeString, selectPrsOptions)
+			targetCommits := getTargetCommits(asyncConfig.App, command, flagSet.Args(), indicatorTypeString, selectPrsOptions)
 			if *reviewers == "" {
-				*reviewers = interactive.UserSelection(appConfig)
+				*reviewers = interactive.UserSelection(asyncConfig)
 				if *reviewers == "" {
 					commandError(
-						appConfig,
+						asyncConfig.App,
 						flagSet,
 						"reviewers not specified.",
 						command.Usage)
 				}
 				slog.Info("Using reviewers " + *reviewers)
 			} else {
-				util.SetHistory(appConfig, interactive.REVIEWERS_HISTORY_FILE,
+				util.SetHistory(asyncConfig.App, interactive.REVIEWERS_HISTORY_FILE,
 					util.AddToHistory(
-						util.ReadHistory(appConfig, interactive.REVIEWERS_HISTORY_FILE), *reviewers))
+						util.ReadHistory(asyncConfig.App, interactive.REVIEWERS_HISTORY_FILE), *reviewers))
 			}
-			addReviewersToPr(appConfig, targetCommits, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
+			addReviewersToPr(asyncConfig, targetCommits, *whenChecksPass, *silent, *minChecks, *reviewers, *pollFrequency)
 		}}
 }
 
 // Adds reviewers to a PR once checks have passed via Github CLI.
-func addReviewersToPr(appConfig util.AppConfig, targetCommits []templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+func addReviewersToPr(asyncConfig util.AsyncAppConfig, targetCommits []templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
 	if reviewers == "" {
 		panic("Reviewers cannot be empty")
 	}
 	var wg sync.WaitGroup
 	for _, targetCommit := range targetCommits {
 		wg.Add(1)
-		go checkBranch(appConfig, &wg, targetCommit, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
+		go checkBranch(asyncConfig, &wg, targetCommit, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
 	}
 	wg.Wait()
 }
 
-func checkBranch(appConfig util.AppConfig, wg *sync.WaitGroup, targetCommit templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+func checkBranch(asyncConfig util.AsyncAppConfig, wg *sync.WaitGroup, targetCommit templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+	defer asyncConfig.GracefulRecover()
 	if whenChecksPass {
 		for {
 			summary := getChecksStatus(targetCommit.Branch)
@@ -96,7 +97,7 @@ func checkBranch(appConfig util.AppConfig, wg *sync.WaitGroup, targetCommit temp
 					" | Pending: ", summary.Pending,
 					" | Failed: ", summary.Failing,
 					"\n"))
-				appConfig.Exit(1)
+				asyncConfig.App.Exit(1)
 			}
 
 			if summary.Total < minChecks {

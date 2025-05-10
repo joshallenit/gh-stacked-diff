@@ -19,3 +19,10 @@ type AppConfig struct {
 	Exit          func(code int) // Call os.Exit with the given code, or panic during unit tests.
 	UserCacheDir  string         // os.UserCacheDir or a dir specific for each test in unit tests.
 }
+
+type AsyncAppConfig struct {
+	App AppConfig
+	// Method to defer to when running code async.
+	// Will exit app after logging message if panic was called.
+	GracefulRecover func()
+}

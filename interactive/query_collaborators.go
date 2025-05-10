@@ -83,12 +83,15 @@ Example output from: gh repo view --json nameWithOwner
 func getAllCollaborators() []string {
 	jq := ".[] | .login"
 	out := util.ExecuteOrDie(util.ExecuteOptions{},
-		"gh", "api", "repos/"+util.GetRepoName()+"/collaborators", "--jq", jq)
-	return removeCurrentUser(strings.Fields(out))
+		"gh", "api", "repos/"+util.GetRepoNameWithOwner()+"/collaborators", "--jq", jq)
+	collaborators := strings.Fields(out)
+	collaborators = removeCurrentUser(collaborators)
+	slices.Sort(collaborators)
+	return collaborators
 }
 
 func removeCurrentUser(users []string) []string {
 	return slices.DeleteFunc(users, func(next string) bool {
-		return next == util.GetUsername()
+		return next == util.GetLoggedInUsername()
 	})
 }

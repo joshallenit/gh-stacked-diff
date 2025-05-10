@@ -2,7 +2,9 @@ package util
 
 import (
 	"log/slog"
+	"path/filepath"
 	"strings"
+	"sync"
 )
 
 // Cached value of main branch name.
@@ -15,6 +17,15 @@ var userEmail string
 
 // Cached repository name.
 var repoName string
+var repoNameOnce *sync.Once = new(sync.Once)
+
+// Cached repository name with owner.
+var repoNameWithOwner string
+var repoNameWithOwnerOnce *sync.Once = new(sync.Once)
+
+// Cached logged in username
+var loggedInUsername string
+var loggedInUsernameOnce *sync.Once = new(sync.Once)
 
 // Returns name of main branch, or panics if cannot be determined.
 func GetMainBranchOrDie() string {
@@ -158,11 +169,35 @@ func PopStash(popStash bool) {
 }
 
 // Returns "repository-owner/repository-name".
+func GetRepoNameWithOwner() string {
+	if repoNameWithOwner == "" {
+		repoNameWithOwnerOnce.Do(func() {
+			out := ExecuteOrDie(ExecuteOptions{},
+				"gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner")
+			repoNameWithOwner = strings.TrimSpace(out)
+		})
+	}
+	return repoNameWithOwner
+}
+
 func GetRepoName() string {
 	if repoName == "" {
-		nameWithOwner := ExecuteOrDie(ExecuteOptions{},
-			"gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner")
-		repoName = strings.TrimSpace(nameWithOwner)
+		repoNameOnce.Do(func() {
+			out := ExecuteOrDie(ExecuteOptions{},
+				"git", "rev-parse", "--show-toplevel")
+			_, repoName = filepath.Split(strings.TrimSpace(out))
+		})
 	}
 	return repoName
+}
+
+func GetLoggedInUsername() string {
+	if loggedInUsername == "" {
+		loggedInUsernameOnce.Do(func() {
+			out := ExecuteOrDie(ExecuteOptions{},
+				"gh", "api", "https://api.github.com/user", "--jq", ".login")
+			loggedInUsername = strings.TrimSpace(out)
+		})
+	}
+	return loggedInUsername
 }

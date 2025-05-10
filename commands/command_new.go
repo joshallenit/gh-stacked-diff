@@ -81,29 +81,29 @@ func createNewCommand() Command {
 			"   TicketNumber                 Jira ticket as parsed from the commit summary\n" +
 			"   Username                     Name as parsed from git config email.\n" +
 			"   UsernameCleaned              Username with dots (.) converted to dashes (-).\n",
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() > 1 {
-				commandError(appConfig, flagSet, "too many arguments", command.Usage)
+				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
 			selectCommitOptions := interactive.CommitSelectionOptions{
 				Prompt:      "What commit do you want to create a PR from?",
 				CommitType:  interactive.CommitTypeNoPr,
 				MultiSelect: false,
 			}
-			targetCommits := getTargetCommits(appConfig, command, flagSet.Args(), indicatorTypeString, selectCommitOptions)
+			targetCommits := getTargetCommits(asyncConfig.App, command, flagSet.Args(), indicatorTypeString, selectCommitOptions)
 			// Note: set the default here rather than via flags to avoid GetMainBranchOrDie being called before OnSelected.
 			if *baseBranch == "" {
 				*baseBranch = util.GetMainBranchOrDie()
 			}
 			if *reviewers == "" && flagSet.NArg() == 0 {
-				*reviewers = interactive.UserSelection(appConfig)
+				*reviewers = interactive.UserSelection(asyncConfig)
 				if *reviewers != "" {
 					slog.Info("Using reviewers " + *reviewers)
 				}
 			}
 			createNewPr(*draft, *featureFlag, *baseBranch, targetCommits[0])
 			if *reviewers != "" {
-				addReviewersToPr(appConfig, targetCommits, true, *silent, *minChecks, *reviewers, 30*time.Second)
+				addReviewersToPr(asyncConfig, targetCommits, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
 		}}
 }

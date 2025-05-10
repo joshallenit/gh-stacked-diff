@@ -24,16 +24,16 @@ func createWaitForMergeCommand() Command {
 			"\n" +
 			"Useful for your own custom scripting.",
 		Usage: "sd " + flagSet.Name() + " [flags] <commit hash or pull request number>",
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() > 1 {
-				commandError(appConfig, flagSet, "too many arguments", command.Usage)
+				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
 			selectCommitOptions := interactive.CommitSelectionOptions{
 				Prompt:      "What PR do you want to wait for to be merged?",
 				CommitType:  interactive.CommitTypePr,
 				MultiSelect: false,
 			}
-			targetCommit := getTargetCommits(appConfig, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
+			targetCommit := getTargetCommits(asyncConfig.App, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
 			waitForMerge(targetCommit[0], *silent)
 		}}
 }

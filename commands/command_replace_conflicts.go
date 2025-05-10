@@ -22,11 +22,11 @@ func createReplaceConflictsCommand() Command {
 			"current uncommitted changes (merge conflicts), with the contents\n" +
 			"(diff between origin/" + util.GetMainBranchForHelp() + " and HEAD) of its associated branch.",
 		Usage: "sd " + flagSet.Name(),
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() > 0 {
-				commandError(appConfig, flagSet, "too many arguments", command.Usage)
+				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
-			replaceConflicts(appConfig, *confirmed)
+			replaceConflicts(asyncConfig.App, *confirmed)
 		}}
 }
 

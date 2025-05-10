@@ -25,16 +25,16 @@ func createReplaceCommitCommand() Command {
 			"fix a problem found on CI, and want to bring the changes over to your\n" +
 			"local " + util.GetMainBranchForHelp() + " branch.",
 		Usage: "sd " + flagSet.Name() + " [flags] <commitIndicator>",
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() > 1 {
-				commandError(appConfig, flagSet, "too many arguments", command.Usage)
+				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
 			selectCommitOptions := interactive.CommitSelectionOptions{
 				Prompt:      "What commit do you want to replace with the contents of its associated branch?",
 				CommitType:  interactive.CommitTypePr,
 				MultiSelect: false,
 			}
-			targetCommit := getTargetCommits(appConfig, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
+			targetCommit := getTargetCommits(asyncConfig.App, command, []string{flagSet.Arg(0)}, indicatorTypeString, selectCommitOptions)
 			replaceCommit(targetCommit[0])
 		}}
 }

@@ -33,18 +33,18 @@ func createUpdateCommand() Command {
 			"   [up,k]     moves cursor up\n" +
 			"   [down,j]   moves cursor down\n" +
 			"   [q,esc]    cancels\n",
-		OnSelected: func(appConfig util.AppConfig, command Command) {
-			destCommit := getDestCommit(appConfig, command, indicatorTypeString)
-			commitsToCherryPick := getCommitsToCherryPick(appConfig, command, indicatorTypeString)
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
+			destCommit := getDestCommit(asyncConfig.App, command, indicatorTypeString)
+			commitsToCherryPick := getCommitsToCherryPick(asyncConfig.App, command, indicatorTypeString)
 			if *reviewers == "" && flagSet.NArg() < 2 {
-				*reviewers = interactive.UserSelection(appConfig)
+				*reviewers = interactive.UserSelection(asyncConfig)
 				if *reviewers != "" {
 					slog.Info("Using reviewers " + *reviewers)
 				}
 			}
-			updatePr(appConfig, destCommit, commitsToCherryPick)
+			updatePr(asyncConfig.App, destCommit, commitsToCherryPick)
 			if *reviewers != "" {
-				addReviewersToPr(appConfig, []templates.GitLog{destCommit}, true, *silent, *minChecks, *reviewers, 30*time.Second)
+				addReviewersToPr(asyncConfig, []templates.GitLog{destCommit}, true, *silent, *minChecks, *reviewers, 30*time.Second)
 			}
 		}}
 }

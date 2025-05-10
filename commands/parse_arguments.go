@@ -113,7 +113,7 @@ func parseArguments(appConfig util.AppConfig, commandLine *flag.FlagSet, command
 	if *logLevelString == "" {
 		logLevelVar.Set(commands[selectedIndex].DefaultLogLevel)
 	}
-	defer func() {
+	recoverFunc := func() {
 		r := recover()
 		if r != nil {
 			util.Fprintln(appConfig.Io.Err, color.RedString(fmt.Sprint("error: ", r)))
@@ -122,10 +122,12 @@ func parseArguments(appConfig util.AppConfig, commandLine *flag.FlagSet, command
 			}
 			appConfig.Exit(1)
 		}
-	}()
+	}
+	defer recoverFunc()
 	// Note: call GetMainBranchOrDie early as it has useful error messages.
 	slog.Debug(fmt.Sprint("Using main branch " + util.GetMainBranchOrDie()))
-	commands[selectedIndex].OnSelected(appConfig, commands[selectedIndex])
+	asyncConfig := util.AsyncAppConfig{App: appConfig, GracefulRecover: recoverFunc}
+	commands[selectedIndex].OnSelected(asyncConfig, commands[selectedIndex])
 }
 
 func getCommandSummaries(commands []Command) []string {

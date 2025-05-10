@@ -18,11 +18,11 @@ func createPrsCommand() Command {
 			"You must be logged-in, via \"gh auth login\"",
 		Usage:           "sd " + flagSet.Name(),
 		DefaultLogLevel: slog.LevelError,
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() != 0 {
-				commandError(appConfig, flagSet, "too many arguments", command.Usage)
+				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
-			util.ExecuteOrDie(util.ExecuteOptions{Io: appConfig.Io},
+			util.ExecuteOrDie(util.ExecuteOptions{Io: asyncConfig.App.Io},
 				"gh", "pr", "list", "--author", "@me")
 		}}
 }

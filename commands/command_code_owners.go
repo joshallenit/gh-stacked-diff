@@ -23,11 +23,11 @@ func createCodeOwnersCommand() Command {
 			"in the current local branch when compared to the remote main branch",
 		Usage:           "sd " + flagSet.Name(),
 		DefaultLogLevel: slog.LevelError,
-		OnSelected: func(appConfig util.AppConfig, command Command) {
+		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() != 0 {
-				commandError(appConfig, flagSet, "too many arguments", command.Usage)
+				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
-			util.Fprint(appConfig.Io.Out, changedFilesOwnersString())
+			util.Fprint(asyncConfig.App.Io.Out, changedFilesOwnersString())
 		}}
 }
 
