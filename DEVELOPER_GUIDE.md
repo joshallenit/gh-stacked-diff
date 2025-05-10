@@ -36,7 +36,9 @@ You can use TEST_ARGS to run only one test from the command line, see [Makefile]
 Follow the steps in golang docs [Publishing a module](https://go.dev/doc/modules/publishing):
 
 ```bash
-# Update the stable version so that it is equal to current version [util/stable_version.txt], merge changes, update local, and then:
+# Update the stable version so that it is equal to current version [util/stable_version.txt]
+make build 
+# merge changes, update local, and then:
 git checkout main
 go mod tidy
 make test
