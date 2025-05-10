@@ -1,10 +1,11 @@
 package interactive
 
 import (
-	"fmt"
 	"regexp"
 	"slices"
 	"strings"
+
+	"fmt"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -41,6 +42,10 @@ func (m userSelectionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.onKeyDown()
 			return m, nil
 		}
+	case setSuggestionsMsg:
+		m.suggestions = msg.suggestions
+		m.setSuggestions()
+		return m, nil
 	}
 
 	m.setSuggestions()
@@ -125,6 +130,12 @@ func (m *userSelectionModel) onKeyDown() {
 	}
 }
 
+type setSuggestionsMsg struct {
+	suggestions []string
+}
+
+var _ tea.Msg = setSuggestionsMsg{}
+
 func UserSelection(appConfig util.AppConfig) string {
 	input := textinput.New()
 	input.Focus()
@@ -142,11 +153,13 @@ func UserSelection(appConfig util.AppConfig) string {
 		suggestions:   suggestions,
 		breakingChars: []rune{',', ' '},
 	}
-	finalModel, err := NewProgram(
+	program := NewProgram(
 		initialModel,
 		tea.WithInput(appConfig.Io.In),
 		tea.WithOutput(appConfig.Io.Out),
-	).Run()
+	)
+	go updateSuggestions(program)
+	finalModel, err := program.Run()
 	if err != nil {
 		panic(err)
 	}
@@ -167,4 +180,12 @@ func normalizeReviewers(selected string) string {
 	expression := regexp.MustCompile("#+")
 	selected = expression.ReplaceAllString(selected, ",")
 	return selected
+}
+
+func updateSuggestions(program *tea.Program) {
+	// Add recent reviewers first so they are auto-completed first.
+	suggestions := getRecentReviewers()
+	program.Send(setSuggestionsMsg{suggestions: suggestions})
+	suggestions = slices.AppendSeq(suggestions, slices.Values(getAllCollaborators()))
+	program.Send(setSuggestionsMsg{suggestions: suggestions})
 }
