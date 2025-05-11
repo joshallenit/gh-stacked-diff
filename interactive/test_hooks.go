@@ -38,14 +38,17 @@ func newProgram(model tea.Model, stdIo util.StdIo) *tea.Program {
 	return program
 }
 
-func runProgram(stdIo util.StdIo, program *tea.Program) (tea.Model, error) {
+func runProgram(stdIo util.StdIo, program *tea.Program) tea.Model {
 	prettyHandler := slog.Default().Handler().(*util.PrettyHandler)
 	defer func() {
 		prettyHandler.SetOut(stdIo.Out)
 	}()
 	prettyHandler.SetOut(programWriter{program: program})
 	model, err := program.Run()
-	return model, err
+	if err != nil {
+		panic(err)
+	}
+	return model
 }
 
 // Sends messages to the program. Each time [NewProgram] is called after [SendToProgram]

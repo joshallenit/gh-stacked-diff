@@ -167,6 +167,7 @@ type setSuggestionsMsg struct {
 	suggestions []string
 }
 
+var _ tea.Model = userSelectionModel{}
 var _ tea.Msg = setSuggestionsMsg{}
 
 func UserSelection(asyncConfig util.AsyncAppConfig) string {
@@ -188,10 +189,7 @@ func UserSelection(asyncConfig util.AsyncAppConfig) string {
 	}
 	program := newProgram(initialModel, asyncConfig.App.Io)
 	go updateSuggestions(asyncConfig, program)
-	finalModel, err := runProgram(asyncConfig.App.Io, program)
-	if err != nil {
-		panic(err)
-	}
+	finalModel := runProgram(asyncConfig.App.Io, program)
 	finalSelectionModel := finalModel.(userSelectionModel)
 	if !finalSelectionModel.confirmed {
 		asyncConfig.App.Exit(0)
