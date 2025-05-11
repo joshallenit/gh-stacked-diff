@@ -3,6 +3,7 @@ package util
 import (
 	"log/slog"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 )
@@ -200,4 +201,65 @@ func GetLoggedInUsername() string {
 		})
 	}
 	return loggedInUsername
+}
+
+/*
+Returns users that have already approved latest commit.
+
+Example output of gh pr view:
+
+$ gh pr view mybranch --json "reviews"
+
+	{
+	  "reviews": [
+	    {
+	      "id": "PRR_kwDODeVIac6f37Qq",
+	      "author": {
+	        "login": "mybestie"
+	      },
+	      "authorAssociation": "MEMBER",
+	      "body": "",
+	      "submittedAt": "2025-03-13T14:47:31Z",
+	      "includesCreatedEdit": false,
+	      "reactionGroups": [],
+	      "state": "COMMENTED",
+	      "commit": {
+	        "oid": "af01bdf8eb5649956096a608717f7de5eeb97e45"
+	      }
+	    },
+	    {
+	      "id": "PRR_kwDODeVIac6f5jeG",
+	      "author": {
+	        "login": "myfave"
+	      },
+	      "authorAssociation": "MEMBER",
+	      "body": "",
+	      "submittedAt": "2025-03-13T16:32:44Z",
+	      "includesCreatedEdit": false,
+	      "reactionGroups": [],
+	      "state": "APPROVED",
+	      "commit": {
+	        "oid": "af01bdf8eb5649956096a608717f7de5eeb97e45"
+	      }
+	    }
+	  ]
+	}
+*/
+func GetAllApprovingUsers(branchName string) []string {
+	lastCommit := GetBranchLatestCommit(branchName)
+	jq := ".reviews[] | select(.state == \"APPROVED\" and .commit.oid == \"" + lastCommit + "\") | .author.login"
+	out := ExecuteOrDie(ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "reviews", "--jq", jq)
+	approvingUsers := strings.Fields(out)
+	slices.Sort(approvingUsers)
+	return slices.Compact(approvingUsers)
+}
+
+// Returns full commit hash of branch with name of branchName, or "" if no such branch.
+func GetBranchLatestCommit(branchName string) string {
+	out, err := Execute(ExecuteOptions{}, "git", "log", "-n", "1", "--pretty=format:%H", branchName)
+	if err != nil {
+		return ""
+	} else {
+		return strings.TrimSpace(out)
+	}
 }

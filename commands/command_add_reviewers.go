@@ -167,7 +167,7 @@ func getChecksStatus(branchName string) pullRequestChecksStatus {
 }
 
 func getNonApprovingUsers(commit templates.GitLog, reviewers string) (string, string) {
-	allApprovingUsers := getAllApprovingUsers(commit)
+	allApprovingUsers := util.GetAllApprovingUsers(commit.Branch)
 	approvingUsers := make([]string, 0)
 	nonApprovingUsers := make([]string, 0)
 	for _, reviewer := range strings.Split(reviewers, ",") {
@@ -178,53 +178,4 @@ func getNonApprovingUsers(commit templates.GitLog, reviewers string) (string, st
 		}
 	}
 	return strings.Join(approvingUsers, ","), strings.Join(nonApprovingUsers, ",")
-}
-
-/*
-Returns users that have already approved latest commit.
-
-Example output of gh pr view:
-
-$ gh pr view mybranch --json "reviews"
-
-	{
-	  "reviews": [
-	    {
-	      "id": "PRR_kwDODeVIac6f37Qq",
-	      "author": {
-	        "login": "mybestie"
-	      },
-	      "authorAssociation": "MEMBER",
-	      "body": "",
-	      "submittedAt": "2025-03-13T14:47:31Z",
-	      "includesCreatedEdit": false,
-	      "reactionGroups": [],
-	      "state": "COMMENTED",
-	      "commit": {
-	        "oid": "af01bdf8eb5649956096a608717f7de5eeb97e45"
-	      }
-	    },
-	    {
-	      "id": "PRR_kwDODeVIac6f5jeG",
-	      "author": {
-	        "login": "myfave"
-	      },
-	      "authorAssociation": "MEMBER",
-	      "body": "",
-	      "submittedAt": "2025-03-13T16:32:44Z",
-	      "includesCreatedEdit": false,
-	      "reactionGroups": [],
-	      "state": "APPROVED",
-	      "commit": {
-	        "oid": "af01bdf8eb5649956096a608717f7de5eeb97e45"
-	      }
-	    }
-	  ]
-	}
-*/
-func getAllApprovingUsers(commit templates.GitLog) []string {
-	lastCommit := getBranchLatestCommit(commit.Branch)
-	jq := ".reviews[] | select(.state == \"APPROVED\" and .commit.oid == \"" + lastCommit + "\") | .author.login"
-	approvedUsers := util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "view", commit.Branch, "--json", "reviews", "--jq", jq)
-	return strings.Fields(approvedUsers)
 }

@@ -122,26 +122,16 @@ func checkUniqueBranches(dropCommits []templates.GitLog) {
 
 func deleteBranches(stdIo util.StdIo, dropCommits []templates.GitLog) {
 	for _, dropCommit := range dropCommits {
-		localHash := getBranchLatestCommit(dropCommit.Branch)
+		localHash := util.GetBranchLatestCommit(dropCommit.Branch)
 		if localHash != "" {
 			// nolint:errcheck
 			util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "branch", "-D", dropCommit.Branch)
 			// Only delete remote branch if it is on the same commit to avoid accidentally deleting
 			// a branch that is not merged.
-			if localHash == getBranchLatestCommit("origin/"+dropCommit.Branch) {
+			if localHash == util.GetBranchLatestCommit("origin/"+dropCommit.Branch) {
 				// nolint:errcheck
 				util.Execute(util.ExecuteOptions{Io: stdIo}, "git", "push", "--delete", "origin", dropCommit.Branch)
 			}
 		}
-	}
-}
-
-// Returns full commit hash of branch with name of branchName, or "" if no such branch.
-func getBranchLatestCommit(branchName string) string {
-	out, err := util.Execute(util.ExecuteOptions{}, "git", "log", "-n", "1", "--pretty=format:%H", branchName)
-	if err != nil {
-		return ""
-	} else {
-		return strings.TrimSpace(out)
 	}
 }

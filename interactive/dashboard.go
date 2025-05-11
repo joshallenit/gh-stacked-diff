@@ -2,6 +2,7 @@ package interactive
 
 import (
 	"fmt"
+	"log/slog"
 	"slices"
 	"strings"
 
@@ -37,6 +38,9 @@ func (m dashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "Q", "esc", "ctrl+c":
 			return m, tea.Quit
 		}
+	case updateDashboardRowMsg:
+		m.rows[msg.index] = msg.row
+		return m, nil
 	}
 	var tableCmd tea.Cmd
 	m.table, tableCmd = m.table.Update(msg)
@@ -59,22 +63,40 @@ func (m dashboardModel) getTableRows() []table.Row {
 		}
 		var checksPassed string
 		if row.checksPassed == nil {
-			checksPassed = m.spinner.View()
+			if row.pr {
+				checksPassed = m.spinner.View()
+			} else {
+				checksPassed = "-"
+			}
 		} else {
-			checksPassed = "passed"
+			if *row.checksPassed {
+				checksPassed = "passed"
+			} else {
+				checksPassed = "failed"
+			}
 		}
 		var approved string
 		if row.approved == nil {
-			approved = m.spinner.View()
+			if row.pr {
+				approved = m.spinner.View()
+			} else {
+				approved = "-"
+			}
 		} else {
 			approved = strings.Join(row.approved, " ")
 		}
-		tableRows[i] = table.Row{row.index, pr, checksPassed, approved, row.log.Commit, row.log.Subject}
+		tableRows[i] = table.Row{row.index, pr, checksPassed, approved, row.log.Commit, row.log.Subject + "\nnext 2"}
 	}
 	return tableRows
 }
 
+type updateDashboardRowMsg struct {
+	index int
+	row   dashboardRow
+}
+
 var _ tea.Model = dashboardModel{}
+var _ tea.Msg = updateDashboardRowMsg{}
 
 func ShowDashboard(asyncConfig util.AsyncAppConfig) {
 
@@ -113,7 +135,25 @@ func ShowDashboard(asyncConfig util.AsyncAppConfig) {
 		rows:    rows,
 	}
 	initialModel.spinner.Spinner = spinner.Dot
-	finalModel := runProgram(asyncConfig.App.Io, newProgram(initialModel, asyncConfig.App.Io))
+	program := newProgram(initialModel, asyncConfig.App.Io)
+	go updateDashboardData(asyncConfig, program, rows)
+	finalModel := runProgram(asyncConfig.App.Io, program)
 	finalDashboardModel := finalModel.(dashboardModel)
 	println("finalDashboardModel", fmt.Sprint(finalDashboardModel))
+}
+
+func updateDashboardData(asyncConfig util.AsyncAppConfig, program *tea.Program, rows []dashboardRow) {
+	defer asyncConfig.GracefulRecover()
+	println("here   len ", len(rows))
+	for i, row := range rows {
+		if row.pr {
+			row.approved = util.GetAllApprovingUsers(row.log.Branch)
+			slog.Warn("hi" + fmt.Sprint(row.approved))
+			tea.Println("Approved value " + fmt.Sprint(row.approved))
+			program.Send(updateDashboardRowMsg{index: i, row: row})
+		} else {
+			slog.Warn("h3i")
+			tea.Println("not PR " + fmt.Sprint(row.approved))
+		}
+	}
 }
