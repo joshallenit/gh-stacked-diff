@@ -38,11 +38,12 @@ func addReviewersFlags(flagSet *flag.FlagSet, reviewersUseCaseExtra string) (*st
 			"checks have passed.\n"+
 			reviewersUseCaseExtra)
 	silent := addSilentFlag(flagSet, "reviewers have been added")
-	minChecks := flagSet.Int("min-checks", 4,
+	minChecks := flagSet.Int("min-checks", -1,
 		"Minimum number of checks to wait for before verifying that checks\n"+
 			"have passed before adding reviewers. It takes some time for checks\n"+
 			"to be added to a PR by Github, and if you add-reviewers too soon it\n"+
-			"will think that they have all passed.")
+			"will think that they have all passed. Default of -1 means to use 4 \n"+
+			"or the average number of checks of merged PRs, whatever is less.")
 	return reviewers, silent, minChecks
 }
 

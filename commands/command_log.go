@@ -39,7 +39,7 @@ func createLogCommand() Command {
 				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
 			if true {
-				interactive.ShowDashboard(asyncConfig)
+				interactive.ShowDashboard(asyncConfig, -1)
 				return
 			}
 			printGitLog(asyncConfig.App.Io)
