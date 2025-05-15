@@ -2,7 +2,6 @@ package interactive
 
 import (
 	"fmt"
-	"log/slog"
 	"slices"
 	"strings"
 
@@ -14,11 +13,10 @@ import (
 )
 
 type dashboardRow struct {
-	index        string
-	pr           bool
-	checksPassed *bool
-	approved     []string
-	log          templates.GitLog
+	index  string
+	pr     bool
+	status *util.PullRequestStatus
+	log    templates.GitLog
 }
 
 type dashboardModel struct {
@@ -58,32 +56,23 @@ func (m dashboardModel) getTableRows() []table.Row {
 	tableRows := make([]table.Row, len(m.rows))
 	for i, row := range m.rows {
 		var pr string = ""
+		checksPassed := ""
+		approved := ""
 		if row.pr {
 			pr = "pr"
-		}
-		var checksPassed string
-		if row.checksPassed == nil {
-			if row.pr {
+			if row.status != nil {
+				if row.status.Checks.IsSuccess() {
+					checksPassed = "passesd"
+				} else if row.status.Checks.IsFailing() {
+					checksPassed = "failed"
+				} else {
+					checksPassed = fmt.Sprint(row.status.Checks.PercentageComplete())
+				}
+				approved = strings.Join(row.status.Approvers, "\n")
+			} else {
 				checksPassed = m.spinner.View()
-			} else {
-				checksPassed = "-"
-			}
-		} else {
-			if *row.checksPassed {
-				checksPassed = "passed"
-			} else {
-				checksPassed = "failed"
-			}
-		}
-		var approved string
-		if row.approved == nil {
-			if row.pr {
 				approved = m.spinner.View()
-			} else {
-				approved = "-"
 			}
-		} else {
-			approved = strings.Join(row.approved, " ")
 		}
 		tableRows[i] = table.Row{row.index, pr, checksPassed, approved, row.log.Commit, row.log.Subject + "\nnext 2"}
 	}
@@ -98,7 +87,7 @@ type updateDashboardRowMsg struct {
 var _ tea.Model = dashboardModel{}
 var _ tea.Msg = updateDashboardRowMsg{}
 
-func ShowDashboard(asyncConfig util.AsyncAppConfig) {
+func ShowDashboard(asyncConfig util.AsyncAppConfig, minChecks int) {
 
 	columns := []string{"Index", "PR", "Checks", "Approved", "Commit", "Summary"}
 	newCommits := templates.GetNewCommits("HEAD")
@@ -116,7 +105,7 @@ func ShowDashboard(asyncConfig util.AsyncAppConfig) {
 		paddingLen := len(fmt.Sprint(len(newCommits))) - len(indexString)
 		indexString = strings.Repeat(" ", paddingLen) + indexString
 		rows[i] = dashboardRow{
-			index: indexString, pr: hasLocalBranch, checksPassed: nil, approved: nil, log: log,
+			index: indexString, pr: hasLocalBranch, log: log, status: nil,
 		}
 	}
 
@@ -136,24 +125,21 @@ func ShowDashboard(asyncConfig util.AsyncAppConfig) {
 	}
 	initialModel.spinner.Spinner = spinner.Dot
 	program := newProgram(initialModel, asyncConfig.App.Io)
-	go updateDashboardData(asyncConfig, program, rows)
-	finalModel := runProgram(asyncConfig.App.Io, program)
-	finalDashboardModel := finalModel.(dashboardModel)
-	println("finalDashboardModel", fmt.Sprint(finalDashboardModel))
+	go updateDashboardData(asyncConfig, program, rows, minChecks)
+	runProgram(asyncConfig.App.Io, program)
+	// finalModel := runProgram(asyncConfig.App.Io, program)
+	// finalDashboardModel := finalModel.(dashboardModel)
+	// println("finalDashboardModel", fmt.Sprint(finalDashboardModel))
 }
 
-func updateDashboardData(asyncConfig util.AsyncAppConfig, program *tea.Program, rows []dashboardRow) {
+func updateDashboardData(asyncConfig util.AsyncAppConfig, program *tea.Program, rows []dashboardRow, minChecks int) {
 	defer asyncConfig.GracefulRecover()
-	println("here   len ", len(rows))
 	for i, row := range rows {
 		if row.pr {
-			row.approved = util.GetAllApprovingUsers(row.log.Branch)
-			slog.Warn("hi" + fmt.Sprint(row.approved))
-			tea.Println("Approved value " + fmt.Sprint(row.approved))
+			status := util.GetPullRequestStatus(row.log.Branch, minChecks)
+			row.status = &status
 			program.Send(updateDashboardRowMsg{index: i, row: row})
-		} else {
-			slog.Warn("h3i")
-			tea.Println("not PR " + fmt.Sprint(row.approved))
+
 		}
 	}
 }
