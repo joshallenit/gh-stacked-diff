@@ -49,7 +49,10 @@ func (m dashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m dashboardModel) View() string {
 	m.table.SetRows(m.getTableRows())
-	return m.spinner.View() + " " + m.spinner.View() + "\n" + m.table.View() + "\n"
+	if m.table.Cursor() == -1 {
+		m.table.SetCursor(0)
+	}
+	return m.table.View() + "\n"
 }
 
 func (m dashboardModel) getTableRows() []table.Row {
