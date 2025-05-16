@@ -57,6 +57,7 @@ func parseArguments(appConfig util.AppConfig, commandLine *flag.FlagSet, command
 		createBranchNameCommand(),
 		createCheckoutCommand(),
 		createCodeOwnersCommand(),
+		createDashboardCommand(),
 		createDropAlreadyMergedCommand(),
 		createLogCommand(),
 		createMarkAsFixupCommand(),
