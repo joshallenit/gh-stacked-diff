@@ -1,6 +1,7 @@
 package interactive
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"strings"
@@ -23,6 +24,7 @@ type dashboardModel struct {
 	spinner spinner.Model
 	table   table.Model
 	rows    []dashboardRow
+	ctx     context.Context
 }
 
 func (m dashboardModel) Init() tea.Cmd {
@@ -40,6 +42,14 @@ func (m dashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.rows[msg.index] = msg.row
 		return m, nil
 	}
+
+	// Check for context cancellation
+	select {
+	case <-m.ctx.Done():
+		return m, tea.Quit
+	default:
+	}
+
 	var tableCmd tea.Cmd
 	m.table, tableCmd = m.table.Update(msg)
 	var spinnerCmd tea.Cmd
@@ -77,7 +87,7 @@ func (m dashboardModel) getTableRows() []table.Row {
 				approved = m.spinner.View()
 			}
 		}
-		tableRows[i] = table.Row{row.index, pr, checksPassed, approved, row.log.Commit, row.log.Subject + "\nnext 2"}
+		tableRows[i] = table.Row{row.index, pr, checksPassed, approved, row.log.Commit, row.log.Subject}
 	}
 	return tableRows
 }
@@ -90,8 +100,7 @@ type updateDashboardRowMsg struct {
 var _ tea.Model = dashboardModel{}
 var _ tea.Msg = updateDashboardRowMsg{}
 
-func ShowDashboard(asyncConfig util.AsyncAppConfig, minChecks int) {
-
+func ShowDashboard(asyncConfig util.AsyncAppConfig, minChecks int, ctx context.Context) {
 	columns := []string{"Index", "PR", "Checks", "Approved", "Commit", "Summary"}
 	newCommits := templates.GetNewCommits("HEAD")
 	gitBranchArgs := make([]string, 0, len(newCommits)+2)
@@ -125,14 +134,12 @@ func ShowDashboard(asyncConfig util.AsyncAppConfig, minChecks int) {
 		spinner: spinner.New(),
 		table:   t,
 		rows:    rows,
+		ctx:     ctx,
 	}
 	initialModel.spinner.Spinner = spinner.Dot
 	program := newProgram(initialModel, asyncConfig.App.Io)
 	go updateDashboardData(asyncConfig, program, rows, minChecks)
 	runProgram(asyncConfig.App.Io, program)
-	// finalModel := runProgram(asyncConfig.App.Io, program)
-	// finalDashboardModel := finalModel.(dashboardModel)
-	// println("finalDashboardModel", fmt.Sprint(finalDashboardModel))
 }
 
 func updateDashboardData(asyncConfig util.AsyncAppConfig, program *tea.Program, rows []dashboardRow, minChecks int) {
