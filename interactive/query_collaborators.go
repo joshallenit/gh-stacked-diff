@@ -83,7 +83,7 @@ Example output from: gh repo view --json nameWithOwner
 func getAllCollaborators() []string {
 	jq := ".[] | .login"
 	out := util.ExecuteOrDie(util.ExecuteOptions{},
-		"gh", "api", "repos/"+util.GetRepoNameWithOwner()+"/collaborators", "--paginate", "--jq", jq)
+		"gh", "api", "repos/"+util.GetRepoNameWithOwner()+"/collaborators", "--paginate", "--cache", "6h", "--jq", jq)
 	collaborators := strings.Fields(out)
 	collaborators = removeCurrentUser(collaborators)
 	slices.Sort(collaborators)
