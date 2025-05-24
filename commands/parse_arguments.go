@@ -14,6 +14,8 @@ import (
 )
 
 func ExecuteCommand(appConfig util.AppConfig, commandLineArgs []string) {
+	slog.Debug("App executable:" + appConfig.AppExecutable)
+	slog.Debug("User cache dir:" + appConfig.UserCacheDir)
 	// Unset any color in case a previous terminal command set colors and then was
 	// terminated before it could reset the colors.
 	color.Unset()
