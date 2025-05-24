@@ -82,6 +82,7 @@ func (m userSelectionModel) View() string {
 		"   tab       select auto-complete\n" +
 		"   enter     confirm\n" +
 		"   esc       quit\n" +
+		"   comma     use comma or space to separate reviewers\n" +
 		users
 }
 
