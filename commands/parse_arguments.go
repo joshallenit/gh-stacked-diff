@@ -14,8 +14,6 @@ import (
 )
 
 func ExecuteCommand(appConfig util.AppConfig, commandLineArgs []string) {
-	slog.Debug("App executable:" + appConfig.AppExecutable)
-	slog.Debug("User cache dir:" + appConfig.UserCacheDir)
 	// Unset any color in case a previous terminal command set colors and then was
 	// terminated before it could reset the colors.
 	color.Unset()
@@ -126,6 +124,8 @@ func parseArguments(appConfig util.AppConfig, commandLine *flag.FlagSet, command
 		}
 	}
 	defer recoverFunc()
+	slog.Debug("App executable: " + appConfig.AppExecutable)
+	slog.Debug("User cache dir: " + appConfig.UserCacheDir)
 	// Note: call GetMainBranchOrDie early as it has useful error messages.
 	slog.Debug(fmt.Sprint("Using main branch " + util.GetMainBranchOrDie()))
 	asyncConfig := util.AsyncAppConfig{App: appConfig, GracefulRecover: recoverFunc}
