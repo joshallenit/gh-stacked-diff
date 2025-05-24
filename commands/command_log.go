@@ -10,6 +10,7 @@ import (
 
 	"github.com/fatih/color"
 
+	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
@@ -36,6 +37,10 @@ func createLogCommand() Command {
 		OnSelected: func(asyncConfig util.AsyncAppConfig, command Command) {
 			if flagSet.NArg() != 0 {
 				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
+			}
+			if true {
+				interactive.ShowDashboard(asyncConfig)
+				return
 			}
 			printGitLog(asyncConfig.App.Io)
 		}}
