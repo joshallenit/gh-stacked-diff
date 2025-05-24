@@ -10,7 +10,6 @@ import (
 
 	"github.com/fatih/color"
 
-	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 )
@@ -38,12 +37,9 @@ func createLogCommand() Command {
 			if flagSet.NArg() != 0 {
 				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
-			if true {
-				interactive.ShowDashboard(asyncConfig, -1)
-				return
-			}
 			printGitLog(asyncConfig.App.Io)
-		}}
+		},
+	}
 }
 
 // Prints changes in the current branch compared to the main branch to out.
