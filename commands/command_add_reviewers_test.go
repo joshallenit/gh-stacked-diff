@@ -178,7 +178,7 @@ func TestSdAddReviewers_UserChoosesHistory_ChoosesSameReviewers(t *testing.T) {
 		interactive.NewMessageKey(tea.KeyUp),
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
-	testParseArguments("add-reviewers", "1")
+	testParseArguments("add-reviewers", "--min-checks", "4", "1")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
@@ -227,7 +227,7 @@ func TestSdAddReviewers_UserChoosesHistoryFromTyped_ChoosesSameReviewers(t *test
 		interactive.NewMessageKey(tea.KeyUp),
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
-	testParseArguments("add-reviewers", "1")
+	testParseArguments("add-reviewers", "--min-checks", "4", "1")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "my"}
