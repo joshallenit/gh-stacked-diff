@@ -91,7 +91,7 @@ func checkBranch(asyncConfig util.AsyncAppConfig, wg *sync.WaitGroup, targetComm
 			}
 
 			if summary.Total() < summary.MinChecks {
-				slog.Info(fmt.Sprint("Waiting for at least ", minChecks, " checks to be added to PR. Currently only ", summary.Total()))
+				slog.Info(fmt.Sprint("Waiting for at least ", summary.MinChecks, " checks to be added to PR. Currently only ", summary.Total()))
 			} else if summary.Passing == summary.Total() {
 				slog.Info(fmt.Sprint("All ", summary.Total(), " checks passed"))
 				break
