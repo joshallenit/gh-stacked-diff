@@ -33,7 +33,7 @@ func TestSdAddReviewers_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", util.MatchAnyRemainingArgs)
 
-	testParseArguments("add-reviewers", "--reviewers=mybestie", allCommits[0].Commit)
+	testParseArguments("add-reviewers", "--min-checks", "4", "--reviewers=mybestie", allCommits[0].Commit)
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
@@ -62,7 +62,7 @@ func TestSdAddReviewers_WhenUsingListIndicator_AddReviewers(t *testing.T) {
 			"SUCCESS\nSUCCESS\nSUCCESS\n",
 		nil, "gh", "pr", "view", util.MatchAnyRemainingArgs)
 
-	testParseArguments("add-reviewers", "--indicator=list", "--reviewers=mybestie", "1")
+	testParseArguments("add-reviewers", "--min-checks", "4", "--indicator=list", "--reviewers=mybestie", "1")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
@@ -92,7 +92,7 @@ func TestSdAddReviewers_WhenOmittingCommitIndicator_AsksForSelection(t *testing.
 		nil, "gh", "pr", "view", util.MatchAnyRemainingArgs)
 
 	interactive.SendToProgram(0, interactive.NewMessageKey(tea.KeyEnter))
-	testParseArguments("add-reviewers", "--indicator=list", "--reviewers=mybestie")
+	testParseArguments("add-reviewers", "--min-checks", "4", "--indicator=list", "--reviewers=mybestie")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
@@ -133,7 +133,7 @@ func TestSdAddReviewers_WhenUserAlreadyApproved_DoesNotRequestReview(t *testing.
 			slices.Contains(args, "reviews")
 	})
 
-	out := testParseArguments("--log-level=info", "add-reviewers", "--reviewers=alreadyapproved2,mybestie,alreadyapproved1", "1")
+	out := testParseArguments("--log-level=info", "add-reviewers", "--min-checks", "4", "--reviewers=alreadyapproved2,mybestie,alreadyapproved1", "1")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
@@ -168,7 +168,7 @@ func TestSdAddReviewers_UserChoosesHistory_ChoosesSameReviewers(t *testing.T) {
 			slices.Contains(args, "statusCheckRollup")
 	})
 
-	testParseArguments("add-reviewers", "--reviewers=mybestie", "1")
+	testParseArguments("add-reviewers", "--min-checks", "4", "--reviewers=mybestie", "1")
 
 	// Clear responses.
 	testExecutor.Responses = []util.ExecutedResponse{}
@@ -178,7 +178,7 @@ func TestSdAddReviewers_UserChoosesHistory_ChoosesSameReviewers(t *testing.T) {
 		interactive.NewMessageKey(tea.KeyUp),
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
-	testParseArguments("add-reviewers", "1")
+	testParseArguments("add-reviewers", "--min-checks", "4", "1")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "mybestie"}
@@ -217,7 +217,7 @@ func TestSdAddReviewers_UserChoosesHistoryFromTyped_ChoosesSameReviewers(t *test
 		interactive.NewMessageRune('y'),
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
-	testParseArguments("add-reviewers", "1")
+	testParseArguments("add-reviewers", "--min-checks", "4", "1")
 
 	// Clear responses.
 	testExecutor.Responses = []util.ExecutedResponse{}
@@ -227,7 +227,7 @@ func TestSdAddReviewers_UserChoosesHistoryFromTyped_ChoosesSameReviewers(t *test
 		interactive.NewMessageKey(tea.KeyUp),
 		interactive.NewMessageKey(tea.KeyEnter),
 	)
-	testParseArguments("add-reviewers", "1")
+	testParseArguments("add-reviewers", "--min-checks", "4", "1")
 
 	contains := slices.ContainsFunc(testExecutor.Responses, func(next util.ExecutedResponse) bool {
 		ghExpectedArgs := []string{"pr", "edit", allCommits[0].Branch, "--add-reviewer", "my"}

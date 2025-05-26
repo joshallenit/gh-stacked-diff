@@ -3,7 +3,7 @@ package interactive
 import (
 	"slices"
 
-	table "github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -150,10 +150,7 @@ func GetTableSelection(
 		rowEnabled:   rowEnabled,
 		prompt:       prompt,
 	}
-	finalModel, err := runProgram(stdIo, newProgram(initialModel, stdIo))
-	if err != nil {
-		panic(err)
-	}
+	finalModel := runProgram(stdIo, newProgram(initialModel, stdIo))
 	selected := finalModel.(model).selectedRows
 	slices.Sort(selected)
 	return selected

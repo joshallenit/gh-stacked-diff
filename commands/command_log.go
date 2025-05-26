@@ -38,7 +38,8 @@ func createLogCommand() Command {
 				commandError(asyncConfig.App, flagSet, "too many arguments", command.Usage)
 			}
 			printGitLog(asyncConfig.App.Io)
-		}}
+		},
+	}
 }
 
 // Prints changes in the current branch compared to the main branch to out.

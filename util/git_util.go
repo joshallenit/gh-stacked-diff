@@ -19,14 +19,6 @@ var userEmail string
 var repoName string
 var repoNameOnce *sync.Once = new(sync.Once)
 
-// Cached repository name with owner.
-var repoNameWithOwner string
-var repoNameWithOwnerOnce *sync.Once = new(sync.Once)
-
-// Cached logged in username
-var loggedInUsername string
-var loggedInUsernameOnce *sync.Once = new(sync.Once)
-
 // Returns name of main branch, or panics if cannot be determined.
 func GetMainBranchOrDie() string {
 	out, err := getMainBranchFromGitLog()
@@ -168,18 +160,6 @@ func PopStash(popStash bool) {
 	}
 }
 
-// Returns "repository-owner/repository-name".
-func GetRepoNameWithOwner() string {
-	if repoNameWithOwner == "" {
-		repoNameWithOwnerOnce.Do(func() {
-			out := ExecuteOrDie(ExecuteOptions{},
-				"gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner")
-			repoNameWithOwner = strings.TrimSpace(out)
-		})
-	}
-	return repoNameWithOwner
-}
-
 func GetRepoName() string {
 	if repoName == "" {
 		repoNameOnce.Do(func() {
@@ -189,15 +169,4 @@ func GetRepoName() string {
 		})
 	}
 	return repoName
-}
-
-func GetLoggedInUsername() string {
-	if loggedInUsername == "" {
-		loggedInUsernameOnce.Do(func() {
-			out := ExecuteOrDie(ExecuteOptions{},
-				"gh", "api", "https://api.github.com/user", "--jq", ".login")
-			loggedInUsername = strings.TrimSpace(out)
-		})
-	}
-	return loggedInUsername
 }

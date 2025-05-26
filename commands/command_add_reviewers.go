@@ -1,12 +1,9 @@
 package commands
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"log/slog"
-
-	"github.com/fatih/color"
 
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
@@ -19,13 +16,6 @@ import (
 	"github.com/joshallenit/gh-stacked-diff/v2/templates"
 )
 
-type pullRequestChecksStatus struct {
-	Pending int
-	Failing int
-	Passing int
-	Total   int
-}
-
 func createAddReviewersCommand() Command {
 	flagSet := flag.NewFlagSet("add-reviewers", flag.ContinueOnError)
 	indicatorTypeString := addIndicatorFlag(flagSet)
@@ -34,7 +24,7 @@ func createAddReviewersCommand() Command {
 	defaultPollFrequency := 30 * time.Second
 	pollFrequency := flagSet.Duration("poll-frequency", defaultPollFrequency,
 		"Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration")
-	reviewers, silent, minChecks := addReviewersFlags(flagSet, "Falls back to "+color.HiWhiteString("PR_REVIEWERS")+" environment variable.")
+	reviewers, silent, minChecks := addReviewersFlags(flagSet)
 
 	return Command{
 		FlagSet: flagSet,
@@ -86,13 +76,13 @@ func checkBranch(asyncConfig util.AsyncAppConfig, wg *sync.WaitGroup, targetComm
 	defer asyncConfig.GracefulRecover()
 	if whenChecksPass {
 		for {
-			summary := getChecksStatus(targetCommit.Branch)
+			summary := util.GetChecksStatus(targetCommit.Branch, minChecks)
 			if summary.Failing > 0 {
 				if !silent {
 					util.ExecuteOrDie(util.ExecuteOptions{}, "say", "Checks failed")
 				}
 				slog.Error(fmt.Sprint("Checks failed for ", targetCommit, ". "+
-					"Total: ", summary.Total,
+					"Total: ", summary.Total(),
 					" | Passed: ", summary.Passing,
 					" | Pending: ", summary.Pending,
 					" | Failed: ", summary.Failing,
@@ -100,15 +90,15 @@ func checkBranch(asyncConfig util.AsyncAppConfig, wg *sync.WaitGroup, targetComm
 				asyncConfig.App.Exit(1)
 			}
 
-			if summary.Total < minChecks {
-				slog.Info(fmt.Sprint("Waiting for at least ", minChecks, " checks to be added to PR. Currently only ", summary.Total))
-			} else if summary.Passing == summary.Total {
-				slog.Info(fmt.Sprint("All ", summary.Total, " checks passed"))
+			if summary.Total() < summary.MinChecks {
+				slog.Info(fmt.Sprint("Waiting for at least ", summary.MinChecks, " checks to be added to PR. Currently only ", summary.Total()))
+			} else if summary.Passing == summary.Total() {
+				slog.Info(fmt.Sprint("All ", summary.Total(), " checks passed"))
 				break
 			} else if summary.Passing == 0 {
 				slog.Info(fmt.Sprint("Checks pending for ", targetCommit, ". Completed: 0%"))
 			} else {
-				slog.Info(fmt.Sprint("Checks pending for ", targetCommit, ". Completed: ", int32(float32(summary.Passing)/float32(summary.Total)*100), "%"))
+				slog.Info(fmt.Sprint("Checks pending for ", targetCommit, ". Completed: ", int(summary.PercentageComplete()*100), "%"))
 			}
 			util.Sleep(pollFrequency)
 		}
@@ -133,41 +123,8 @@ func checkBranch(asyncConfig util.AsyncAppConfig, wg *sync.WaitGroup, targetComm
 	wg.Done()
 }
 
-/*
- * Logic copied from https://github.com/cli/cli/blob/57fbe4f317ca7d0849eeeedb16c1abc21a81913b/api/queries_pr.go#L258-L274
- */
-func getChecksStatus(branchName string) pullRequestChecksStatus {
-	var summary pullRequestChecksStatus
-	stateString := util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "view", branchName, "--json", "statusCheckRollup", "--jq", ".statusCheckRollup[] | .status, .conclusion, .state")
-	scanner := bufio.NewScanner(strings.NewReader(strings.TrimSpace(stateString)))
-	for scanner.Scan() {
-		status := scanner.Text()
-		scanner.Scan()
-		conclusion := scanner.Text()
-		scanner.Scan()
-		state := scanner.Text()
-		if state == "" {
-			if status == "COMPLETED" {
-				state = conclusion
-			} else {
-				state = status
-			}
-		}
-		switch state {
-		case "SUCCESS", "NEUTRAL", "SKIPPED":
-			summary.Passing++
-		case "ERROR", "FAILURE", "CANCELLED", "TIMED_OUT", "ACTION_REQUIRED":
-			summary.Failing++
-		default: // "EXPECTED", "REQUESTED", "WAITING", "QUEUED", "PENDING", "IN_PROGRESS", "STALE"
-			summary.Pending++
-		}
-		summary.Total++
-	}
-	return summary
-}
-
 func getNonApprovingUsers(commit templates.GitLog, reviewers string) (string, string) {
-	allApprovingUsers := getAllApprovingUsers(commit)
+	allApprovingUsers := util.GetAllApprovingUsers(commit.Branch)
 	approvingUsers := make([]string, 0)
 	nonApprovingUsers := make([]string, 0)
 	for _, reviewer := range strings.Split(reviewers, ",") {
@@ -178,53 +135,4 @@ func getNonApprovingUsers(commit templates.GitLog, reviewers string) (string, st
 		}
 	}
 	return strings.Join(approvingUsers, ","), strings.Join(nonApprovingUsers, ",")
-}
-
-/*
-Returns users that have already approved latest commit.
-
-Example output of gh pr view:
-
-$ gh pr view mybranch --json "reviews"
-
-	{
-	  "reviews": [
-	    {
-	      "id": "PRR_kwDODeVIac6f37Qq",
-	      "author": {
-	        "login": "mybestie"
-	      },
-	      "authorAssociation": "MEMBER",
-	      "body": "",
-	      "submittedAt": "2025-03-13T14:47:31Z",
-	      "includesCreatedEdit": false,
-	      "reactionGroups": [],
-	      "state": "COMMENTED",
-	      "commit": {
-	        "oid": "af01bdf8eb5649956096a608717f7de5eeb97e45"
-	      }
-	    },
-	    {
-	      "id": "PRR_kwDODeVIac6f5jeG",
-	      "author": {
-	        "login": "myfave"
-	      },
-	      "authorAssociation": "MEMBER",
-	      "body": "",
-	      "submittedAt": "2025-03-13T16:32:44Z",
-	      "includesCreatedEdit": false,
-	      "reactionGroups": [],
-	      "state": "APPROVED",
-	      "commit": {
-	        "oid": "af01bdf8eb5649956096a608717f7de5eeb97e45"
-	      }
-	    }
-	  ]
-	}
-*/
-func getAllApprovingUsers(commit templates.GitLog) []string {
-	lastCommit := getBranchLatestCommit(commit.Branch)
-	jq := ".reviews[] | select(.state == \"APPROVED\" and .commit.oid == \"" + lastCommit + "\") | .author.login"
-	approvedUsers := util.ExecuteOrDie(util.ExecuteOptions{}, "gh", "pr", "view", commit.Branch, "--json", "reviews", "--jq", jq)
-	return strings.Fields(approvedUsers)
 }
