@@ -58,7 +58,7 @@ func (m dashboardModel) View() string {
 func (m dashboardModel) getTableRows() []table.Row {
 	tableRows := make([]table.Row, len(m.rows))
 	for i, row := range m.rows {
-		var pr string = ""
+		pr := ""
 		checksPassed := ""
 		approved := ""
 		if row.pr {
@@ -142,7 +142,6 @@ func updateDashboardData(asyncConfig util.AsyncAppConfig, program *tea.Program, 
 			status := util.GetPullRequestStatus(row.log.Branch, minChecks)
 			row.status = &status
 			program.Send(updateDashboardRowMsg{index: i, row: row})
-
 		}
 	}
 }

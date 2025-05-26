@@ -186,7 +186,9 @@ func updatePullRequestChecksStatus(checks *PullRequestChecksStatus, status strin
 
 func getMinChecks() int {
 	jq := ".[].statusCheckRollup | length"
-	out := ExecuteOrDie(ExecuteOptions{}, "gh", "pr", "list", "--state", "merged", "--base", GetMainBranchOrDie(), "--json", "statusCheckRollup", "--jq", jq)
+	out := ExecuteOrDie(ExecuteOptions{},
+		"gh", "pr", "list", "--state", "merged", "--base", GetMainBranchOrDie(),
+		"--json", "statusCheckRollup", "--jq", jq)
 	allNumChecks := strings.Fields(out)
 	if len(allNumChecks) == 0 {
 		return 0
