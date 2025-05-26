@@ -23,7 +23,7 @@ func createNewCommand() Command {
 	featureFlag := flagSet.String("feature-flag", "", "Value for FEATURE_FLAG in PR description")
 	baseBranch := flagSet.String("base", "", "Base branch for Pull Request. Default is "+util.GetMainBranchForHelp())
 
-	reviewers, silent, minChecks := addReviewersFlags(flagSet, "")
+	reviewers, silent, minChecks := addReviewersFlags(flagSet)
 
 	indicatorTypeString := addIndicatorFlag(flagSet)
 

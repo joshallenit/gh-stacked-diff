@@ -32,11 +32,10 @@ func checkIndicatorFlag(appConfig util.AppConfig, command Command, indicatorType
 	return indicatorType
 }
 
-func addReviewersFlags(flagSet *flag.FlagSet, reviewersUseCaseExtra string) (*string, *bool, *int) {
+func addReviewersFlags(flagSet *flag.FlagSet) (*string, *bool, *int) {
 	reviewers := flagSet.String("reviewers", "",
 		"Comma-separated list of Github usernames to add as reviewers once\n"+
-			"checks have passed.\n"+
-			reviewersUseCaseExtra)
+			"checks have passed.")
 	silent := addSilentFlag(flagSet, "reviewers have been added")
 	minChecks := flagSet.Int("min-checks", -1,
 		"Minimum number of checks to wait for before verifying that checks\n"+

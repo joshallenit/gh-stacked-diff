@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/fatih/color"
-
 	"github.com/joshallenit/gh-stacked-diff/v2/interactive"
 	"github.com/joshallenit/gh-stacked-diff/v2/util"
 
@@ -26,7 +24,7 @@ func createAddReviewersCommand() Command {
 	defaultPollFrequency := 30 * time.Second
 	pollFrequency := flagSet.Duration("poll-frequency", defaultPollFrequency,
 		"Frequency which to poll checks. For valid formats see https://pkg.go.dev/time#ParseDuration")
-	reviewers, silent, minChecks := addReviewersFlags(flagSet, "Falls back to "+color.HiWhiteString("PR_REVIEWERS")+" environment variable.")
+	reviewers, silent, minChecks := addReviewersFlags(flagSet)
 
 	return Command{
 		FlagSet: flagSet,

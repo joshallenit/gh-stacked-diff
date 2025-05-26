@@ -18,7 +18,7 @@ import (
 func createUpdateCommand() Command {
 	flagSet := flag.NewFlagSet("update", flag.ContinueOnError)
 	indicatorTypeString := addIndicatorFlag(flagSet)
-	reviewers, silent, minChecks := addReviewersFlags(flagSet, "")
+	reviewers, silent, minChecks := addReviewersFlags(flagSet)
 	return Command{
 		FlagSet: flagSet,
 		Summary: "Add commits from " + util.GetMainBranchForHelp() + " to an existing PR",
