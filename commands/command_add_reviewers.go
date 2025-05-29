@@ -82,6 +82,7 @@ func checkBranch(asyncConfig util.AsyncAppConfig, wg *sync.WaitGroup, targetComm
 	if whenChecksPass {
 		for {
 			summary := util.GetChecksStatus(targetCommit.Branch, minChecks)
+			progressIndicator.SetProgress(float64(summary.PercentageComplete()))
 			if summary.Failing > 0 {
 				if !silent {
 					util.ExecuteOrDie(util.ExecuteOptions{}, "say", "Checks failed")
@@ -100,11 +101,6 @@ func checkBranch(asyncConfig util.AsyncAppConfig, wg *sync.WaitGroup, targetComm
 			} else if summary.Passing == summary.Total() {
 				slog.Info(fmt.Sprint("All ", summary.Total(), " checks passed"))
 				break
-			} else if summary.Passing == 0 {
-				slog.Info(fmt.Sprint("Checks pending for ", targetCommit, ". Completed: 0%"))
-			} else {
-				progressIndicator.SetProgress(float64(summary.PercentageComplete()))
-				// slog.Info(fmt.Sprint("Checks pending for ", targetCommit, ". Completed: ", int(summary.PercentageComplete()*100), "%"))
 			}
 			util.Sleep(pollFrequency)
 		}
