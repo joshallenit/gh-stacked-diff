@@ -64,15 +64,20 @@ func addReviewersToPr(asyncConfig util.AsyncAppConfig, targetCommits []templates
 	if reviewers == "" {
 		panic("Reviewers cannot be empty")
 	}
+	progressIndicator := interactive.NewProgressIndicator(asyncConfig.App.Io)
 	var wg sync.WaitGroup
-	for _, targetCommit := range targetCommits {
+	for i, targetCommit := range targetCommits {
 		wg.Add(1)
-		go checkBranch(asyncConfig, &wg, targetCommit, whenChecksPass, silent, minChecks, reviewers, pollFrequency)
+		go checkBranch(asyncConfig, &wg, targetCommit, whenChecksPass, silent, minChecks, reviewers, pollFrequency, progressIndicator)
+		if i == 0 {
+			go progressIndicator.Show(asyncConfig.App)
+		}
 	}
 	wg.Wait()
+	progressIndicator.Quit()
 }
 
-func checkBranch(asyncConfig util.AsyncAppConfig, wg *sync.WaitGroup, targetCommit templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration) {
+func checkBranch(asyncConfig util.AsyncAppConfig, wg *sync.WaitGroup, targetCommit templates.GitLog, whenChecksPass bool, silent bool, minChecks int, reviewers string, pollFrequency time.Duration, progressIndicator *interactive.ProgressIndicator) {
 	defer asyncConfig.GracefulRecover()
 	if whenChecksPass {
 		for {
@@ -98,7 +103,8 @@ func checkBranch(asyncConfig util.AsyncAppConfig, wg *sync.WaitGroup, targetComm
 			} else if summary.Passing == 0 {
 				slog.Info(fmt.Sprint("Checks pending for ", targetCommit, ". Completed: 0%"))
 			} else {
-				slog.Info(fmt.Sprint("Checks pending for ", targetCommit, ". Completed: ", int(summary.PercentageComplete()*100), "%"))
+				progressIndicator.SetProgress(float64(summary.PercentageComplete()))
+				// slog.Info(fmt.Sprint("Checks pending for ", targetCommit, ". Completed: ", int(summary.PercentageComplete()*100), "%"))
 			}
 			util.Sleep(pollFrequency)
 		}
@@ -113,12 +119,16 @@ func checkBranch(asyncConfig util.AsyncAppConfig, wg *sync.WaitGroup, targetComm
 		slog.Warn(fmt.Sprint("Skipping reviewers that have already approved: " + approvingUsers))
 	}
 	if len(nonApprovingUsers) > 0 {
-		prUrl := strings.TrimSpace(
-			util.ExecuteOrDie(util.ExecuteOptions{},
-				"gh", "pr", "edit", targetCommit.Branch, "--add-reviewer", nonApprovingUsers,
-			),
-		)
-		slog.Info(fmt.Sprint("Added reviewers ", nonApprovingUsers, " to ", prUrl))
+		if asyncConfig.App.DemoMode {
+			slog.Info(fmt.Sprint("Added reviewers ", nonApprovingUsers))
+		} else {
+			prUrl := strings.TrimSpace(
+				util.ExecuteOrDie(util.ExecuteOptions{},
+					"gh", "pr", "edit", targetCommit.Branch, "--add-reviewer", nonApprovingUsers,
+				),
+			)
+			slog.Info(fmt.Sprint("Added reviewers ", nonApprovingUsers, " to ", prUrl))
+		}
 	}
 	wg.Done()
 }
