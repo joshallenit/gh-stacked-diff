@@ -15,11 +15,17 @@ history items are returned as:
 [last element] most recent
 */
 func ReadHistory(appConfig AppConfig, historyFilename string) []string {
-	data, err := os.ReadFile(getHistoryFile(appConfig, historyFilename))
+	dataBytes, err := os.ReadFile(getHistoryFile(appConfig, historyFilename))
 	if err != nil {
 		return []string{}
 	}
-	return strings.Split(string(data), "\n")
+	data := string(dataBytes)
+	if appConfig.DemoMode {
+		// To support writing history file manuallly when demo'ing on windows.
+		return strings.Fields(data)
+	} else {
+		return strings.Split(data, "\n")
+	}
 }
 
 // Add a most recently used item to history.

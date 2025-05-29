@@ -65,6 +65,7 @@ func testParseArgumentsWithOut(out io.Writer, commandLineArgs ...string) {
 		AppExecutable: appExecutable,
 		Exit:          panicOnExit,
 		UserCacheDir:  getTestAppCacheDir(),
+		DemoMode:      false,
 	}
 	parseArguments(
 		appConfig,

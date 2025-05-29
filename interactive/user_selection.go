@@ -213,6 +213,9 @@ func normalizeReviewers(selected string) string {
 func updateSuggestions(asyncConfig util.AsyncAppConfig, program *tea.Program) {
 	defer asyncConfig.GracefulRecover()
 	allCollaborators := getAllCollaborators()
-	program.Send(setSuggestionsMsg{suggestions: allCollaborators})
-	util.SetHistory(asyncConfig.App, all_collaborators_file, allCollaborators)
+	if !asyncConfig.App.DemoMode {
+		// Do not set if in demo mode, instead write the cache file manually.
+		program.Send(setSuggestionsMsg{suggestions: allCollaborators})
+		util.SetHistory(asyncConfig.App, all_collaborators_file, allCollaborators)
+	}
 }

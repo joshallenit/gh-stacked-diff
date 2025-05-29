@@ -47,11 +47,13 @@ func main() {
 	if err != nil {
 		panic("Cannot find user cache dir: " + err.Error())
 	}
+	demoModeEnv, _ := os.LookupEnv("GH_STACKED_DIFF_DEMO_MODE")
 	appConfig := util.AppConfig{
 		Io:            util.StdIo{Out: os.Stdout, Err: os.Stderr, In: os.Stdin},
 		AppExecutable: getAppExecutable(),
 		Exit:          os.Exit,
 		UserCacheDir:  userCacheDir,
+		DemoMode:      strings.ToLower(demoModeEnv) == "true",
 	}
 	commands.ExecuteCommand(appConfig, os.Args[1:])
 }
